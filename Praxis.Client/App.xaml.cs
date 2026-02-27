@@ -1,10 +1,15 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Windows;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Praxis.Domain.Entities;
 using Praxis.Infrastructure;
 using Praxis.Infrastructure.Persistence;
+using Praxis.Infrastructure.Services;
 
 namespace Praxis.Client;
 
@@ -27,29 +32,53 @@ public partial class App : System.Windows.Application
                 var dbFile = ctx.Configuration["Database:FileName"] ?? "praxis.db";
                 var dbPath = Path.Combine(Directory.GetCurrentDirectory(), dbFile);
 
-                MessageBox.Show($"DB Pfad:\n{dbPath}");
+                // optional: anzeigen, wo die DB liegt
+                // MessageBox.Show($"DB Pfad:\n{dbPath}");
 
                 services.AddInfrastructure(dbPath);
-                services.AddSingleton<MainWindow>();
+
+                // Services
+                services.AddScoped<PatientService>();
+
+                // MainWindow über DI
+                services.AddTransient<MainWindow>();
             })
             .Build();
 
-        // Datenbank-Datei/Schema anlegen (leer, ohne Tabellen)
+        // DB erstellen + Testdaten einfügen
         using (var scope = _host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<PraxisDbContext>();
+
             await db.Database.EnsureCreatedAsync();
 
-            MessageBox.Show("DB wurde erstellt ✅");
+            // TESTDATEN (nur wenn Tabelle leer ist)
+            if (!db.Patients.Any())
+            {
+                db.Patients.Add(new Patient
+                {
+                    Vorname = "Max",
+                    Nachname = "Mustermann",
+                    Geburtsdatum = new DateTime(1980, 1, 1),
+                    Email = "max@test.de"
+                });
+
+                await db.SaveChangesAsync();
+            }
         }
 
+        // UI starten
         _host.Services.GetRequiredService<MainWindow>().Show();
     }
 
     protected override async void OnExit(ExitEventArgs e)
     {
-        if (_host != null) await _host.StopAsync();
-        _host?.Dispose();
+        if (_host != null)
+        {
+            await _host.StopAsync();
+            _host.Dispose();
+        }
+
         base.OnExit(e);
     }
 }

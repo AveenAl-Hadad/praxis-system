@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Praxis.Application\Praxis.Application.csproj" />
+    <ProjectReference Include="..\Praxis.Domain\Praxis.Domain.csproj" />
     <ProjectReference Include="..\Praxis.Infrastructure\Praxis.Infrastructure.csproj" />
   </ItemGroup>
 

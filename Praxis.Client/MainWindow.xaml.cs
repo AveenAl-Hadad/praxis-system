@@ -1,24 +1,42 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Praxis.Domain.Entities;
+using Praxis.Infrastructure.Services;
 
-namespace Praxis.Client
+namespace Praxis.Client;
+
+public partial class MainWindow : Window
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    private readonly PatientService _patientService;
+
+    public MainWindow(PatientService patientService)
     {
-        public MainWindow()
+        InitializeComponent();
+        _patientService = patientService;
+
+        Loaded += async (_, __) => await LoadPatientsAsync();
+    }
+
+    private async Task LoadPatientsAsync()
+    {
+        try
         {
-            InitializeComponent();
+            StatusText.Text = "Lade Patienten...";
+            List<Patient> patients = await _patientService.GetAllPatientsAsync();
+            PatientsGrid.ItemsSource = patients;
+            StatusText.Text = $"Anzahl Patienten: {patients.Count}";
         }
+        catch (Exception ex)
+        {
+            StatusText.Text = "Fehler beim Laden.";
+            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void Refresh_Click(object sender, RoutedEventArgs e)
+    {
+        await LoadPatientsAsync();
     }
 }
