@@ -54,6 +54,28 @@ public partial class MainWindow : Window
             StatusText.Text = "Patient erfolgreich gespeichert.";
             
         }
+
+    }
+    private async void DeletePatient_Click(object sender, RoutedEventArgs e)
+    {
+        if (PatientsGrid.SelectedItem is Patient selected)
+        {
+            var result = MessageBox.Show(
+                $"Patient {selected.Nachname} wirklich löschen?",
+                "Bestätigung",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                await _patientService.DeletePatientAsync(selected.Id);
+                await LoadPatientsAsync();
+            }
+        }
+        else
+        {
+            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+        }
     }
 
 }

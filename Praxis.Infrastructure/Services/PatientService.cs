@@ -22,4 +22,13 @@ public class PatientService
         _context.Patients.Add(patient);
         await _context.SaveChangesAsync();
     }
+    public async Task DeletePatientAsync(int id)
+    {
+        var patient = await _context.Patients.FindAsync(id);
+        if (patient != null)
+        {
+            _context.Patients.Remove(patient);
+            await _context.SaveChangesAsync();
+        }
+    }
 }
