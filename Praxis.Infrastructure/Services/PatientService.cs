@@ -31,4 +31,9 @@ public class PatientService
             await _context.SaveChangesAsync();
         }
     }
+    public async Task UpdatePatientAsync(Patient patient)
+    {
+        _context.Patients.Update(patient);
+        await _context.SaveChangesAsync();
+    }
 }

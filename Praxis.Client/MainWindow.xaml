@@ -31,6 +31,12 @@
                 Margin="0,0,10,0"
                 Click="DeletePatient_Click"/>
                 
+                <Button Content="✏ Bearbeiten"
+                Width="120"
+                Height="30"
+                Margin="0,0,10,0"
+                Click="EditPatient_Click"/>
+                
                 <Button Content="Aktualisieren"
                 Width="120"
                 Height="30"

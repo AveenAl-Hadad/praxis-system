@@ -77,5 +77,26 @@ public partial class MainWindow : Window
             MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
         }
     }
+    private async void EditPatient_Click(object sender, RoutedEventArgs e)
+    {
+        if (PatientsGrid.SelectedItem is Patient selected)
+        {
+            var dlg = new AddPatientWindow(selected)
+            {
+                Owner = this
+            };
+
+            var ok = dlg.ShowDialog();
+            if (ok == true && dlg.CreatedPatient != null)
+            {
+                await _patientService.UpdatePatientAsync(dlg.CreatedPatient);
+                await LoadPatientsAsync();
+            }
+        }
+        else
+        {
+            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+        }
+    }
 
 }
