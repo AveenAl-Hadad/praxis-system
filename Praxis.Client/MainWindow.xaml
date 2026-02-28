@@ -12,9 +12,23 @@
 
         <!-- Toolbar -->
         <DockPanel Grid.Row="0" LastChildFill="True" Margin="0,0,0,10">
-            <TextBlock Text="Patientenliste" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
-            <Button Content="Aktualisieren" Width="120" Height="30"
-                    DockPanel.Dock="Right" Click="Refresh_Click"/>
+            <TextBlock Text="Patientenliste"
+               FontSize="18"
+               FontWeight="SemiBold"
+               VerticalAlignment="Center"/>
+
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                <Button Content="➕ Patient hinzufügen"
+                Width="170"
+                Height="30"
+                Margin="0,0,10,0"
+                Click="AddPatient_Click"/>
+
+                <Button Content="Aktualisieren"
+                Width="120"
+                Height="30"
+                Click="Refresh_Click"/>
+            </StackPanel>
         </DockPanel>
 
         <!-- DataGrid -->

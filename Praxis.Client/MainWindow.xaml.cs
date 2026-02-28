@@ -39,4 +39,22 @@ public partial class MainWindow : Window
     {
         await LoadPatientsAsync();
     }
+    private async void AddPatient_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new AddPatientWindow
+        {
+            Owner = this
+        };
+
+        var ok = dlg.ShowDialog();
+        if (ok == true)
+        {
+          
+            MessageBox.Show($"Erfasst: {dlg.CreatedPatient?.Nachname}, {dlg.CreatedPatient?.Vorname}",
+                "OK", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            
+        }
+    }
+
 }
