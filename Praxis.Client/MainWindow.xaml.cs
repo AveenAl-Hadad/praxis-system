@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 
@@ -96,6 +97,22 @@ public partial class MainWindow : Window
         else
         {
             MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+        }
+    }
+
+    private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var term = SearchBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(term))
+        {
+            await LoadPatientsAsync();
+        }
+        else
+        {
+            var results = await _patientService.SearchPatientsAsync(term);
+            PatientsGrid.ItemsSource = results;
+            StatusText.Text = $"Gefundene Patienten: {results.Count}";
         }
     }
 

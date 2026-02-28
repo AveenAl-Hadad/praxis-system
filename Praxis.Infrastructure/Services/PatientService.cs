@@ -36,4 +36,16 @@ public class PatientService
         _context.Patients.Update(patient);
         await _context.SaveChangesAsync();
     }
+    public async Task<List<Patient>> SearchPatientsAsync(string searchTerm)
+    {
+        searchTerm = searchTerm.ToLower();
+
+        return await _context.Patients
+            .Where(p =>
+                p.Vorname.ToLower().Contains(searchTerm) ||
+                p.Nachname.ToLower().Contains(searchTerm) ||
+                p.Email.ToLower().Contains(searchTerm) ||
+                p.Telefonnummer.ToLower().Contains(searchTerm))
+            .ToListAsync();
+    }
 }
