@@ -47,12 +47,11 @@ public partial class MainWindow : Window
         };
 
         var ok = dlg.ShowDialog();
-        if (ok == true)
+        if (ok == true && dlg.CreatedPatient != null)
         {
-          
-            MessageBox.Show($"Erfasst: {dlg.CreatedPatient?.Nachname}, {dlg.CreatedPatient?.Vorname}",
-                "OK", MessageBoxButton.OK, MessageBoxImage.Information);
-
+            await _patientService.AddPatientAsync(dlg.CreatedPatient);
+            await LoadPatientsAsync();
+            StatusText.Text = "Patient erfolgreich gespeichert.";
             
         }
     }

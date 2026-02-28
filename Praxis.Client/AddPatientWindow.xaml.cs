@@ -35,7 +35,7 @@ public partial class AddPatientWindow : Window
         {
             Vorname = firstName,
             Nachname = lastName,
-            Geburtsdatum = DobPicker.SelectedDate ?? DateTime.MinValue,
+            Geburtsdatum = DobPicker.SelectedDate ?? DateTime.Now,
             Email = (EmailBox.Text ?? "").Trim(),
             Telefonnummer = (PhoneBox.Text ?? "").Trim()
         };

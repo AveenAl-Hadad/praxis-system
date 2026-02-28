@@ -17,4 +17,9 @@ public class PatientService
     {
         return await _context.Patients.AsNoTracking().ToListAsync();
     }
+    public async Task AddPatientAsync(Patient patient)
+    {
+        _context.Patients.Add(patient);
+        await _context.SaveChangesAsync();
+    }
 }
