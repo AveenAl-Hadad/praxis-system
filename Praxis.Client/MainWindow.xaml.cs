@@ -59,8 +59,10 @@ public partial class MainWindow : Window
         }
     }
 
-}
+
     private async void DeletePatient_Click(object sender, RoutedEventArgs e)
+    {
+    try
     {
         if (PatientsGrid.SelectedItem is Patient selected)
         {
@@ -81,25 +83,41 @@ public partial class MainWindow : Window
             MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
         }
     }
-    private async void EditPatient_Click(object sender, RoutedEventArgs e)
-    {
-        if (PatientsGrid.SelectedItem is Patient selected)
-        {
-            var dlg = new AddPatientWindow(selected)
-            {
-                Owner = this
-            };
 
-            var ok = dlg.ShowDialog();
-            if (ok == true && dlg.CreatedPatient != null)
+    catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            StatusText.Text = "Fehler beim Speichern ❌";
+        }
+
+    }
+private async void EditPatient_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (PatientsGrid.SelectedItem is Patient selected)
             {
-                await _patientService.UpdatePatientAsync(dlg.CreatedPatient);
-                await LoadPatientsAsync();
+                var dlg = new AddPatientWindow(selected)
+                {
+                    Owner = this
+                };
+
+                var ok = dlg.ShowDialog();
+                if (ok == true && dlg.CreatedPatient != null)
+                {
+                    await _patientService.UpdatePatientAsync(dlg.CreatedPatient);
+                    await LoadPatientsAsync();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
             }
         }
-        else
+        catch (Exception ex)
         {
-            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            StatusText.Text = "Fehler beim Speichern ❌";
         }
     }
 

@@ -41,8 +41,10 @@ public partial class AddPatientWindow : Window
         }
         var lastName = (LastNameBox.Text ?? "").Trim();
         var firstName = (FirstNameBox.Text ?? "").Trim();
+        var email = (EmailBox.Text ?? "").Trim();
+        var phone = (PhoneBox.Text ?? "").Trim();
 
-       // 🔹 WICHTIG: Nur neues Objekt erstellen wenn keines existiert
+        // 🔹 WICHTIG: Nur neues Objekt erstellen wenn keines existiert
         if (CreatedPatient == null)
         
             CreatedPatient = new Patient();
@@ -52,8 +54,8 @@ public partial class AddPatientWindow : Window
         CreatedPatient.Vorname = firstName;
         CreatedPatient.Nachname = lastName;
         CreatedPatient.Geburtsdatum = DobPicker.SelectedDate!.Value;
-        CreatedPatient.Email = (EmailBox.Text ?? "").Trim();
-        CreatedPatient.Telefonnummer = (PhoneBox.Text ?? "").Trim();
+        CreatedPatient.Email = string.IsNullOrWhiteSpace(email) ? null : email;
+        CreatedPatient.Telefonnummer = string.IsNullOrWhiteSpace(phone) ? null : phone;
 
         DialogResult = true;
         Close();
