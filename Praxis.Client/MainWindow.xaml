@@ -80,6 +80,7 @@
                 <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" Width="2*"/>
                 <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" Width="2*"/>
                 <DataGridTextColumn Header="Geburt" Binding="{Binding Geburtsdatum, StringFormat=d}" Width="120"/>
+                <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" Width="80"/>
                 <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" Width="2*"/>
                 <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" Width="160"/>
             </DataGrid.Columns>

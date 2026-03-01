@@ -13,4 +13,18 @@ public class Patient
     public string Telefonnummer { get; set; } = string.Empty;
 
     public string Email { get; set; } = string.Empty;
+
+    public int Alter
+    {
+        get
+        {
+            var today = DateTime.Today;
+            var age = today.Year - Geburtsdatum.Year;
+
+            if (Geburtsdatum.Date > today.AddYears(-age))
+                age--;
+
+            return age;
+        }
+    }
 }
