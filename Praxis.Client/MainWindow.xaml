@@ -87,6 +87,24 @@
           SelectionUnit="FullRow"
           MouseDoubleClick="PatientsGrid_DoubleClick">
 
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <!-- Inaktiv -->
+                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                            <Setter Property="Background" Value="#FFF8D7DA"/>
+                            <!-- hellrot -->
+                        </DataTrigger>
+
+                        <!-- Aktiv -->
+                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                            <Setter Property="Background" Value="#FFE6FFED"/>
+                            <!-- hellgrün -->
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
                 <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" Width="2*"/>
@@ -95,7 +113,28 @@
                 <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" Width="80"/>
                 <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" Width="2*"/>
                 <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" Width="160"/>
-                <DataGridTextColumn Header="Status" Binding="{Binding IsActive, Converter={StaticResource ActiveText}}" Width="90"/>
+                <DataGridTemplateColumn Header="Status" Width="110">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock FontWeight="SemiBold" HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <!-- Default -->
+                                        <Setter Property="Text" Value="Inaktiv"/>
+                                        <Setter Property="Foreground" Value="Red"/>
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                <Setter Property="Text" Value="Aktiv"/>
+                                                <Setter Property="Foreground" Value="Green"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
 
         </DataGrid>
