@@ -1,0 +1,25 @@
+﻿<Window x:Class="Praxis.Client.PatientDetailWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Patient Details" Height="420" Width="520"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock x:Name="TitleText" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12"/>
+
+            <TextBlock x:Name="DobText" Margin="0,0,0,6"/>
+            <TextBlock x:Name="AgeText" Margin="0,0,0,6"/>
+            <TextBlock x:Name="EmailText" Margin="0,0,0,6"/>
+            <TextBlock x:Name="PhoneText" Margin="0,0,0,6"/>
+            <TextBlock x:Name="StatusText2" Margin="0,0,0,6"/>
+        </StackPanel>
+
+        <Button Grid.Row="1" Content="Schließen" Width="110" Height="30"
+                HorizontalAlignment="Right" Click="Close_Click"/>
+    </Grid>
+</Window>

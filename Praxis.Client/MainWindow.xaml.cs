@@ -149,5 +149,17 @@ private async void EditPatient_Click(object sender, RoutedEventArgs e)
             MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
         }
     }
+    private void PatientsGrid_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (PatientsGrid.SelectedItem is Patient selected)
+        {
+            var detail = new PatientDetailWindow(selected)
+            {
+                Owner = this
+            };
+
+            detail.ShowDialog();
+        }
+    }
 
 }
