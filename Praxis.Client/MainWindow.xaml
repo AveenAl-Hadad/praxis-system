@@ -4,9 +4,11 @@
         xmlns:conv="clr-namespace:Praxis.Client.Converters"
         Title="PraxisSystem - Patienten" Height="650" Width="1100"
         WindowStartupLocation="CenterScreen">
+    
     <Window.Resources>
         <conv:BoolToActiveTextConverter x:Key="ActiveText"/>
     </Window.Resources>
+    
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -16,64 +18,54 @@
 
         <!-- Toolbar -->
         <DockPanel Grid.Row="0" LastChildFill="True" Margin="0,0,0,10">
-            <TextBlock Text="Patientenliste"
-               FontSize="18"
-               FontWeight="SemiBold"
-               VerticalAlignment="Center"/>
+           <StackPanel Orientation="Vertical">
+                <!-- Reihe 1: Titel + Suche -->
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                    <TextBlock Grid.Column="0"
+                       Text="Patientenliste"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"/>
 
-                <Grid Width="200" Height="30" Margin="0,0,10,0">
-                    <TextBox x:Name="SearchBox"
-             VerticalContentAlignment="Center"
-             TextChanged="SearchBox_TextChanged"/>
+                    <!-- Suche (mit Placeholder-Overlay) -->
+                    <Grid Grid.Column="1" Width="260" Height="32">
+                        <TextBox x:Name="SearchBox"
+                         VerticalContentAlignment="Center"
+                         TextChanged="SearchBox_TextChanged"/>
 
-                    <TextBlock Text="Suche..."
-               Margin="8,0,0,0"
-               VerticalAlignment="Center"
-               Foreground="Gray"
-               IsHitTestVisible="False">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                        <TextBlock Text="Suche..."
+                           Margin="8,0,0,0"
+                           VerticalAlignment="Center"
+                           Foreground="Gray"
+                           IsHitTestVisible="False">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
                 </Grid>
 
-                <Button Content="➕ Patient hinzufügen"
-                Width="170"
-                Height="30"
-                Margin="0,0,10,0"
-                Click="AddPatient_Click"/>
-
-                <Button Content="✏ Bearbeiten"
-                Width="120"
-                Height="30"
-                Margin="0,0,10,0"
-                Click="EditPatient_Click"/>
-
-                <Button Content="🗑 Löschen"
-                Width="120"
-                Height="30"
-                Margin="0,0,10,0"
-                Click="DeletePatient_Click"/>
-                <Button Content="⭐ Aktiv/Inaktiv"
-                Width="140"
-                Height="30"
-                Margin="0,0,10,0"
-                Click="ToggleActive_Click"/>    
-
-                <Button Content="Aktualisieren"
-                Width="120"
-                Height="30"
-                Click="Refresh_Click"/>
-                
+                <!-- Reihe 2: Buttons -->
+                <WrapPanel>
+                    <Button Content="➕ Patient hinzufügen" Width="170" Height="30" Margin="0,0,10,8" Click="AddPatient_Click"/>
+                    <Button Content="✏ Bearbeiten" Width="120" Height="30" Margin="0,0,10,8" Click="EditPatient_Click"/>
+                    <Button Content="🗑 Löschen" Width="120" Height="30" Margin="0,0,10,8" Click="DeletePatient_Click"/>
+                    <Button Content="⭐ Aktiv/Inaktiv" Width="140" Height="30" Margin="0,0,10,8" Click="ToggleActive_Click"/>
+                    <Button Content="📤 Export CSV" Width="130" Height="30" Margin="0,0,10,8" Click="ExportCsv_Click"/>
+                    <Button Content="Aktualisieren" Width="120" Height="30" Margin="0,0,10,8" Click="Refresh_Click"/>
+                </WrapPanel>
 
             </StackPanel>
         </DockPanel>

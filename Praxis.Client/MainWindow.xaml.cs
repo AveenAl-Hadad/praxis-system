@@ -5,6 +5,10 @@ using System.Windows;
 using System.Windows.Controls;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
+using Microsoft.Win32;
+using System.Text;
+using System.IO;
+using System.Linq;
 
 namespace Praxis.Client;
 
@@ -159,6 +163,66 @@ private async void EditPatient_Click(object sender, RoutedEventArgs e)
             };
 
             detail.ShowDialog();
+        }
+    }
+
+    private void ExportCsv_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            // 1) Aktuell angezeigte Liste holen (inkl. Suche/Filter)
+            var current = PatientsGrid.ItemsSource as System.Collections.IEnumerable;
+
+            if (current == null)
+            {
+                MessageBox.Show("Keine Daten zum Exportieren.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var patients = current.Cast<Patient>().ToList();
+            if (patients.Count == 0)
+            {
+                MessageBox.Show("Keine Daten zum Exportieren.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // 2) Dateidialog
+            var dlg = new SaveFileDialog
+            {
+                Title = "Patientenliste exportieren",
+                Filter = "CSV Datei (*.csv)|*.csv",
+                FileName = $"patienten_{DateTime.Now:yyyyMMdd_HHmm}.csv"
+            };
+
+            if (dlg.ShowDialog() != true)
+                return;
+
+            // 3) CSV bauen
+            var sb = new StringBuilder();
+            sb.AppendLine("Id;Nachname;Vorname;Geburtsdatum;Alter;Email;Telefon;Status");
+
+            foreach (var p in patients)
+            {
+                var status = p.IsActive ? "Aktiv" : "Inaktiv";
+
+                // CSV-safe: Semikolon und Zeilenumbrüche entfernen/ersetzen
+                string Clean(string? s) =>
+                    (s ?? "").Replace(";", ",").Replace("\r", " ").Replace("\n", " ").Trim();
+
+                sb.AppendLine(
+                    $"{p.Id};{Clean(p.Nachname)};{Clean(p.Vorname)};{p.Geburtsdatum:yyyy-MM-dd};{p.Alter};{Clean(p.Email)};{Clean(p.Telefonnummer)};{status}"
+                );
+            }
+
+            // 4) Datei schreiben (UTF-8)
+            File.WriteAllText(dlg.FileName, sb.ToString(), Encoding.UTF8);
+
+            StatusText.Text = $"CSV exportiert: {dlg.FileName}";
+            MessageBox.Show("Export erfolgreich ✅", "CSV Export", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Export fehlgeschlagen:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
