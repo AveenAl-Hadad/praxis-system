@@ -21,6 +21,30 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+        this.DispatcherUnhandledException += (s, exArgs) =>
+        {
+            LogError(exArgs.Exception);
+            MessageBox.Show(
+                "Ein unerwarteter Fehler ist aufgetreten.\nDetails stehen in logs\\app.log",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+
+            exArgs.Handled = true; // verhindert App-Crash
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (s, exArgs) =>
+        {
+            if (exArgs.ExceptionObject is Exception ex)
+                LogError(ex);
+        };
+
+        TaskScheduler.UnobservedTaskException += (s, exArgs) =>
+        {
+            LogError(exArgs.Exception);
+            exArgs.SetObserved();
+        };
+
         _host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(cfg =>
             {
@@ -80,5 +104,22 @@ public partial class App : System.Windows.Application
         }
 
         base.OnExit(e);
+    }
+
+    private static void LogError(Exception ex)
+    {
+        try
+        {
+            var logDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+            Directory.CreateDirectory(logDir);
+
+            var logPath = Path.Combine(logDir, "app.log");
+            File.AppendAllText(logPath,
+                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex}\n\n");
+        }
+        catch
+        {
+            // Logging darf nie crashen
+        }
     }
 }

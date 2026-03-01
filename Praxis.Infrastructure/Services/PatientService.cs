@@ -19,32 +19,53 @@ public class PatientService
     }
     public async Task AddPatientAsync(Patient patient)
     {
-        _context.Patients.Add(patient);
-        await _context.SaveChangesAsync();
+        try
+        {
+            _context.Patients.Add(patient);
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex) 
+        {
+            throw new Exception("speichern fehlgeschlagen. Bitte prüfen Sie die Eingaben oder versuchen Sie es erneut.",ex);
+        }
     }
     public async Task DeletePatientAsync(int id)
     {
         var patient = await _context.Patients.FindAsync(id);
         if (patient != null)
         {
+            try
+            { 
             _context.Patients.Remove(patient);
             await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new Exception("speichern fehlgeschlagen. Bitte prüfen Sie die Eingaben oder versuchen Sie es erneut.", ex);
+            }
         }
     }
     public async Task UpdatePatientAsync(Patient patient)
     {
-        var existing = await _context.Patients
-         .FirstOrDefaultAsync(p => p.Id == patient.Id);
+        try
+        {
+            var existing = await _context.Patients
+             .FirstOrDefaultAsync(p => p.Id == patient.Id);
 
-        if (existing == null) return;
+            if (existing == null) return;
 
-        existing.Vorname = patient.Vorname;
-        existing.Nachname = patient.Nachname;
-        existing.Geburtsdatum = patient.Geburtsdatum;
-        existing.Email = patient.Email;
-        existing.Telefonnummer = patient.Telefonnummer;
+            existing.Vorname = patient.Vorname;
+            existing.Nachname = patient.Nachname;
+            existing.Geburtsdatum = patient.Geburtsdatum;
+            existing.Email = patient.Email;
+            existing.Telefonnummer = patient.Telefonnummer;
 
-        await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new Exception("speichern fehlgeschlagen. Bitte prüfen Sie die Eingaben oder versuchen Sie es erneut.", ex);
+        }
     }
     public async Task<List<Patient>> SearchPatientsAsync(string searchTerm)
     {

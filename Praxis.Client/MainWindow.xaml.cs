@@ -42,21 +42,24 @@ public partial class MainWindow : Window
     }
     private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
-        var dlg = new AddPatientWindow
+        try
         {
-            Owner = this
-        };
-
-        var ok = dlg.ShowDialog();
-        if (ok == true && dlg.CreatedPatient != null)
-        {
-            await _patientService.AddPatientAsync(dlg.CreatedPatient);
-            await LoadPatientsAsync();
-            StatusText.Text = "Patient erfolgreich gespeichert.";
-            
+            var dlg = new AddPatientWindow { Owner = this };
+            if (dlg.ShowDialog() == true && dlg.CreatedPatient != null)
+            {
+                await _patientService.AddPatientAsync(dlg.CreatedPatient);
+                await LoadPatientsAsync();
+                StatusText.Text = "Patient gespeichert ✅";
+            }
         }
-
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            StatusText.Text = "Fehler beim Speichern ❌";
+        }
     }
+
+}
     private async void DeletePatient_Click(object sender, RoutedEventArgs e)
     {
         if (PatientsGrid.SelectedItem is Patient selected)
