@@ -1,4 +1,6 @@
-﻿namespace Praxis.Domain.Entities;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Praxis.Domain.Entities;
 
 public class Patient
 {
@@ -14,6 +16,7 @@ public class Patient
 
     public string Email { get; set; } = string.Empty;
 
+    [NotMapped]
     public int Alter
     {
         get
