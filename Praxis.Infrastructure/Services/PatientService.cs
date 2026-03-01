@@ -33,14 +33,24 @@ public class PatientService
     }
     public async Task UpdatePatientAsync(Patient patient)
     {
-        _context.Patients.Update(patient);
+        var existing = await _context.Patients
+         .FirstOrDefaultAsync(p => p.Id == patient.Id);
+
+        if (existing == null) return;
+
+        existing.Vorname = patient.Vorname;
+        existing.Nachname = patient.Nachname;
+        existing.Geburtsdatum = patient.Geburtsdatum;
+        existing.Email = patient.Email;
+        existing.Telefonnummer = patient.Telefonnummer;
+
         await _context.SaveChangesAsync();
     }
     public async Task<List<Patient>> SearchPatientsAsync(string searchTerm)
     {
         searchTerm = searchTerm.ToLower();
 
-        return await _context.Patients
+        return await _context.Patients.AsNoTracking()
             .Where(p =>
                 p.Vorname.ToLower().Contains(searchTerm) ||
                 p.Nachname.ToLower().Contains(searchTerm) ||
