@@ -1,8 +1,7 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Windows;
 using Praxis.Domain.Entities;
-using System.Text.RegularExpressions;
-
 
 namespace Praxis.Client;
 
@@ -22,7 +21,12 @@ public partial class AddPatientWindow : Window
             EmailBox.Text = patient.Email;
             PhoneBox.Text = patient.Telefonnummer;
 
+            IsActiveCheck.IsChecked = patient.IsActive;
             CreatedPatient = patient;
+        }
+        else
+        {
+            IsActiveCheck.IsChecked = true; // Standard
         }
     }
 
@@ -39,27 +43,26 @@ public partial class AddPatientWindow : Window
             MessageBox.Show(error, "Validierung", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
+
         var lastName = (LastNameBox.Text ?? "").Trim();
         var firstName = (FirstNameBox.Text ?? "").Trim();
         var email = (EmailBox.Text ?? "").Trim();
         var phone = (PhoneBox.Text ?? "").Trim();
 
-        // 🔹 WICHTIG: Nur neues Objekt erstellen wenn keines existiert
         if (CreatedPatient == null)
-        
             CreatedPatient = new Patient();
-        
 
-        // 🔹 Werte setzen (für Add UND Edit)
         CreatedPatient.Vorname = firstName;
         CreatedPatient.Nachname = lastName;
-        CreatedPatient.Geburtsdatum = DobPicker.SelectedDate!.Value;
+        CreatedPatient.Geburtsdatum = DobPicker.SelectedDate ?? DateTime.Today;
         CreatedPatient.Email = string.IsNullOrWhiteSpace(email) ? null : email;
         CreatedPatient.Telefonnummer = string.IsNullOrWhiteSpace(phone) ? null : phone;
+        CreatedPatient.IsActive = IsActiveCheck.IsChecked == true;
 
         DialogResult = true;
         Close();
     }
+
     private bool ValidateInputs(out string error)
     {
         error = "";
@@ -100,7 +103,6 @@ public partial class AddPatientWindow : Window
 
         if (!string.IsNullOrWhiteSpace(email))
         {
-            // einfache Email-Validierung (MVP)
             var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
             if (!emailRegex.IsMatch(email))
             {
@@ -112,7 +114,6 @@ public partial class AddPatientWindow : Window
 
         if (!string.IsNullOrWhiteSpace(phone))
         {
-            // erlaubt: Zahlen, +, Leerzeichen, -, (), /
             var phoneRegex = new Regex(@"^[0-9+\-\s()/]+$");
             if (!phoneRegex.IsMatch(phone))
             {

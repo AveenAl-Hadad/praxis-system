@@ -135,4 +135,13 @@ public class PatientService
         }
     }
 
+    public async Task ToggleActiveAsync(int id)
+    {
+        var existing = await _context.Patients.FindAsync(id);
+        if (existing == null) return;
+
+        existing.IsActive = !existing.IsActive;
+        await _context.SaveChangesAsync();
+    }
+
 }

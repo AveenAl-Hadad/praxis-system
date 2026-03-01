@@ -136,5 +136,18 @@ private async void EditPatient_Click(object sender, RoutedEventArgs e)
             StatusText.Text = $"Gefundene Patienten: {results.Count}";
         }
     }
+    private async void ToggleActive_Click(object sender, RoutedEventArgs e)
+    {
+        if (PatientsGrid.SelectedItem is Patient selected)
+        {
+            await _patientService.ToggleActiveAsync(selected.Id);
+            await LoadPatientsAsync();
+            StatusText.Text = "Status geändert ✅";
+        }
+        else
+        {
+            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+        }
+    }
 
 }

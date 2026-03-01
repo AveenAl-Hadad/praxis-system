@@ -27,4 +27,5 @@ public class Patient
             return age;
         }
     }
+    public bool IsActive { get; set; } = true;
 }

@@ -4,17 +4,19 @@
         Title="Neuer Patient" Height="420" Width="520"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
+
     <Window.Resources>
         <Style TargetType="TextBox">
             <Style.Triggers>
                 <Trigger Property="Validation.HasError" Value="True">
                     <Setter Property="ToolTip"
-                        Value="{Binding RelativeSource={RelativeSource Self},
-                                        Path=(Validation.Errors)[0].ErrorContent}" />
+                            Value="{Binding RelativeSource={RelativeSource Self},
+                                            Path=(Validation.Errors)[0].ErrorContent}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
+
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -26,12 +28,15 @@
                 <ColumnDefinition Width="140"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <!-- Status -->
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Grid.Column="0" Text="Vorname:" VerticalAlignment="Center" Margin="0,0,10,8"/>
@@ -48,6 +53,13 @@
 
             <TextBlock Grid.Row="4" Grid.Column="0" Text="Telefon:" VerticalAlignment="Center" Margin="0,0,10,8"/>
             <TextBox x:Name="PhoneBox" Grid.Row="4" Grid.Column="1" Height="28" Margin="0,0,0,8"/>
+
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="Status:" VerticalAlignment="Center" Margin="0,0,10,8"/>
+            <CheckBox x:Name="IsActiveCheck"
+                      Grid.Row="5" Grid.Column="1"
+                      Content="Aktiv"
+                      IsChecked="True"
+                      Margin="0,0,0,8"/>
         </Grid>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
@@ -56,4 +68,3 @@
         </StackPanel>
     </Grid>
 </Window>
-    
