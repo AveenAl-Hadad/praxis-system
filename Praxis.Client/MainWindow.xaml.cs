@@ -1,20 +1,25 @@
-﻿using System;
+﻿// MainWindow.xaml.cs
+using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using Praxis.Domain.Entities;
-using Praxis.Infrastructure.Services;
-using Microsoft.Win32;
-using System.Text;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using Microsoft.Win32;
+using Praxis.Domain.Entities;
+using Praxis.Infrastructure.Services;
+// optional, falls du UserFriendlyException nutzt:
+// using Praxis.Infrastructure.Exceptions;
 
 namespace Praxis.Client;
 
 public partial class MainWindow : Window
 {
     private readonly PatientService _patientService;
+
+    private List<Patient> _allPatients = new();
 
     public MainWindow(PatientService patientService)
     {
@@ -29,21 +34,63 @@ public partial class MainWindow : Window
         try
         {
             StatusText.Text = "Lade Patienten...";
-            List<Patient> patients = await _patientService.GetAllPatientsAsync();
-            PatientsGrid.ItemsSource = patients;
-            StatusText.Text = $"Anzahl Patienten: {patients.Count}";
+            _allPatients = (await _patientService.GetAllPatientsAsync()).ToList();
+            ApplyFilters();
+            StatusText.Text = $"Geladen: {_allPatients.Count} Patienten";
         }
+        // catch (UserFriendlyException ex)
+        // {
+        //     MessageBox.Show(ex.Message, "Hinweis", MessageBoxButton.OK, MessageBoxImage.Warning);
+        // }
         catch (Exception ex)
         {
-            StatusText.Text = "Fehler beim Laden.";
             MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            StatusText.Text = "Fehler beim Laden ❌";
         }
     }
 
-    private async void Refresh_Click(object sender, RoutedEventArgs e)
+    private void ApplyFilters()
     {
-        await LoadPatientsAsync();
+        if (PatientsGrid == null)
+        {
+            MessageBox.Show("PatientsGrid ist NULL -> XAML wurde nicht richtig geladen/kompiliert");
+            return;
+        }
+        var term = (SearchBox.Text ?? "").Trim().ToLower();
+        var onlyActive = OnlyActiveCheck.IsChecked == true;
+
+        IEnumerable<Patient> query = _allPatients;
+
+        if (onlyActive)
+            query = query.Where(p => p.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(term))
+        {
+            query = query.Where(p =>
+                (p.Nachname ?? "").ToLower().Contains(term) ||
+                (p.Vorname ?? "").ToLower().Contains(term) ||
+                (p.Email ?? "").ToLower().Contains(term) ||
+                (p.Telefonnummer ?? "").ToLower().Contains(term));
+        }
+
+        var list = query.ToList();
+
+        // Wichtig: nur ItemsSource nutzen, niemals PatientsGrid.Items.Add(...)
+        PatientsGrid.ItemsSource = null;
+        PatientsGrid.ItemsSource = list;
+
+        StatusText.Text = $"Anzeige: {list.Count} / Gesamt: {_allPatients.Count}";
     }
+
+    private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        => ApplyFilters();
+
+    private void OnlyActiveCheck_Changed(object sender, RoutedEventArgs e)
+        => ApplyFilters();
+
+    private async void Refresh_Click(object sender, RoutedEventArgs e)
+        => await LoadPatientsAsync();
+
     private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -56,6 +103,10 @@ public partial class MainWindow : Window
                 StatusText.Text = "Patient gespeichert ✅";
             }
         }
+        // catch (UserFriendlyException ex)
+        // {
+        //     MessageBox.Show(ex.Message, "Hinweis", MessageBoxButton.OK, MessageBoxImage.Warning);
+        // }
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -63,106 +114,90 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void EditPatient_Click(object sender, RoutedEventArgs e)
+    {
+        if (PatientsGrid.SelectedItem is not Patient selected)
+        {
+            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+            return;
+        }
+
+        try
+        {
+            // Wir erstellen eine Kopie fürs Bearbeiten, damit EF/WPF nicht mit Tracking kollidiert
+            var copy = new Patient
+            {
+                Id = selected.Id,
+                Vorname = selected.Vorname,
+                Nachname = selected.Nachname,
+                Geburtsdatum = selected.Geburtsdatum,
+                Email = selected.Email,
+                Telefonnummer = selected.Telefonnummer,
+                IsActive = selected.IsActive
+            };
+
+            var dlg = new AddPatientWindow(copy) { Owner = this };
+            if (dlg.ShowDialog() == true && dlg.CreatedPatient != null)
+            {
+                await _patientService.UpdatePatientAsync(dlg.CreatedPatient);
+                await LoadPatientsAsync();
+                StatusText.Text = "Patient aktualisiert ✅";
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            StatusText.Text = "Fehler beim Bearbeiten ❌";
+        }
+    }
 
     private async void DeletePatient_Click(object sender, RoutedEventArgs e)
     {
-    try
-    {
-        if (PatientsGrid.SelectedItem is Patient selected)
-        {
-            var result = MessageBox.Show(
-                $"Patient {selected.Nachname} wirklich löschen?",
-                "Bestätigung",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                await _patientService.DeletePatientAsync(selected.Id);
-                await LoadPatientsAsync();
-            }
-        }
-        else
+        if (PatientsGrid.SelectedItem is not Patient selected)
         {
             MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
-        }
-    }
-
-    catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            StatusText.Text = "Fehler beim Speichern ❌";
+            return;
         }
 
-    }
-private async void EditPatient_Click(object sender, RoutedEventArgs e)
-    {
+        var result = MessageBox.Show(
+            $"Patient {selected.Nachname}, {selected.Vorname} wirklich löschen?",
+            "Bestätigung",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes) return;
+
         try
         {
-            if (PatientsGrid.SelectedItem is Patient selected)
-            {
-                var dlg = new AddPatientWindow(selected)
-                {
-                    Owner = this
-                };
-
-                var ok = dlg.ShowDialog();
-                if (ok == true && dlg.CreatedPatient != null)
-                {
-                    await _patientService.UpdatePatientAsync(dlg.CreatedPatient);
-                    await LoadPatientsAsync();
-                }
-            }
-            else
-            {
-                MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
-            }
+            await _patientService.DeletePatientAsync(selected.Id);
+            await LoadPatientsAsync();
+            StatusText.Text = "Patient gelöscht ✅";
         }
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            StatusText.Text = "Fehler beim Speichern ❌";
+            StatusText.Text = "Fehler beim Löschen ❌";
         }
     }
 
-    private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        var term = SearchBox.Text.Trim();
-
-        if (string.IsNullOrWhiteSpace(term))
-        {
-            await LoadPatientsAsync();
-        }
-        else
-        {
-            var results = await _patientService.SearchPatientsAsync(term);
-            PatientsGrid.ItemsSource = results;
-            StatusText.Text = $"Gefundene Patienten: {results.Count}";
-        }
-    }
     private async void ToggleActive_Click(object sender, RoutedEventArgs e)
     {
-        if (PatientsGrid.SelectedItem is Patient selected)
+        if (PatientsGrid.SelectedItem is not Patient selected)
+        {
+            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+            return;
+        }
+
+        try
         {
             await _patientService.ToggleActiveAsync(selected.Id);
             await LoadPatientsAsync();
             StatusText.Text = "Status geändert ✅";
         }
-        else
+        catch (Exception ex)
         {
-            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
-        }
-    }
-    private void PatientsGrid_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-    {
-        if (PatientsGrid.SelectedItem is Patient selected)
-        {
-            var detail = new PatientDetailWindow(selected)
-            {
-                Owner = this
-            };
-
-            detail.ShowDialog();
+            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            StatusText.Text = "Fehler beim Statuswechsel ❌";
         }
     }
 
@@ -170,23 +205,19 @@ private async void EditPatient_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            // 1) Aktuell angezeigte Liste holen (inkl. Suche/Filter)
-            var current = PatientsGrid.ItemsSource as System.Collections.IEnumerable;
-
-            if (current == null)
+            if (PatientsGrid.ItemsSource is not IEnumerable<Patient> patientsEnum)
             {
                 MessageBox.Show("Keine Daten zum Exportieren.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var patients = current.Cast<Patient>().ToList();
+            var patients = patientsEnum.ToList();
             if (patients.Count == 0)
             {
                 MessageBox.Show("Keine Daten zum Exportieren.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            // 2) Dateidialog
             var dlg = new SaveFileDialog
             {
                 Title = "Patientenliste exportieren",
@@ -194,27 +225,20 @@ private async void EditPatient_Click(object sender, RoutedEventArgs e)
                 FileName = $"patienten_{DateTime.Now:yyyyMMdd_HHmm}.csv"
             };
 
-            if (dlg.ShowDialog() != true)
-                return;
+            if (dlg.ShowDialog() != true) return;
 
-            // 3) CSV bauen
+            string Clean(string? s) =>
+                (s ?? "").Replace(";", ",").Replace("\r", " ").Replace("\n", " ").Trim();
+
             var sb = new StringBuilder();
             sb.AppendLine("Id;Nachname;Vorname;Geburtsdatum;Alter;Email;Telefon;Status");
 
             foreach (var p in patients)
             {
                 var status = p.IsActive ? "Aktiv" : "Inaktiv";
-
-                // CSV-safe: Semikolon und Zeilenumbrüche entfernen/ersetzen
-                string Clean(string? s) =>
-                    (s ?? "").Replace(";", ",").Replace("\r", " ").Replace("\n", " ").Trim();
-
-                sb.AppendLine(
-                    $"{p.Id};{Clean(p.Nachname)};{Clean(p.Vorname)};{p.Geburtsdatum:yyyy-MM-dd};{p.Alter};{Clean(p.Email)};{Clean(p.Telefonnummer)};{status}"
-                );
+                sb.AppendLine($"{p.Id};{Clean(p.Nachname)};{Clean(p.Vorname)};{p.Geburtsdatum:yyyy-MM-dd};{p.Alter};{Clean(p.Email)};{Clean(p.Telefonnummer)};{status}");
             }
 
-            // 4) Datei schreiben (UTF-8)
             File.WriteAllText(dlg.FileName, sb.ToString(), Encoding.UTF8);
 
             StatusText.Text = $"CSV exportiert: {dlg.FileName}";
@@ -226,4 +250,65 @@ private async void EditPatient_Click(object sender, RoutedEventArgs e)
         }
     }
 
+    private void PatientsGrid_DoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (PatientsGrid.SelectedItem is not Patient selected) return;
+
+        // Detail-Fenster muss existieren:
+        // PatientDetailWindow(Patient patient)
+        var wnd = new PatientDetailWindow(selected) { Owner = this };
+        wnd.ShowDialog();
+    }
+
+    // Shortcuts
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.F)
+        {
+            SearchBox.Focus();
+            SearchBox.SelectAll();
+            e.Handled = true;
+            return;
+        }
+
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.N)
+        {
+            AddPatient_Click(sender, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.E)
+        {
+            ExportCsv_Click(sender, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == Key.F5)
+        {
+            Refresh_Click(sender, new RoutedEventArgs());
+            e.Handled = true;
+        }
+    }
+
+    private void PatientsGrid_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Delete)
+        {
+            DeletePatient_Click(sender, new RoutedEventArgs());
+            e.Handled = true;
+        }
+    }
+
+    private void SearchBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        // Strg+F fokusiert schon über Window_KeyDown, aber wir lassen es hier auch zu
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.F)
+        {
+            SearchBox.Focus();
+            SearchBox.SelectAll();
+            e.Handled = true;
+        }
+    }
 }
