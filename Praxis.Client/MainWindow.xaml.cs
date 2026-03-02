@@ -1,38 +1,39 @@
-﻿// MainWindow.xaml.cs
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 using System.ComponentModel;
-using System.Windows.Data;
-using System.ComponentModel;
-using System.Windows.Controls;
-using System.Windows.Data;
-// optional, falls du UserFriendlyException nutzt:
-// using Praxis.Infrastructure.Exceptions;
 
 namespace Praxis.Client;
 
 public partial class MainWindow : Window
 {
     private readonly PatientService _patientService;
+
     private List<Patient> _allPatients = new();
-    private ICollectionView? _patientsView;
-    private bool _sortLastNameAsc = true;
+    private List<Patient> _filteredPatients = new();
+
+    // Sortierung (per Header)
+    private string _sortBy = nameof(Patient.Nachname);
+    private ListSortDirection _sortDir = ListSortDirection.Ascending;
+
+    // Pagination
+    private const int PageSize = 50;
+    private int _currentPage = 1;
+    private int _totalPages = 1;
 
     public MainWindow(PatientService patientService)
     {
         InitializeComponent();
+               
         _patientService = patientService;
 
         Loaded += async (_, __) => await LoadPatientsAsync();
+                       
     }
 
     private async Task LoadPatientsAsync()
@@ -41,15 +42,12 @@ public partial class MainWindow : Window
         {
             StatusText.Text = "Lade Patienten...";
             _allPatients = (await _patientService.GetAllPatientsAsync()).ToList();
-            _patientsView = CollectionViewSource.GetDefaultView(_allPatients);
-            PatientsGrid.ItemsSource = _patientsView;
-            ApplyFiltersAndSort();
+
+            _currentPage = 1;
+            ApplyFilterSortAndPagination();
+
             StatusText.Text = $"Geladen: {_allPatients.Count} Patienten";
         }
-        // catch (UserFriendlyException ex)
-        // {
-        //     MessageBox.Show(ex.Message, "Hinweis", MessageBoxButton.OK, MessageBoxImage.Warning);
-        // }
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -57,99 +55,137 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ApplyFiltersAndSort()
+    private void ApplyFilterSortAndPagination()
     {
-        if (_patientsView == null) return;
-
+        if (PatientsGrid == null) return;
+        // 1) Filter
         var term = (SearchBox.Text ?? "").Trim().ToLower();
         var onlyActive = OnlyActiveCheck.IsChecked == true;
 
-        _patientsView.Filter = obj =>
+        IEnumerable<Patient> query = _allPatients;
+
+        if (onlyActive)
+            query = query.Where(p => p.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(term))
         {
-            if (obj is not Patient p) return false;
+            query = query.Where(p =>
+                (p.Nachname ?? "").ToLower().Contains(term) ||
+                (p.Vorname ?? "").ToLower().Contains(term) ||
+                (p.Email ?? "").ToLower().Contains(term) ||
+                (p.Telefonnummer ?? "").ToLower().Contains(term));
+        }
 
-            if (onlyActive && !p.IsActive) return false;
+        _filteredPatients = query.ToList();
 
-            if (!string.IsNullOrWhiteSpace(term))
-            {
-                bool match =
-                    (p.Nachname ?? "").ToLower().Contains(term) ||
-                    (p.Vorname ?? "").ToLower().Contains(term) ||
-                    (p.Email ?? "").ToLower().Contains(term) ||
-                    (p.Telefonnummer ?? "").ToLower().Contains(term);
+        // 2) Sort
+        _filteredPatients = SortPatients(_filteredPatients, _sortBy, _sortDir);
 
-                if (!match) return false;
-            }
+        // 3) Pagination berechnen
+        _totalPages = Math.Max(1, (int)Math.Ceiling(_filteredPatients.Count / (double)PageSize));
 
-            return true;
-        };
+        //wenn Page außerhalb liegt -> korrigieren
+        if (_currentPage < 1) _currentPage = 1;
+        if (_currentPage > _totalPages) _currentPage = _totalPages;
 
-        // Sortierung Also diese Zeilen raus oder nur optional:
+        var pageItems = _filteredPatients
+            .Skip((_currentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
 
-        //_patientsView.SortDescriptions.Clear();
-        //_patientsView.SortDescriptions.Add(
-        //  new SortDescription(nameof(Patient.Nachname),
-        //    _sortLastNameAsc ? ListSortDirection.Ascending : ListSortDirection.Descending));
+        PatientsGrid.ItemsSource = null;
+        PatientsGrid.ItemsSource = pageItems;
 
-        // optional 2. Sortierung (Vorname) für gleiche Nachnamen
-        _patientsView.SortDescriptions.Add(
-            new SortDescription(nameof(Patient.Vorname), ListSortDirection.Ascending));
-
-        _patientsView.Refresh();
-
-        // Status-Zeile (Count aus View)
-        int shown = _patientsView.Cast<object>().Count();
-        StatusText.Text = $"Anzeige: {shown} / Gesamt: {_allPatients.Count} | Sort: Nachname {(_sortLastNameAsc ? "A→Z" : "Z→A")}";
+        PageInfoText.Text = $"Seite {_currentPage} / {_totalPages} (je {PageSize})";
+        StatusText.Text = $"Anzeige: {pageItems.Count} | Gefiltert: {_filteredPatients.Count} | Gesamt: {_allPatients.Count} | Sort: {_sortBy} ({(_sortDir == ListSortDirection.Ascending ? "A→Z" : "Z→A")})";
     }
 
-    private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-        => ApplyFiltersAndSort();
+    private static List<Patient> SortPatients(List<Patient> list, string sortBy, ListSortDirection dir)
+    {
+        bool asc = dir == ListSortDirection.Ascending;
+
+        return sortBy switch
+        {
+            nameof(Patient.Id) => asc ? list.OrderBy(p => p.Id).ToList() : list.OrderByDescending(p => p.Id).ToList(),
+            nameof(Patient.Nachname) => asc ? list.OrderBy(p => p.Nachname).ThenBy(p => p.Vorname).ToList()
+                                           : list.OrderByDescending(p => p.Nachname).ThenBy(p => p.Vorname).ToList(),
+            nameof(Patient.Vorname) => asc ? list.OrderBy(p => p.Vorname).ThenBy(p => p.Nachname).ToList()
+                                          : list.OrderByDescending(p => p.Vorname).ThenBy(p => p.Nachname).ToList(),
+            nameof(Patient.Geburtsdatum) => asc ? list.OrderBy(p => p.Geburtsdatum).ToList()
+                                               : list.OrderByDescending(p => p.Geburtsdatum).ToList(),
+            nameof(Patient.Alter) => asc ? list.OrderBy(p => p.Alter).ToList()
+                                        : list.OrderByDescending(p => p.Alter).ToList(),
+            nameof(Patient.Email) => asc ? list.OrderBy(p => p.Email).ToList()
+                                        : list.OrderByDescending(p => p.Email).ToList(),
+            nameof(Patient.Telefonnummer) => asc ? list.OrderBy(p => p.Telefonnummer).ToList()
+                                                : list.OrderByDescending(p => p.Telefonnummer).ToList(),
+            nameof(Patient.IsActive) => asc ? list.OrderBy(p => p.IsActive).ToList()
+                                           : list.OrderByDescending(p => p.IsActive).ToList(),
+            _ => list
+        };
+    }
+
+    // Events: Filter
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        _currentPage = 1;
+        ApplyFilterSortAndPagination();
+    }
 
     private void OnlyActiveCheck_Changed(object sender, RoutedEventArgs e)
-        => ApplyFiltersAndSort();
+    {
+        _currentPage = 1;
+        ApplyFilterSortAndPagination();
+    }
 
-    private async void Refresh_Click(object sender, RoutedEventArgs e)
-        => await LoadPatientsAsync();
+    // Events: Pagination
+    private void NextPage_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentPage < _totalPages)
+        {
+            _currentPage++;
+            ApplyFilterSortAndPagination();
+        }
+    }
 
+    private void PrevPage_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentPage > 1)
+        {
+            _currentPage--;
+            ApplyFilterSortAndPagination();
+        }
+    }
+
+    // Events: Sortierung per Header
     private void PatientsGrid_Sorting(object sender, DataGridSortingEventArgs e)
     {
-        if (_patientsView == null) return;
-
-        // Wir übernehmen die Sortierung selbst (sonst macht WPF doppelt)
         e.Handled = true;
 
         var sortBy = e.Column.SortMemberPath;
         if (string.IsNullOrWhiteSpace(sortBy)) return;
 
         // Toggle Richtung
-        ListSortDirection direction =
-            (e.Column.SortDirection != ListSortDirection.Ascending)
-                ? ListSortDirection.Ascending
-                : ListSortDirection.Descending;
+        if (_sortBy == sortBy)
+            _sortDir = _sortDir == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending;
+        else
+        {
+            _sortBy = sortBy;
+            _sortDir = ListSortDirection.Ascending;
+        }
 
-        // alle anderen Columns zurücksetzen (Pfeile entfernen)
+        // Pfeile korrekt setzen
         foreach (var col in PatientsGrid.Columns)
             col.SortDirection = null;
 
-        e.Column.SortDirection = direction;
+        e.Column.SortDirection = _sortDir;
 
-        // Sort in View setzen
-        _patientsView.SortDescriptions.Clear();
-        _patientsView.SortDescriptions.Add(new SortDescription(sortBy, direction));
-
-        // optional: zweite Sortierung stabil (wenn Nachname gleich)
-        if (sortBy != nameof(Patient.Nachname))
-            _patientsView.SortDescriptions.Add(new SortDescription(nameof(Patient.Nachname), ListSortDirection.Ascending));
-
-        if (sortBy != nameof(Patient.Vorname))
-            _patientsView.SortDescriptions.Add(new SortDescription(nameof(Patient.Vorname), ListSortDirection.Ascending));
-
-        _patientsView.Refresh();
-
-        // Status aktualisieren
-        int shown = _patientsView.Cast<object>().Count();
-        StatusText.Text = $"Anzeige: {shown} / Gesamt: {_allPatients.Count} | Sort: {sortBy} ({(direction == ListSortDirection.Ascending ? "A→Z" : "Z→A")})";
+        ApplyFilterSortAndPagination();
     }
+
+    // Buttons
+    private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadPatientsAsync();
+
     private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -162,10 +198,6 @@ public partial class MainWindow : Window
                 StatusText.Text = "Patient gespeichert ✅";
             }
         }
-        // catch (UserFriendlyException ex)
-        // {
-        //     MessageBox.Show(ex.Message, "Hinweis", MessageBoxButton.OK, MessageBoxImage.Warning);
-        // }
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -183,7 +215,6 @@ public partial class MainWindow : Window
 
         try
         {
-            // Wir erstellen eine Kopie fürs Bearbeiten, damit EF/WPF nicht mit Tracking kollidiert
             var copy = new Patient
             {
                 Id = selected.Id,
@@ -264,14 +295,8 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (PatientsGrid.ItemsSource is not IEnumerable<Patient> patientsEnum)
-            {
-                MessageBox.Show("Keine Daten zum Exportieren.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var patients = patientsEnum.ToList();
-            if (patients.Count == 0)
+            // Exportiert die aktuell gefilterte Liste (nicht nur Seite)
+            if (_filteredPatients.Count == 0)
             {
                 MessageBox.Show("Keine Daten zum Exportieren.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -292,7 +317,7 @@ public partial class MainWindow : Window
             var sb = new StringBuilder();
             sb.AppendLine("Id;Nachname;Vorname;Geburtsdatum;Alter;Email;Telefon;Status");
 
-            foreach (var p in patients)
+            foreach (var p in _filteredPatients)
             {
                 var status = p.IsActive ? "Aktiv" : "Inaktiv";
                 sb.AppendLine($"{p.Id};{Clean(p.Nachname)};{Clean(p.Vorname)};{p.Geburtsdatum:yyyy-MM-dd};{p.Alter};{Clean(p.Email)};{Clean(p.Telefonnummer)};{status}");
@@ -313,8 +338,6 @@ public partial class MainWindow : Window
     {
         if (PatientsGrid.SelectedItem is not Patient selected) return;
 
-        // Detail-Fenster muss existieren:
-        // PatientDetailWindow(Patient patient)
         var wnd = new PatientDetailWindow(selected) { Owner = this };
         wnd.ShowDialog();
     }
@@ -358,21 +381,5 @@ public partial class MainWindow : Window
             DeletePatient_Click(sender, new RoutedEventArgs());
             e.Handled = true;
         }
-    }
-
-    private void SearchBox_KeyDown(object sender, KeyEventArgs e)
-    {
-        // Strg+F fokusiert schon über Window_KeyDown, aber wir lassen es hier auch zu
-        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.F)
-        {
-            SearchBox.Focus();
-            SearchBox.SelectAll();
-            e.Handled = true;
-        }
-    }
-    private void SortLastName_Click(object sender, RoutedEventArgs e)
-    {
-        _sortLastNameAsc = !_sortLastNameAsc;
-        ApplyFiltersAndSort();
     }
 }
