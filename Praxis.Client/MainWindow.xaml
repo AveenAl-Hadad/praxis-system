@@ -107,11 +107,15 @@
                     <!-- Gruppe: Ansicht -->
                     <GroupBox Header="Ansicht" Margin="0,0,10,8" Padding="8,6">
                         <WrapPanel>
-                            <Button Content="⟳ Refresh" Width="90" Height="30"
-                                    Click="Refresh_Click"
-                                    ToolTip="Neu laden (F5)"/>
+                            <Button Content="⟳ Refresh" Width="90" Height="30" Margin="0,0,8,0"
+                                Click="Refresh_Click"
+                                ToolTip="Neu laden (F5)"/>
+
+                            <Button Content="↕ Nachname" Width="110" Height="30"
+                                Click="SortLastName_Click"
+                                ToolTip="Sortierung Nachname umschalten (A→Z / Z→A)"/>  
                         </WrapPanel>
-                    </GroupBox>
+                        </GroupBox>
 
                 </WrapPanel>
             </StackPanel>
@@ -125,7 +129,9 @@
                   SelectionMode="Single"
                   SelectionUnit="FullRow"
                   MouseDoubleClick="PatientsGrid_DoubleClick"
-                  KeyDown="PatientsGrid_KeyDown">
+                  KeyDown="PatientsGrid_KeyDown"
+                  CanUserSortColumns="True"
+                  Sorting="PatientsGrid_Sorting">
 
             <!-- ganze Zeile einfärben -->
             <DataGrid.RowStyle>
@@ -142,13 +148,13 @@
             </DataGrid.RowStyle>
 
             <DataGrid.Columns>
-                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
-                <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" Width="2*"/>
-                <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" Width="2*"/>
-                <DataGridTextColumn Header="Geburt" Binding="{Binding Geburtsdatum, StringFormat=d}" Width="120"/>
-                <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" Width="80"/>
-                <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" Width="2*"/>
-                <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" Width="160"/>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" SortMemberPath="Id" Width="70"/>
+                <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" SortMemberPath="Nachname" Width="2*"/>
+                <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" SortMemberPath="Vorname" Width="2*"/>
+                <DataGridTextColumn Header="Geburt" Binding="{Binding Geburtsdatum, StringFormat=d}" SortMemberPath="Geburtsdatum" Width="120"/>
+                <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" SortMemberPath="Alter" Width="80"/>
+                <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" SortMemberPath="Email" Width="2*"/>
+                <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" SortMemberPath="Telefonnummer" Width="160"/>
 
                 <!-- Status farbig -->
                 <DataGridTemplateColumn Header="Status" Width="110">

@@ -10,6 +10,11 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
+using System.ComponentModel;
+using System.Windows.Data;
+using System.ComponentModel;
+using System.Windows.Controls;
+using System.Windows.Data;
 // optional, falls du UserFriendlyException nutzt:
 // using Praxis.Infrastructure.Exceptions;
 
@@ -18,8 +23,9 @@ namespace Praxis.Client;
 public partial class MainWindow : Window
 {
     private readonly PatientService _patientService;
-
     private List<Patient> _allPatients = new();
+    private ICollectionView? _patientsView;
+    private bool _sortLastNameAsc = true;
 
     public MainWindow(PatientService patientService)
     {
@@ -35,7 +41,9 @@ public partial class MainWindow : Window
         {
             StatusText.Text = "Lade Patienten...";
             _allPatients = (await _patientService.GetAllPatientsAsync()).ToList();
-            ApplyFilters();
+            _patientsView = CollectionViewSource.GetDefaultView(_allPatients);
+            PatientsGrid.ItemsSource = _patientsView;
+            ApplyFiltersAndSort();
             StatusText.Text = $"Geladen: {_allPatients.Count} Patienten";
         }
         // catch (UserFriendlyException ex)
@@ -49,48 +57,99 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ApplyFilters()
+    private void ApplyFiltersAndSort()
     {
-        if (PatientsGrid == null)
-        {
-            MessageBox.Show("PatientsGrid ist NULL -> XAML wurde nicht richtig geladen/kompiliert");
-            return;
-        }
+        if (_patientsView == null) return;
+
         var term = (SearchBox.Text ?? "").Trim().ToLower();
         var onlyActive = OnlyActiveCheck.IsChecked == true;
 
-        IEnumerable<Patient> query = _allPatients;
-
-        if (onlyActive)
-            query = query.Where(p => p.IsActive);
-
-        if (!string.IsNullOrWhiteSpace(term))
+        _patientsView.Filter = obj =>
         {
-            query = query.Where(p =>
-                (p.Nachname ?? "").ToLower().Contains(term) ||
-                (p.Vorname ?? "").ToLower().Contains(term) ||
-                (p.Email ?? "").ToLower().Contains(term) ||
-                (p.Telefonnummer ?? "").ToLower().Contains(term));
-        }
+            if (obj is not Patient p) return false;
 
-        var list = query.ToList();
+            if (onlyActive && !p.IsActive) return false;
 
-        // Wichtig: nur ItemsSource nutzen, niemals PatientsGrid.Items.Add(...)
-        PatientsGrid.ItemsSource = null;
-        PatientsGrid.ItemsSource = list;
+            if (!string.IsNullOrWhiteSpace(term))
+            {
+                bool match =
+                    (p.Nachname ?? "").ToLower().Contains(term) ||
+                    (p.Vorname ?? "").ToLower().Contains(term) ||
+                    (p.Email ?? "").ToLower().Contains(term) ||
+                    (p.Telefonnummer ?? "").ToLower().Contains(term);
 
-        StatusText.Text = $"Anzeige: {list.Count} / Gesamt: {_allPatients.Count}";
+                if (!match) return false;
+            }
+
+            return true;
+        };
+
+        // Sortierung Also diese Zeilen raus oder nur optional:
+
+        //_patientsView.SortDescriptions.Clear();
+        //_patientsView.SortDescriptions.Add(
+        //  new SortDescription(nameof(Patient.Nachname),
+        //    _sortLastNameAsc ? ListSortDirection.Ascending : ListSortDirection.Descending));
+
+        // optional 2. Sortierung (Vorname) für gleiche Nachnamen
+        _patientsView.SortDescriptions.Add(
+            new SortDescription(nameof(Patient.Vorname), ListSortDirection.Ascending));
+
+        _patientsView.Refresh();
+
+        // Status-Zeile (Count aus View)
+        int shown = _patientsView.Cast<object>().Count();
+        StatusText.Text = $"Anzeige: {shown} / Gesamt: {_allPatients.Count} | Sort: Nachname {(_sortLastNameAsc ? "A→Z" : "Z→A")}";
     }
 
     private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-        => ApplyFilters();
+        => ApplyFiltersAndSort();
 
     private void OnlyActiveCheck_Changed(object sender, RoutedEventArgs e)
-        => ApplyFilters();
+        => ApplyFiltersAndSort();
 
     private async void Refresh_Click(object sender, RoutedEventArgs e)
         => await LoadPatientsAsync();
 
+    private void PatientsGrid_Sorting(object sender, DataGridSortingEventArgs e)
+    {
+        if (_patientsView == null) return;
+
+        // Wir übernehmen die Sortierung selbst (sonst macht WPF doppelt)
+        e.Handled = true;
+
+        var sortBy = e.Column.SortMemberPath;
+        if (string.IsNullOrWhiteSpace(sortBy)) return;
+
+        // Toggle Richtung
+        ListSortDirection direction =
+            (e.Column.SortDirection != ListSortDirection.Ascending)
+                ? ListSortDirection.Ascending
+                : ListSortDirection.Descending;
+
+        // alle anderen Columns zurücksetzen (Pfeile entfernen)
+        foreach (var col in PatientsGrid.Columns)
+            col.SortDirection = null;
+
+        e.Column.SortDirection = direction;
+
+        // Sort in View setzen
+        _patientsView.SortDescriptions.Clear();
+        _patientsView.SortDescriptions.Add(new SortDescription(sortBy, direction));
+
+        // optional: zweite Sortierung stabil (wenn Nachname gleich)
+        if (sortBy != nameof(Patient.Nachname))
+            _patientsView.SortDescriptions.Add(new SortDescription(nameof(Patient.Nachname), ListSortDirection.Ascending));
+
+        if (sortBy != nameof(Patient.Vorname))
+            _patientsView.SortDescriptions.Add(new SortDescription(nameof(Patient.Vorname), ListSortDirection.Ascending));
+
+        _patientsView.Refresh();
+
+        // Status aktualisieren
+        int shown = _patientsView.Cast<object>().Count();
+        StatusText.Text = $"Anzeige: {shown} / Gesamt: {_allPatients.Count} | Sort: {sortBy} ({(direction == ListSortDirection.Ascending ? "A→Z" : "Z→A")})";
+    }
     private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -310,5 +369,10 @@ public partial class MainWindow : Window
             SearchBox.SelectAll();
             e.Handled = true;
         }
+    }
+    private void SortLastName_Click(object sender, RoutedEventArgs e)
+    {
+        _sortLastNameAsc = !_sortLastNameAsc;
+        ApplyFiltersAndSort();
     }
 }
