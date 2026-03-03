@@ -1,12 +1,17 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
+using Praxis.Client.Logic;          // <-- PatientListManager Namespace
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
-using System.ComponentModel;
 
 namespace Praxis.Client;
 
@@ -15,36 +20,45 @@ public partial class MainWindow : Window
     private readonly PatientService _patientService;
 
     private List<Patient> _allPatients = new();
-    private List<Patient> _filteredPatients = new();
+    private PatientListManager? _listManager;
+    private PatientCrudController _crud;
 
-    // Sortierung (per Header)
+    // Filter-UI Zustand
+    private string CurrentSearchTerm => (SearchBox.Text ?? "").Trim();
+    private bool OnlyActive => OnlyActiveCheck.IsChecked == true;
+
+    // Sort-Zustand (kommt von Header-Klick)
     private string _sortBy = nameof(Patient.Nachname);
     private ListSortDirection _sortDir = ListSortDirection.Ascending;
-
-    // Pagination
-    private const int PageSize = 50;
-    private int _currentPage = 1;
-    private int _totalPages = 1;
 
     public MainWindow(PatientService patientService)
     {
         InitializeComponent();
-               
         _patientService = patientService;
+        _crud = new PatientCrudController (_patientService);
 
-        Loaded += async (_, __) => await LoadPatientsAsync();
-                       
+        ContentRendered += async (_, __) => await LoadPatientsAsync();
     }
 
+    /// <summary>
+    /// Lädt alle Patienten aus der DB und initialisiert den ListManager.
+    /// </summary>
     private async Task LoadPatientsAsync()
     {
         try
         {
             StatusText.Text = "Lade Patienten...";
+
             _allPatients = (await _patientService.GetAllPatientsAsync()).ToList();
 
-            _currentPage = 1;
-            ApplyFilterSortAndPagination();
+            // ListManager initialisieren (Filter/Sort/Pagination)
+            _listManager = new PatientListManager(_allPatients)
+            {
+                PageSize = 50
+            };
+            _listManager.SetSorting(_sortBy, _sortDir);
+
+            RenderList(); // UI aktualisieren
 
             StatusText.Text = $"Geladen: {_allPatients.Count} Patienten";
         }
@@ -55,111 +69,68 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ApplyFilterSortAndPagination()
+    /// <summary>
+    /// Rendert die aktuelle Seite in die DataGrid + aktualisiert Pagination-Info + Status.
+    /// </summary>
+    private void RenderList()
     {
-        if (PatientsGrid == null) return;
-        // 1) Filter
-        var term = (SearchBox.Text ?? "").Trim().ToLower();
-        var onlyActive = OnlyActiveCheck.IsChecked == true;
+        if (_listManager == null) return;
 
-        IEnumerable<Patient> query = _allPatients;
-
-        if (onlyActive)
-            query = query.Where(p => p.IsActive);
-
-        if (!string.IsNullOrWhiteSpace(term))
-        {
-            query = query.Where(p =>
-                (p.Nachname ?? "").ToLower().Contains(term) ||
-                (p.Vorname ?? "").ToLower().Contains(term) ||
-                (p.Email ?? "").ToLower().Contains(term) ||
-                (p.Telefonnummer ?? "").ToLower().Contains(term));
-        }
-
-        _filteredPatients = query.ToList();
-
-        // 2) Sort
-        _filteredPatients = SortPatients(_filteredPatients, _sortBy, _sortDir);
-
-        // 3) Pagination berechnen
-        _totalPages = Math.Max(1, (int)Math.Ceiling(_filteredPatients.Count / (double)PageSize));
-
-        //wenn Page außerhalb liegt -> korrigieren
-        if (_currentPage < 1) _currentPage = 1;
-        if (_currentPage > _totalPages) _currentPage = _totalPages;
-
-        var pageItems = _filteredPatients
-            .Skip((_currentPage - 1) * PageSize)
-            .Take(PageSize)
-            .ToList();
+        var pageItems = _listManager.GetPage(CurrentSearchTerm, OnlyActive);
 
         PatientsGrid.ItemsSource = null;
         PatientsGrid.ItemsSource = pageItems;
 
-        PageInfoText.Text = $"Seite {_currentPage} / {_totalPages} (je {PageSize})";
-        StatusText.Text = $"Anzeige: {pageItems.Count} | Gefiltert: {_filteredPatients.Count} | Gesamt: {_allPatients.Count} | Sort: {_sortBy} ({(_sortDir == ListSortDirection.Ascending ? "A→Z" : "Z→A")})";
+        PageInfoText.Text = $"Seite {_listManager.CurrentPage} / {_listManager.TotalPages} (je {_listManager.PageSize})";
+
+        // Hinweis: Gesamt = _allPatients.Count, Gefiltert können wir über Manager optional als Property bereitstellen.
+        StatusText.Text = $"Anzeige: {pageItems.Count} | Gesamt: {_allPatients.Count} | Sort: {_sortBy} ({(_sortDir == ListSortDirection.Ascending ? "A→Z" : "Z→A")})";
     }
 
-    private static List<Patient> SortPatients(List<Patient> list, string sortBy, ListSortDirection dir)
-    {
-        bool asc = dir == ListSortDirection.Ascending;
+    // ------------------------
+    // Filter Events
+    // ------------------------
 
-        return sortBy switch
-        {
-            nameof(Patient.Id) => asc ? list.OrderBy(p => p.Id).ToList() : list.OrderByDescending(p => p.Id).ToList(),
-            nameof(Patient.Nachname) => asc ? list.OrderBy(p => p.Nachname).ThenBy(p => p.Vorname).ToList()
-                                           : list.OrderByDescending(p => p.Nachname).ThenBy(p => p.Vorname).ToList(),
-            nameof(Patient.Vorname) => asc ? list.OrderBy(p => p.Vorname).ThenBy(p => p.Nachname).ToList()
-                                          : list.OrderByDescending(p => p.Vorname).ThenBy(p => p.Nachname).ToList(),
-            nameof(Patient.Geburtsdatum) => asc ? list.OrderBy(p => p.Geburtsdatum).ToList()
-                                               : list.OrderByDescending(p => p.Geburtsdatum).ToList(),
-            nameof(Patient.Alter) => asc ? list.OrderBy(p => p.Alter).ToList()
-                                        : list.OrderByDescending(p => p.Alter).ToList(),
-            nameof(Patient.Email) => asc ? list.OrderBy(p => p.Email).ToList()
-                                        : list.OrderByDescending(p => p.Email).ToList(),
-            nameof(Patient.Telefonnummer) => asc ? list.OrderBy(p => p.Telefonnummer).ToList()
-                                                : list.OrderByDescending(p => p.Telefonnummer).ToList(),
-            nameof(Patient.IsActive) => asc ? list.OrderBy(p => p.IsActive).ToList()
-                                           : list.OrderByDescending(p => p.IsActive).ToList(),
-            _ => list
-        };
-    }
-
-    // Events: Filter
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        _currentPage = 1;
-        ApplyFilterSortAndPagination();
+        if (_listManager == null) return;
+        _listManager.GoToFirstPage();
+        RenderList();
     }
 
     private void OnlyActiveCheck_Changed(object sender, RoutedEventArgs e)
     {
-        _currentPage = 1;
-        ApplyFilterSortAndPagination();
+        if (_listManager == null) return;
+        _listManager.GoToFirstPage();
+        RenderList();
     }
 
-    // Events: Pagination
+    // ------------------------
+    // Pagination Events
+    // ------------------------
+
     private void NextPage_Click(object sender, RoutedEventArgs e)
     {
-        if (_currentPage < _totalPages)
-        {
-            _currentPage++;
-            ApplyFilterSortAndPagination();
-        }
+        if (_listManager == null) return;
+        _listManager.NextPage();
+        RenderList();
     }
 
     private void PrevPage_Click(object sender, RoutedEventArgs e)
     {
-        if (_currentPage > 1)
-        {
-            _currentPage--;
-            ApplyFilterSortAndPagination();
-        }
+        if (_listManager == null) return;
+        _listManager.PreviousPage();
+        RenderList();
     }
 
-    // Events: Sortierung per Header
+    // ------------------------
+    // Sortierung per Spaltenkopf
+    // ------------------------
+
     private void PatientsGrid_Sorting(object sender, DataGridSortingEventArgs e)
     {
+        if (_listManager == null) return;
+
         e.Handled = true;
 
         var sortBy = e.Column.SortMemberPath;
@@ -174,35 +145,28 @@ public partial class MainWindow : Window
             _sortDir = ListSortDirection.Ascending;
         }
 
-        // Pfeile korrekt setzen
+        // Pfeile setzen
         foreach (var col in PatientsGrid.Columns)
             col.SortDirection = null;
 
         e.Column.SortDirection = _sortDir;
 
-        ApplyFilterSortAndPagination();
+        _listManager.SetSorting(_sortBy, _sortDir);
+        _listManager.GoToFirstPage();
+        RenderList();
     }
 
-    // Buttons
-    private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadPatientsAsync();
+    // ------------------------
+    // CRUD Buttons
+    // ------------------------
+
+    private async void Refresh_Click(object sender, RoutedEventArgs e)
+        => await LoadPatientsAsync();
 
     private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            var dlg = new AddPatientWindow { Owner = this };
-            if (dlg.ShowDialog() == true && dlg.CreatedPatient != null)
-            {
-                await _patientService.AddPatientAsync(dlg.CreatedPatient);
-                await LoadPatientsAsync();
-                StatusText.Text = "Patient gespeichert ✅";
-            }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            StatusText.Text = "Fehler beim Speichern ❌";
-        }
+        if (await _crud.AddAsync(this))
+            await LoadPatientsAsync();
     }
 
     private async void EditPatient_Click(object sender, RoutedEventArgs e)
@@ -213,32 +177,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        try
-        {
-            var copy = new Patient
-            {
-                Id = selected.Id,
-                Vorname = selected.Vorname,
-                Nachname = selected.Nachname,
-                Geburtsdatum = selected.Geburtsdatum,
-                Email = selected.Email,
-                Telefonnummer = selected.Telefonnummer,
-                IsActive = selected.IsActive
-            };
-
-            var dlg = new AddPatientWindow(copy) { Owner = this };
-            if (dlg.ShowDialog() == true && dlg.CreatedPatient != null)
-            {
-                await _patientService.UpdatePatientAsync(dlg.CreatedPatient);
-                await LoadPatientsAsync();
-                StatusText.Text = "Patient aktualisiert ✅";
-            }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            StatusText.Text = "Fehler beim Bearbeiten ❌";
-        }
+        if (await _crud.EditAsync(this, selected))
+            await LoadPatientsAsync();
     }
 
     private async void DeletePatient_Click(object sender, RoutedEventArgs e)
@@ -249,25 +189,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        var result = MessageBox.Show(
-            $"Patient {selected.Nachname}, {selected.Vorname} wirklich löschen?",
-            "Bestätigung",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (result != MessageBoxResult.Yes) return;
-
-        try
-        {
-            await _patientService.DeletePatientAsync(selected.Id);
+        if (await _crud.DeleteAsync(selected))
             await LoadPatientsAsync();
-            StatusText.Text = "Patient gelöscht ✅";
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            StatusText.Text = "Fehler beim Löschen ❌";
-        }
     }
 
     private async void ToggleActive_Click(object sender, RoutedEventArgs e)
@@ -278,100 +201,61 @@ public partial class MainWindow : Window
             return;
         }
 
-        try
-        {
-            await _patientService.ToggleActiveAsync(selected.Id);
-            await LoadPatientsAsync();
-            StatusText.Text = "Status geändert ✅";
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            StatusText.Text = "Fehler beim Statuswechsel ❌";
-        }
+       if( await _crud.ToggleActiveAsync(selected));
+        await LoadPatientsAsync();
     }
+
+    // ------------------------
+    // CSV Export
+    // ------------------------
 
     private void ExportCsv_Click(object sender, RoutedEventArgs e)
     {
-        try
+        if (_listManager == null) return;
+
+        // Exportiert die GEFILTERTE Liste (nicht nur Seite)
+        var exportList = _listManager.GetFilteredAndSorted(CurrentSearchTerm, OnlyActive);
+
+        if (exportList.Count == 0)
         {
-            // Exportiert die aktuell gefilterte Liste (nicht nur Seite)
-            if (_filteredPatients.Count == 0)
-            {
-                MessageBox.Show("Keine Daten zum Exportieren.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var dlg = new SaveFileDialog
-            {
-                Title = "Patientenliste exportieren",
-                Filter = "CSV Datei (*.csv)|*.csv",
-                FileName = $"patienten_{DateTime.Now:yyyyMMdd_HHmm}.csv"
-            };
-
-            if (dlg.ShowDialog() != true) return;
-
-            string Clean(string? s) =>
-                (s ?? "").Replace(";", ",").Replace("\r", " ").Replace("\n", " ").Trim();
-
-            var sb = new StringBuilder();
-            sb.AppendLine("Id;Nachname;Vorname;Geburtsdatum;Alter;Email;Telefon;Status");
-
-            foreach (var p in _filteredPatients)
-            {
-                var status = p.IsActive ? "Aktiv" : "Inaktiv";
-                sb.AppendLine($"{p.Id};{Clean(p.Nachname)};{Clean(p.Vorname)};{p.Geburtsdatum:yyyy-MM-dd};{p.Alter};{Clean(p.Email)};{Clean(p.Telefonnummer)};{status}");
-            }
-
-            File.WriteAllText(dlg.FileName, sb.ToString(), Encoding.UTF8);
-
-            StatusText.Text = $"CSV exportiert: {dlg.FileName}";
-            MessageBox.Show("Export erfolgreich ✅", "CSV Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Keine Daten zum Exportieren.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
         }
-        catch (Exception ex)
+
+        var dlg = new SaveFileDialog
         {
-            MessageBox.Show($"Export fehlgeschlagen:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            Title = "Patientenliste exportieren",
+            Filter = "CSV Datei (*.csv)|*.csv",
+            FileName = $"patienten_{DateTime.Now:yyyyMMdd_HHmm}.csv"
+        };
+
+        if (dlg.ShowDialog() != true) return;
+
+        string Clean(string? s) =>
+            (s ?? "").Replace(";", ",").Replace("\r", " ").Replace("\n", " ").Trim();
+
+        var sb = new StringBuilder();
+        sb.AppendLine("Id;Nachname;Vorname;Geburtsdatum;Alter;Email;Telefon;Status");
+
+        foreach (var p in exportList)
+        {
+            var status = p.IsActive ? "Aktiv" : "Inaktiv";
+            sb.AppendLine($"{p.Id};{Clean(p.Nachname)};{Clean(p.Vorname)};{p.Geburtsdatum:yyyy-MM-dd};{p.Alter};{Clean(p.Email)};{Clean(p.Telefonnummer)};{status}");
         }
+
+        File.WriteAllText(dlg.FileName, sb.ToString(), Encoding.UTF8);
+        MessageBox.Show("Export erfolgreich ✅", "CSV Export", MessageBoxButton.OK, MessageBoxImage.Information);
     }
+
+    // ------------------------
+    // Detail + Shortcuts
+    // ------------------------
 
     private void PatientsGrid_DoubleClick(object sender, MouseButtonEventArgs e)
     {
         if (PatientsGrid.SelectedItem is not Patient selected) return;
-
         var wnd = new PatientDetailWindow(selected) { Owner = this };
         wnd.ShowDialog();
-    }
-
-    // Shortcuts
-    private void Window_KeyDown(object sender, KeyEventArgs e)
-    {
-        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.F)
-        {
-            SearchBox.Focus();
-            SearchBox.SelectAll();
-            e.Handled = true;
-            return;
-        }
-
-        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.N)
-        {
-            AddPatient_Click(sender, new RoutedEventArgs());
-            e.Handled = true;
-            return;
-        }
-
-        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.E)
-        {
-            ExportCsv_Click(sender, new RoutedEventArgs());
-            e.Handled = true;
-            return;
-        }
-
-        if (e.Key == Key.F5)
-        {
-            Refresh_Click(sender, new RoutedEventArgs());
-            e.Handled = true;
-        }
     }
 
     private void PatientsGrid_KeyDown(object sender, KeyEventArgs e)
@@ -379,6 +263,31 @@ public partial class MainWindow : Window
         if (e.Key == Key.Delete)
         {
             DeletePatient_Click(sender, new RoutedEventArgs());
+            e.Handled = true;
+        }
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.F)
+        {
+            SearchBox.Focus();
+            SearchBox.SelectAll();
+            e.Handled = true;
+        }
+        else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.N)
+        {
+            AddPatient_Click(sender, new RoutedEventArgs());
+            e.Handled = true;
+        }
+        else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.E)
+        {
+            ExportCsv_Click(sender, new RoutedEventArgs());
+            e.Handled = true;
+        }
+        else if (e.Key == Key.F5)
+        {
+            Refresh_Click(sender, new RoutedEventArgs());
             e.Handled = true;
         }
     }
