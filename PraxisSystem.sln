@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Praxis.Tests", "Praxis.Tests\Praxis.Tests.csproj", "{C670A18A-8CAC-4DE8-8364-DB880DC9C611}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{856148C5-AE0F-4F15-B184-D5FDC7920911}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{856148C5-AE0F-4F15-B184-D5FDC7920911}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{856148C5-AE0F-4F15-B184-D5FDC7920911}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C670A18A-8CAC-4DE8-8364-DB880DC9C611}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C670A18A-8CAC-4DE8-8364-DB880DC9C611}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C670A18A-8CAC-4DE8-8364-DB880DC9C611}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C670A18A-8CAC-4DE8-8364-DB880DC9C611}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
