@@ -62,7 +62,7 @@ public partial class App : System.Windows.Application
                 services.AddInfrastructure(dbPath);
 
                 // Services
-                services.AddScoped<PatientService>();
+                services.AddScoped<IPatientService, PatientService>();
 
                 // MainWindow über DI
                 services.AddTransient<MainWindow>();

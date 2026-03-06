@@ -6,7 +6,7 @@ using Microsoft.Data.Sqlite;
 
 namespace Praxis.Infrastructure.Services;
 
-public class PatientService
+public class PatientService : IPatientService
 {
     private readonly PraxisDbContext _context;
 
@@ -15,7 +15,7 @@ public class PatientService
         _context = context;
     }
 
-    public async Task<List<Patient>> GetAllPatientsAsync()
+    public async Task<IEnumerable<Patient>> GetAllPatientsAsync()
     {
         return await _context.Patients.AsNoTracking().ToListAsync();
     }
@@ -144,4 +144,5 @@ public class PatientService
         await _context.SaveChangesAsync();
     }
 
+    
 }

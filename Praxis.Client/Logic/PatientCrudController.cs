@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Windows;
+using Praxis.Client.Logic.UI;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 
@@ -11,68 +12,89 @@ namespace Praxis.Client.Logic;
 /// </summary>
 public class PatientCrudController
 {
-    private readonly PatientService _patientService;
+    private readonly IPatientService _patientService;
+    private readonly IDialogService _dialogs;
+    private readonly IMessageBoxService _messages;
 
-    public PatientCrudController(PatientService patientService)
+    public PatientCrudController(IPatientService patientService, IDialogService dialogs, IMessageBoxService messages)
     {
         _patientService = patientService;
+        _dialogs = dialogs;
+        _messages = messages;
     }
+
+
 
     /// <summary>Neuen Patienten anlegen (öffnet Dialog, speichert in DB).</summary>
     public async Task<bool> AddAsync(Window owner)
     {
-        var dlg = new AddPatientWindow { Owner = owner };
-        if (dlg.ShowDialog() == true && dlg.CreatedPatient != null)
+        try
         {
-            await _patientService.AddPatientAsync(dlg.CreatedPatient);
-            return true; // geändert
+            if (!_dialogs.TryCreatePatient(owner, out var patient) || patient == null)
+                return false;
+
+            await _patientService.AddPatientAsync(patient);
+            return true;
         }
-        return false; // abgebrochen
+        catch (Exception ex)
+        {
+            _messages.ShowError(ex.Message, "Fehler");
+            return false;
+        }
     }
 
     /// <summary>Patient bearbeiten (öffnet Dialog mit Kopie, speichert Update).</summary>
     public async Task<bool> EditAsync(Window owner, Patient selected)
     {
-        var copy = new Patient
+        try
         {
-            Id = selected.Id,
-            Vorname = selected.Vorname,
-            Nachname = selected.Nachname,
-            Geburtsdatum = selected.Geburtsdatum,
-            Email = selected.Email,
-            Telefonnummer = selected.Telefonnummer,
-            IsActive = selected.IsActive
-        };
+            if (!_dialogs.TryEditPatient(owner, selected, out var updated) || updated == null)
+                return false;
 
-        var dlg = new AddPatientWindow(copy) { Owner = owner };
-        if (dlg.ShowDialog() == true && dlg.CreatedPatient != null)
-        {
-            await _patientService.UpdatePatientAsync(dlg.CreatedPatient);
+            await _patientService.UpdatePatientAsync(updated);
             return true;
         }
-        return false;
+        catch (Exception ex)
+        {
+            _messages.ShowError(ex.Message, "Fehler");
+            return false;
+        }
     }
 
     /// <summary>Patient löschen (mit Bestätigung).</summary>
     public async Task<bool> DeleteAsync(Patient selected)
     {
-        var result = MessageBox.Show(
+        var result = _messages.Confirm(
             $"Patient {selected.Nachname}, {selected.Vorname} wirklich löschen?",
-            "Bestätigung",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            "Bestätigung");
 
         if (result != MessageBoxResult.Yes)
             return false;
 
-        await _patientService.DeletePatientAsync(selected.Id);
-        return true;
+        try
+        {
+            await _patientService.DeletePatientAsync(selected.Id);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _messages.ShowError(ex.Message, "Fehler");
+            return false;
+        }
     }
 
     /// <summary>Status Aktiv/Inaktiv umschalten.</summary>
     public async Task<bool> ToggleActiveAsync(Patient selected)
     {
-        await _patientService.ToggleActiveAsync(selected.Id);
-        return true;
+        try
+        {
+            await _patientService.ToggleActiveAsync(selected.Id);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _messages.ShowError(ex.Message, "Fehler");
+            return false;
+        }
     }
 }

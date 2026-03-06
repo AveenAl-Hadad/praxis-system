@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
 using Praxis.Client.Logic;          // <-- PatientListManager Namespace
+using Praxis.Client.Logic.UI;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 
@@ -17,7 +18,8 @@ namespace Praxis.Client;
 
 public partial class MainWindow : Window
 {
-    private readonly PatientService _patientService;
+    private readonly IPatientService _patientService;
+
 
     private List<Patient> _allPatients = new();
     private PatientListManager? _listManager;
@@ -31,11 +33,13 @@ public partial class MainWindow : Window
     private string _sortBy = nameof(Patient.Nachname);
     private ListSortDirection _sortDir = ListSortDirection.Ascending;
 
-    public MainWindow(PatientService patientService)
+    public MainWindow(IPatientService patientService)
     {
         InitializeComponent();
         _patientService = patientService;
-        _crud = new PatientCrudController (_patientService);
+        var dialogService = new WpfDialogService();
+        var messageService = new WpfMessageBoxService();
+        _crud = new PatientCrudController (_patientService, dialogService, messageService);
 
         ContentRendered += async (_, __) => await LoadPatientsAsync();
     }

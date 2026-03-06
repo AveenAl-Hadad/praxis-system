@@ -43,11 +43,11 @@ public class PatientListManagerTests
         //Arrange (Vorbreiten)
         // ich erzeuge 10 Patienten.Dann erstelle ich den Manger mit diesem Liste
         var patients = CreatePatients(10);
-        var mgr = new PatientListManager(patients);
+        var patientListManger = new PatientListManager(patients);
 
         //Act(ausführen)
         // hier sag ich Suchtext:leer und onlyActive: true -- nur aktive sollen bleiben
-        var result = mgr.GetFilteredAndSorted(searchTerm: "", onlyActive: true);
+        var result = patientListManger.GetFilteredAndSorted(searchTerm: "", onlyActive: true);
 
         //Assert (Prüfen)
         //Das bedeutet: für jedes Element im Ergebnis muss IsActive == true sein.
@@ -66,13 +66,13 @@ public class PatientListManagerTests
             new Patient { Id=1, Nachname="Mustermann", Vorname="Max", IsActive=true, Geburtsdatum=new DateTime(1980,1,1)},
             new Patient { Id=2, Nachname="Schneider", Vorname="Anna", IsActive=true, Geburtsdatum=new DateTime(1980,1,1)}
         };
-        var mgr = new PatientListManager(patients);
+        var patientListManger = new PatientListManager(patients);
 
         //Act(ausführen)
         //ich suche nach "muster" (klein geschrieben), erarte aber, dass"Mustermann" gefunden wird.
         //➡️ Damit testest du indirekt auch Case-insensitive Suche (wenn dein Manager .ToLower() nutzt).
 
-        var result = mgr.GetFilteredAndSorted("muster", onlyActive: false);
+        var result = patientListManger.GetFilteredAndSorted("muster", onlyActive: false);
 
         //Single = Ergebnis muss genau 1 sein.Und es muss Mustermann sein.
         Assert.Single(result);
@@ -95,11 +95,11 @@ public class PatientListManagerTests
             new Patient { Id=2, Nachname="Alpha", Vorname="B", IsActive=true, Geburtsdatum=new DateTime(1980,1,1)}
         };
 
-        var mgr = new PatientListManager(patients);
-        mgr.SetSorting(nameof(Patient.Nachname), ListSortDirection.Ascending);
+        var patientListManger = new PatientListManager(patients);
+        patientListManger.SetSorting(nameof(Patient.Nachname), ListSortDirection.Ascending);
         
         // Act
-         var result = mgr.GetFilteredAndSorted("", false);
+         var result = patientListManger.GetFilteredAndSorted("", false);
         
         //Assert
         Assert.Equal("Alpha", result[0].Nachname);
@@ -117,22 +117,23 @@ public class PatientListManagerTests
          * Sort nach Id (damit Seite 1 IDs 1..50 sind)
          */
         var patients = CreatePatients(120);
-        var mgr = new PatientListManager(patients) { PageSize = 50 };
-        mgr.SetSorting(nameof(Patient.Id), ListSortDirection.Ascending);
+        var patientListManger = new PatientListManager(patients) { PageSize = 50 };
+        patientListManger.SetSorting(nameof(Patient.Id), ListSortDirection.Ascending);
 
         // Act
         //ich hole Seite 1.
-        var page1 = mgr.GetPage("", false);
+        var page1 = patientListManger.GetPage("", false);
 
         /* Assert
+         * 120/50 = 2,4 --> 3 Seiten
          * 120/50 = 2,4 --> 3 Seiten
          * Seite 1: 50
          * Seite 2: 50
          * Seite 3: 20
          */
         Assert.Equal(50, page1.Count);
-        Assert.Equal(1, mgr.CurrentPage);
-        Assert.Equal(3, mgr.TotalPages); // 120 -> 3 Seiten (50,50,20)
+        Assert.Equal(1, patientListManger.CurrentPage);
+        Assert.Equal(3, patientListManger.TotalPages); // 120 -> 3 Seiten (50,50,20)
     }
     /// <summary>
     /// NextPage geht weiter
@@ -143,22 +144,22 @@ public class PatientListManagerTests
         //Arrange
         //wie Vorher
         var patients = CreatePatients(120);
-        var mgr = new PatientListManager(patients) { PageSize = 50 };
-        mgr.SetSorting(nameof(Patient.Id), ListSortDirection.Ascending);
+        var patientListManger = new PatientListManager(patients) { PageSize = 50 };
+        patientListManger.SetSorting(nameof(Patient.Id), ListSortDirection.Ascending);
 
         /*Act
          * ich hole Seite 1, dann NextPage, dann Seite 2.
          */
-        var page1 = mgr.GetPage("", false);
-        mgr.NextPage();
-        var page2 = mgr.GetPage("", false);
+        var page1 = patientListManger.GetPage("", false);
+        patientListManger.NextPage();
+        var page2 = patientListManger.GetPage("", false);
 
         /*Assert
          * CurrentPage muss 2 sein
          * Erstes Element Seite 1 ist nicht gleich erstes Element Seite 2
          * (weil Seite 1 bei Id=1 startet, Seite 2 bei Id=51)
          */
-        Assert.Equal(2, mgr.CurrentPage);
+        Assert.Equal(2, patientListManger.CurrentPage);
         Assert.NotEqual(page1[0].Id, page2[0].Id);
     }
     /// <summary>
@@ -170,15 +171,15 @@ public class PatientListManagerTests
         //Arrange
         //ich gehe absichtlich auf seite 2
         var patients = CreatePatients(120);
-        var mgr = new PatientListManager(patients) { PageSize = 50 };
-        mgr.SetSorting(nameof(Patient.Id), ListSortDirection.Ascending);
+        var patientListManger = new PatientListManager(patients) { PageSize = 50 };
+        patientListManger.SetSorting(nameof(Patient.Id), ListSortDirection.Ascending);
 
-        mgr.GetPage("", false);
-        mgr.NextPage();
-        Assert.Equal(2, mgr.CurrentPage);
+        patientListManger.GetPage("", false);
+        patientListManger.NextPage();
+        Assert.Equal(2, patientListManger.CurrentPage);
         //Act
-        mgr.GoToFirstPage();
+        patientListManger.GoToFirstPage();
         //Assert
-        Assert.Equal(1, mgr.CurrentPage);
+        Assert.Equal(1, patientListManger.CurrentPage);
     }
 }
