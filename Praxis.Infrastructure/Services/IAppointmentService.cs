@@ -9,4 +9,5 @@ public interface IAppointmentService
     Task<List<Appointment>> GetAppointmentsByDateAsync(DateTime date);
     Task<Appointment?> GetAppointmentByIdAsync(int id);
     Task UpdateAppointmentAsync(Appointment appointment);
+    Task DeleteAppointmentAsync(int id);
 }

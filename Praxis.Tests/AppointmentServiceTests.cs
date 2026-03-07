@@ -134,4 +134,32 @@ public class AppointmentServiceTests
         Assert.Equal("Nachkontrolle", updated!.Reason);
         Assert.Equal(45, updated.DurationMinutes);
     }
+    [Fact]
+    public async Task DeleteAppointment_ShouldRemoveAppointment()
+    {
+        var options = new DbContextOptionsBuilder<PraxisDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        using var context = new PraxisDbContext(options);
+        var service = new AppointmentService(context);
+
+        var appointment = new Appointment
+        {
+            PatientId = 1,
+            StartTime = DateTime.Now,
+            DurationMinutes = 30,
+            Reason = "Kontrolle",
+            Status = "Geplant"
+        };
+
+        context.Appointments.Add(appointment);
+        await context.SaveChangesAsync();
+
+        await service.DeleteAppointmentAsync(appointment.Id);
+
+        var count = context.Appointments.Count();
+
+        Assert.Equal(0, count);
+    }
 }

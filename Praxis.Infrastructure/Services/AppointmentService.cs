@@ -66,6 +66,16 @@ public class AppointmentService : IAppointmentService
 
         await _context.SaveChangesAsync();
     }
+    public async Task DeleteAppointmentAsync(int id)
+    {
+        var appointment = await _context.Appointments.FindAsync(id);
+
+        if (appointment == null)
+            throw new InvalidOperationException("Termin wurde nicht gefunden.");
+
+        _context.Appointments.Remove(appointment);
+        await _context.SaveChangesAsync();
+    }
 
     private void ValidateAppointment(Appointment appointment)
     {

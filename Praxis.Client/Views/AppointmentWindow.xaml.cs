@@ -72,5 +72,35 @@ public partial class AppointmentWindow : Window
             await LoadAppointmentsAsync();
         }
     }
-  
+    private async void DeleteAppointmentButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (AppointmentsDataGrid.SelectedItem is not Appointment selectedAppointment)
+        {
+            MessageBox.Show("Bitte zuerst einen Termin auswählen.");
+            return;
+        }
+
+        var result = MessageBox.Show(
+            "Möchten Sie diesen Termin wirklich löschen?",
+            "Termin löschen",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            await _appointmentService.DeleteAppointmentAsync(selectedAppointment.Id);
+
+            MessageBox.Show("Termin wurde gelöscht.");
+
+            await LoadAppointmentsAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
+    }
+
 }
