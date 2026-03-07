@@ -40,7 +40,37 @@ public class AppointmentService : IAppointmentService
             .OrderBy(a => a.StartTime)
             .ToListAsync();
     }
-    
+
+    public async Task<List<Appointment>> GetAppointmentsByWeekAsync(DateTime startOfWeek)
+    {
+        var start = startOfWeek.Date;
+        var end = start.AddDays(7);
+
+        return await _context.Appointments
+            .Include(a => a.Patient)
+            .Where(a => a.StartTime >= start && a.StartTime < end)
+            .OrderBy(a => a.StartTime)
+            .ToListAsync();
+    }
+    public async Task<List<Appointment>> GetAppointmentsByWeekAndPatientAsync(DateTime startOfWeek, int? patientId)
+    {
+        var start = startOfWeek.Date;
+        var end = start.AddDays(7);
+
+        var query = _context.Appointments
+            .Include(a => a.Patient)
+            .Where(a => a.StartTime >= start && a.StartTime < end);
+
+        if (patientId.HasValue)
+        {
+            query = query.Where(a => a.PatientId == patientId.Value);
+        }
+
+        return await query
+            .OrderBy(a => a.StartTime)
+            .ToListAsync();
+    }
+
     public async Task<Appointment?> GetAppointmentByIdAsync(int id)
     {
         return await _context.Appointments

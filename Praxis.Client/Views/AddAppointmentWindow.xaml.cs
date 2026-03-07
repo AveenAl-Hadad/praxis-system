@@ -26,7 +26,14 @@ public partial class AddAppointmentWindow : Window
     {
         var patients = await _patientService.GetAllPatientsAsync();
         PatientComboBox.ItemsSource = patients.ToList();
-
+        StatusComboBox.ItemsSource = new List<string>
+        {
+            "Geplant",
+            "Bestätigt",
+            "Abgesagt",
+            "Erledigt"
+        };
+        // wenn Termin bearbeitet wird
         if (_editingAppointment != null)
         {
             PatientComboBox.SelectedValue = _editingAppointment.PatientId;
@@ -34,10 +41,14 @@ public partial class AddAppointmentWindow : Window
             TimeTextBox.Text = _editingAppointment.StartTime.ToString("HH:mm");
             DurationTextBox.Text = _editingAppointment.DurationMinutes.ToString();
             ReasonTextBox.Text = _editingAppointment.Reason;
+            // Status setzen
+            StatusComboBox.SelectedItem = _editingAppointment.Status;
         }
+
         else
         {
             AppointmentDatePicker.SelectedDate = DateTime.Today;
+            StatusComboBox.SelectedItem = "Geplant";
         }
     }
 
@@ -76,6 +87,7 @@ public partial class AddAppointmentWindow : Window
             }
 
             var startTime = AppointmentDatePicker.SelectedDate.Value.Date.Add(time);
+            var selectedStatus = StatusComboBox.SelectedItem?.ToString() ?? "Geplant";
 
             if (_editingAppointment == null)
             {
@@ -85,7 +97,7 @@ public partial class AddAppointmentWindow : Window
                     StartTime = startTime,
                     DurationMinutes = duration,
                     Reason = ReasonTextBox.Text.Trim(),
-                    Status = "Geplant"
+                    Status = selectedStatus
                 };
 
                 await _appointmentService.AddAppointmentAsync(newAppointment);
@@ -97,6 +109,7 @@ public partial class AddAppointmentWindow : Window
                 _editingAppointment.StartTime = startTime;
                 _editingAppointment.DurationMinutes = duration;
                 _editingAppointment.Reason = ReasonTextBox.Text.Trim();
+                _editingAppointment.Status = selectedStatus;
 
                 await _appointmentService.UpdateAppointmentAsync(_editingAppointment);
                 MessageBox.Show("Termin wurde aktualisiert.");
