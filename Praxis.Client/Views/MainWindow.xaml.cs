@@ -311,4 +311,11 @@ public partial class MainWindow : Window
         window.Owner = this;
         window.ShowDialog();
     }
+    // Kalnder
+    private void OpenCalendar_Click(object sender, RoutedEventArgs e)
+    {
+        var window = App.ServiceProvider.GetRequiredService<AppointmentCalendarWindow>();
+        window.Owner = this;
+        window.ShowDialog();
+    }
 }

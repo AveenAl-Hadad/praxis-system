@@ -73,6 +73,8 @@ public partial class App : System.Windows.Application
                 services.AddTransient<AddAppointmentWindow>();
                 services.AddTransient<AppointmentWindow>();
 
+                services.AddTransient<AppointmentCalendarWindow>();
+
                 services.AddScoped<IAppointmentService, AppointmentService>();
                 services.AddTransient<AddAppointmentWindow>();
                 ServiceProvider = services.BuildServiceProvider();

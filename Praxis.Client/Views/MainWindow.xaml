@@ -120,7 +120,12 @@
                         Width="120"
                         Height="30"
                         Margin="5"
-                        Click="OpenAppointments_Click"/>    
+                        Click="OpenAppointments_Click"/>
+                    <Button Content="Kalender"
+                        Width="120"
+                        Height="30"
+                        Margin="5"
+                        Click="OpenCalendar_Click"/>
                 </WrapPanel>
 
             </StackPanel>

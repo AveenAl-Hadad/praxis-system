@@ -28,6 +28,18 @@ public class AppointmentService : IAppointmentService
             .OrderBy(a => a.StartTime)
             .ToListAsync();
     }
+
+    public async Task<List<Appointment>> GetAppointmentsByDateAsync(DateTime date)
+    {
+        var startOfDay = date.Date;
+        var endOfDay = startOfDay.AddDays(1);
+
+        return await _context.Appointments
+            .Include(a => a.Patient)
+            .Where(a => a.StartTime >= startOfDay && a.StartTime < endOfDay)
+            .OrderBy(a => a.StartTime)
+            .ToListAsync();
+    }
     private void ValidateAppointment(Appointment appointment)
     {
         if (appointment.PatientId <= 0)

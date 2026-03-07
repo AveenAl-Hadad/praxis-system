@@ -1,0 +1,40 @@
+﻿<Window x:Class="Praxis.Client.Views.AppointmentCalendarWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Kalenderansicht"
+        Height="500"
+        Width="900"
+        WindowStartupLocation="CenterOwner">
+
+    <DockPanel Margin="12">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,10">
+            <TextBlock Text="Datum:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <DatePicker x:Name="CalendarDatePicker"
+                        Width="150"
+                        SelectedDateChanged="CalendarDatePicker_SelectedDateChanged"/>
+        </StackPanel>
+
+        <DataGrid x:Name="CalendarAppointmentsGrid"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Uhrzeit"
+                                    Binding="{Binding StartTime, StringFormat=HH:mm}"
+                                    Width="100"/>
+                <DataGridTextColumn Header="Patient"
+                                    Binding="{Binding Patient.FullName}"
+                                    Width="180"/>
+                <DataGridTextColumn Header="Dauer"
+                                    Binding="{Binding DurationMinutes}"
+                                    Width="100"/>
+                <DataGridTextColumn Header="Grund"
+                                    Binding="{Binding Reason}"
+                                    Width="*"/>
+                <DataGridTextColumn Header="Status"
+                                    Binding="{Binding Status}"
+                                    Width="120"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>
