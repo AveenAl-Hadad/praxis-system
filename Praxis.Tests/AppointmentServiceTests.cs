@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System;
 using Xunit;
 
-
+namespace Praxis.Tests;
 public class AppointmentServiceTests
 {
     // [Fact] markiert eine Methode als Unit-Test
@@ -17,7 +17,7 @@ public class AppointmentServiceTests
         // Erstellt eine InMemory-Datenbank für Tests
         // Dadurch brauchen wir keine echte SQLite-Datenbank
         var options = new DbContextOptionsBuilder<PraxisDbContext>()
-            .UseInMemoryDatabase("ConflictTestDb")
+            .UseInMemoryDatabase(databaseName: "TestDb")
             .Options;
 
         // Erstellt eine Instanz des DbContext mit der InMemory-Datenbank
@@ -99,5 +99,39 @@ public class AppointmentServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.AddAppointmentAsync(conflicting));
+    }
+
+    [Fact]
+    public async Task UpdateAppointment_ShouldModifyExistingAppointment()
+    {
+        var options = new DbContextOptionsBuilder<PraxisDbContext>()
+            .UseInMemoryDatabase("UpdateAppointmentTestDb")
+            .Options;
+
+        using var context = new PraxisDbContext(options);
+        var service = new AppointmentService(context);
+
+        var appointment = new Appointment
+        {
+            PatientId = 1,
+            StartTime = DateTime.Today.AddHours(9),
+            DurationMinutes = 30,
+            Reason = "Kontrolle",
+            Status = "Geplant"
+        };
+
+        context.Appointments.Add(appointment);
+        await context.SaveChangesAsync();
+
+        appointment.Reason = "Nachkontrolle";
+        appointment.DurationMinutes = 45;
+
+        await service.UpdateAppointmentAsync(appointment);
+
+        var updated = await context.Appointments.FirstOrDefaultAsync();
+
+        Assert.NotNull(updated);
+        Assert.Equal("Nachkontrolle", updated!.Reason);
+        Assert.Equal(45, updated.DurationMinutes);
     }
 }

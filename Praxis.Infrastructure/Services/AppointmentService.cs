@@ -40,6 +40,33 @@ public class AppointmentService : IAppointmentService
             .OrderBy(a => a.StartTime)
             .ToListAsync();
     }
+    
+    public async Task<Appointment?> GetAppointmentByIdAsync(int id)
+    {
+        return await _context.Appointments
+            .Include(a => a.Patient)
+            .FirstOrDefaultAsync(a => a.Id == id);
+    }
+
+    public async Task UpdateAppointmentAsync(Appointment appointment)
+    {
+        ValidateAppointment(appointment);
+        await CheckForConflictAsync(appointment);
+
+        var existing = await _context.Appointments.FirstOrDefaultAsync(a => a.Id == appointment.Id);
+
+        if (existing == null)
+            throw new InvalidOperationException("Termin wurde nicht gefunden.");
+
+        existing.PatientId = appointment.PatientId;
+        existing.StartTime = appointment.StartTime;
+        existing.DurationMinutes = appointment.DurationMinutes;
+        existing.Reason = appointment.Reason;
+        existing.Status = appointment.Status;
+
+        await _context.SaveChangesAsync();
+    }
+
     private void ValidateAppointment(Appointment appointment)
     {
         if (appointment.PatientId <= 0)
@@ -61,12 +88,12 @@ public class AppointmentService : IAppointmentService
         var newEnd = appointment.StartTime.AddMinutes(appointment.DurationMinutes);
 
         var conflict = await _context.Appointments.AnyAsync(a =>
+            a.Id != appointment.Id &&
             newStart < a.StartTime.AddMinutes(a.DurationMinutes) &&
             newEnd > a.StartTime);
 
         if (conflict)
             throw new InvalidOperationException("Es existiert bereits ein Termin in diesem Zeitraum.");
     }
-
 
 }

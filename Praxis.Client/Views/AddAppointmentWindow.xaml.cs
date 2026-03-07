@@ -9,6 +9,7 @@ public partial class AddAppointmentWindow : Window
 {
     private readonly IAppointmentService _appointmentService;
     private readonly IPatientService _patientService;
+    private Appointment? _editingAppointment;
 
     public AddAppointmentWindow(
         IAppointmentService appointmentService,
@@ -25,7 +26,19 @@ public partial class AddAppointmentWindow : Window
     {
         var patients = await _patientService.GetAllPatientsAsync();
         PatientComboBox.ItemsSource = patients.ToList();
-        AppointmentDatePicker.SelectedDate = DateTime.Today;
+
+        if (_editingAppointment != null)
+        {
+            PatientComboBox.SelectedValue = _editingAppointment.PatientId;
+            AppointmentDatePicker.SelectedDate = _editingAppointment.StartTime.Date;
+            TimeTextBox.Text = _editingAppointment.StartTime.ToString("HH:mm");
+            DurationTextBox.Text = _editingAppointment.DurationMinutes.ToString();
+            ReasonTextBox.Text = _editingAppointment.Reason;
+        }
+        else
+        {
+            AppointmentDatePicker.SelectedDate = DateTime.Today;
+        }
     }
 
     private async void SaveAppointment_Click(object sender, RoutedEventArgs e)
@@ -44,13 +57,13 @@ public partial class AddAppointmentWindow : Window
                 return;
             }
 
-            if (!TimeSpan.TryParseExact(TimeTextBox.Text, @"hh\:mm", CultureInfo.InvariantCulture, out var time))
+            if (!TimeSpan.TryParseExact(TimeTextBox.Text, @"hh\:mm", null, out var time))
             {
                 MessageBox.Show("Bitte Uhrzeit im Format HH:mm eingeben.");
                 return;
             }
 
-            if (!int.TryParse(DurationTextBox.Text, out int duration) || duration <= 0)
+            if (!int.TryParse(DurationTextBox.Text, out var duration) || duration <= 0)
             {
                 MessageBox.Show("Bitte gültige Dauer eingeben.");
                 return;
@@ -61,38 +74,45 @@ public partial class AddAppointmentWindow : Window
                 MessageBox.Show("Bitte Grund eingeben.");
                 return;
             }
-            if (PatientComboBox.SelectedItem == null)
-            {
-                MessageBox.Show("Bitte Patient auswählen.");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(TimeTextBox.Text))
-            {
-                MessageBox.Show("Bitte Uhrzeit eingeben.");
-                return;
-            }
 
             var startTime = AppointmentDatePicker.SelectedDate.Value.Date.Add(time);
 
-            var appointment = new Appointment
+            if (_editingAppointment == null)
             {
-                PatientId = selectedPatient.Id,
-                StartTime = startTime,
-                DurationMinutes = duration,
-                Reason = ReasonTextBox.Text.Trim(),
-                Status = "Geplant"
-            };
+                var newAppointment = new Appointment
+                {
+                    PatientId = selectedPatient.Id,
+                    StartTime = startTime,
+                    DurationMinutes = duration,
+                    Reason = ReasonTextBox.Text.Trim(),
+                    Status = "Geplant"
+                };
 
-            await _appointmentService.AddAppointmentAsync(appointment);
+                await _appointmentService.AddAppointmentAsync(newAppointment);
+                MessageBox.Show("Termin wurde gespeichert.");
+            }
+            else
+            {
+                _editingAppointment.PatientId = selectedPatient.Id;
+                _editingAppointment.StartTime = startTime;
+                _editingAppointment.DurationMinutes = duration;
+                _editingAppointment.Reason = ReasonTextBox.Text.Trim();
 
-            MessageBox.Show("Termin wurde gespeichert.");
+                await _appointmentService.UpdateAppointmentAsync(_editingAppointment);
+                MessageBox.Show("Termin wurde aktualisiert.");
+            }
+
             DialogResult = true;
             Close();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler beim Speichern: {ex.Message}");
+            MessageBox.Show(ex.Message);
         }
+    }
+    public void SetAppointmentForEdit(Appointment appointment)
+    {
+        _editingAppointment = appointment;
+        Title = "Termin bearbeiten";
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 
 namespace Praxis.Client.Views;
@@ -44,4 +45,32 @@ public partial class AppointmentWindow : Window
             await LoadAppointmentsAsync();
         }
     }
+    private async void EditAppointmentButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (AppointmentsDataGrid.SelectedItem is not Appointment selectedAppointment)
+        {
+            MessageBox.Show("Bitte zuerst einen Termin auswählen.");
+            return;
+        }
+
+        var appointmentToEdit = await _appointmentService.GetAppointmentByIdAsync(selectedAppointment.Id);
+
+        if (appointmentToEdit == null)
+        {
+            MessageBox.Show("Termin wurde nicht gefunden.");
+            return;
+        }
+
+        var editWindow = App.ServiceProvider.GetRequiredService<AddAppointmentWindow>();
+        editWindow.Owner = this;
+        editWindow.SetAppointmentForEdit(appointmentToEdit);
+
+        var result = editWindow.ShowDialog();
+
+        if (result == true)
+        {
+            await LoadAppointmentsAsync();
+        }
+    }
+  
 }
