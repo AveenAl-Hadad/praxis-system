@@ -61,6 +61,17 @@ public partial class AddAppointmentWindow : Window
                 MessageBox.Show("Bitte Grund eingeben.");
                 return;
             }
+            if (PatientComboBox.SelectedItem == null)
+            {
+                MessageBox.Show("Bitte Patient auswählen.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TimeTextBox.Text))
+            {
+                MessageBox.Show("Bitte Uhrzeit eingeben.");
+                return;
+            }
 
             var startTime = AppointmentDatePicker.SelectedDate.Value.Date.Add(time);
 

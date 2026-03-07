@@ -15,8 +15,23 @@ public class AppointmentService : IAppointmentService
 
     public async Task AddAppointmentAsync(Appointment appointment)
     {
+        ValidateAppointment(appointment);
         _context.Appointments.Add(appointment);
         await _context.SaveChangesAsync();
+    }
+    private void ValidateAppointment(Appointment appointment)
+    {
+        if (appointment.PatientId <= 0)
+            throw new ArgumentException("Patient muss ausgewählt werden.");
+
+        if (appointment.StartTime == default)
+            throw new ArgumentException("Startzeit ist ungültig.");
+
+        if (appointment.DurationMinutes <= 0)
+            throw new ArgumentException("Dauer muss größer als 0 sein.");
+
+        if (string.IsNullOrWhiteSpace(appointment.Reason))
+            throw new ArgumentException("Grund darf nicht leer sein.");
     }
 
     public async Task<List<Appointment>> GetAllAppointmentsAsync()
