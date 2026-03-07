@@ -9,6 +9,8 @@ public class PraxisDbContext : DbContext
 
     public DbSet<Patient> Patients { get; set; }
 
+    public DbSet<Appointment> Appointments { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -20,5 +22,11 @@ public class PraxisDbContext : DbContext
         modelBuilder.Entity<Patient>()
             .HasIndex(p => p.Telefonnummer)
             .IsUnique();
+
+        modelBuilder.Entity<Appointment>()
+            .HasOne(a => a.Patient)
+            .WithMany(p => p.Appointments)
+            .HasForeignKey(a => a.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

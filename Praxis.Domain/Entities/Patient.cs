@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Xml.Linq;
 
 namespace Praxis.Domain.Entities;
 
@@ -10,12 +11,13 @@ public class Patient
 
     public string Nachname { get; set; } = string.Empty;
 
+    public string FullName => $"{Vorname} {Nachname}";
     public DateTime Geburtsdatum { get; set; }
 
     public string Telefonnummer { get; set; } = string.Empty;
 
     public string Email { get; set; } = string.Empty;
-
+ 
     [NotMapped]
     public int Alter
     {
@@ -31,4 +33,6 @@ public class Patient
         }
     }
     public bool IsActive { get; set; } = true;
+
+    public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 }

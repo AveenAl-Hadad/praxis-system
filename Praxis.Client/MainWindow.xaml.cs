@@ -13,6 +13,8 @@ using Praxis.Client.Logic;          // <-- PatientListManager Namespace
 using Praxis.Client.Logic.UI;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Praxis.Infrastructure.Services;
 
 namespace Praxis.Client;
 
@@ -39,7 +41,7 @@ public partial class MainWindow : Window
         _patientService = patientService;
         var dialogService = new WpfDialogService();
         var messageService = new WpfMessageBoxService();
-        _crud = new PatientCrudController (_patientService, dialogService, messageService);
+        _crud = new PatientCrudController(_patientService, dialogService, messageService);
 
         ContentRendered += async (_, __) => await LoadPatientsAsync();
     }
@@ -205,7 +207,7 @@ public partial class MainWindow : Window
             return;
         }
 
-       if( await _crud.ToggleActiveAsync(selected));
+        if (await _crud.ToggleActiveAsync(selected)) ;
         await LoadPatientsAsync();
     }
 
@@ -294,5 +296,12 @@ public partial class MainWindow : Window
             Refresh_Click(sender, new RoutedEventArgs());
             e.Handled = true;
         }
+    }
+
+    private void OpenAddAppointmentWindow_Click(object sender, RoutedEventArgs e)
+    {
+        var window = App.ServiceProvider.GetRequiredService<AddAppointmentWindow>();
+        window.Owner = this;
+        window.ShowDialog();
     }
 }

@@ -16,6 +16,8 @@ namespace Praxis.Client;
 public partial class App : System.Windows.Application
 {
     private IHost? _host;
+    public static IServiceProvider ServiceProvider { get; private set; } = null!;
+
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -66,6 +68,11 @@ public partial class App : System.Windows.Application
 
                 // MainWindow über DI
                 services.AddTransient<MainWindow>();
+               
+                services.AddScoped<IAppointmentService, AppointmentService>();
+                services.AddTransient<AddAppointmentWindow>();
+                ServiceProvider = services.BuildServiceProvider();
+                base.OnStartup(e);
             })
             .Build();
 
