@@ -14,7 +14,7 @@ using Praxis.Client.Logic.UI;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Praxis.Infrastructure.Services;
+using Praxis.Client.Views;
 
 namespace Praxis.Client;
 
@@ -297,10 +297,17 @@ public partial class MainWindow : Window
             e.Handled = true;
         }
     }
-
+    // Termin legen fenster öffnet
     private void OpenAddAppointmentWindow_Click(object sender, RoutedEventArgs e)
     {
         var window = App.ServiceProvider.GetRequiredService<AddAppointmentWindow>();
+        window.Owner = this;
+        window.ShowDialog();
+    }
+    //Termin list fenster anzeigen
+    private void OpenAppointments_Click(object sender, RoutedEventArgs e)
+    {
+        var window = App.ServiceProvider.GetRequiredService<AppointmentWindow>();
         window.Owner = this;
         window.ShowDialog();
     }

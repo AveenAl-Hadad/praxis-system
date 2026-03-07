@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Praxis.Client.Views;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure;
 using Praxis.Infrastructure.Persistence;
@@ -68,12 +69,16 @@ public partial class App : System.Windows.Application
 
                 // MainWindow über DI
                 services.AddTransient<MainWindow>();
-               
+
+                services.AddTransient<AddAppointmentWindow>();
+                services.AddTransient<AppointmentWindow>();
+
                 services.AddScoped<IAppointmentService, AppointmentService>();
                 services.AddTransient<AddAppointmentWindow>();
                 ServiceProvider = services.BuildServiceProvider();
                 base.OnStartup(e);
-            })
+
+             })
             .Build();
 
         // DB erstellen + Testdaten einfügen

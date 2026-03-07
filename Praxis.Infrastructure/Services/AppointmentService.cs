@@ -19,6 +19,14 @@ public class AppointmentService : IAppointmentService
         _context.Appointments.Add(appointment);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<List<Appointment>> GetAllAppointmentsAsync()
+    {
+        return await _context.Appointments
+            .Include(a => a.Patient)
+            .OrderBy(a => a.StartTime)
+            .ToListAsync();
+    }
     private void ValidateAppointment(Appointment appointment)
     {
         if (appointment.PatientId <= 0)
@@ -34,11 +42,5 @@ public class AppointmentService : IAppointmentService
             throw new ArgumentException("Grund darf nicht leer sein.");
     }
 
-    public async Task<List<Appointment>> GetAllAppointmentsAsync()
-    {
-        return await _context.Appointments
-            .Include(a => a.Patient)
-            .OrderBy(a => a.StartTime)
-            .ToListAsync();
-    }
+   
 }

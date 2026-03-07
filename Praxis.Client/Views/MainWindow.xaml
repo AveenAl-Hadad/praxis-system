@@ -116,6 +116,11 @@
                                 Click="OpenAddAppointmentWindow_Click"/>
                         </WrapPanel>
                     </GroupBox>
+                    <Button Content="Termine"
+                        Width="120"
+                        Height="30"
+                        Margin="5"
+                        Click="OpenAppointments_Click"/>    
                 </WrapPanel>
 
             </StackPanel>
