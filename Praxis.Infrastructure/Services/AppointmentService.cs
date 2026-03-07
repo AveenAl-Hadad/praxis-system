@@ -16,6 +16,7 @@ public class AppointmentService : IAppointmentService
     public async Task AddAppointmentAsync(Appointment appointment)
     {
         ValidateAppointment(appointment);
+        await CheckForConflictAsync(appointment);
         _context.Appointments.Add(appointment);
         await _context.SaveChangesAsync();
     }
@@ -42,5 +43,18 @@ public class AppointmentService : IAppointmentService
             throw new ArgumentException("Grund darf nicht leer sein.");
     }
 
-   
+    private async Task CheckForConflictAsync(Appointment appointment)
+    {
+        var newStart = appointment.StartTime;
+        var newEnd = appointment.StartTime.AddMinutes(appointment.DurationMinutes);
+
+        var conflict = await _context.Appointments.AnyAsync(a =>
+            newStart < a.StartTime.AddMinutes(a.DurationMinutes) &&
+            newEnd > a.StartTime);
+
+        if (conflict)
+            throw new InvalidOperationException("Es existiert bereits ein Termin in diesem Zeitraum.");
+    }
+
+
 }

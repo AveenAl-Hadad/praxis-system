@@ -17,7 +17,7 @@ public class AppointmentServiceTests
         // Erstellt eine InMemory-Datenbank für Tests
         // Dadurch brauchen wir keine echte SQLite-Datenbank
         var options = new DbContextOptionsBuilder<PraxisDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestDb")
+            .UseInMemoryDatabase("ConflictTestDb")
             .Options;
 
         // Erstellt eine Instanz des DbContext mit der InMemory-Datenbank
@@ -64,5 +64,40 @@ public class AppointmentServiceTests
 
         // Prüft, ob die Dauer korrekt gespeichert wurde
         Assert.Equal(30, savedAppointment.DurationMinutes);
+
+
+    }
+    [Fact]
+    public async Task AddAppointment_ShouldThrowException_WhenConflictExists()
+    {
+        var options = new DbContextOptionsBuilder<PraxisDbContext>()
+            .UseInMemoryDatabase("ConflictTestDb")
+            .Options;
+
+        using var context = new PraxisDbContext(options);
+
+        var service = new AppointmentService(context);
+
+        var existing = new Appointment
+        {
+            PatientId = 1,
+            StartTime = DateTime.Today.AddHours(10),
+            DurationMinutes = 30,
+            Reason = "Kontrolle"
+        };
+
+        context.Appointments.Add(existing);
+        await context.SaveChangesAsync();
+
+        var conflicting = new Appointment
+        {
+            PatientId = 2,
+            StartTime = DateTime.Today.AddHours(10).AddMinutes(10),
+            DurationMinutes = 30,
+            Reason = "Untersuchung"
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.AddAppointmentAsync(conflicting));
     }
 }
