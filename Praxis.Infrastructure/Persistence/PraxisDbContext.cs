@@ -7,9 +7,9 @@ public class PraxisDbContext : DbContext
 {
     public PraxisDbContext(DbContextOptions<PraxisDbContext> options) : base(options) { }
 
-    public DbSet<Patient> Patients { get; set; }
-
-    public DbSet<Appointment> Appointments { get; set; }
+    public DbSet<Patient> Patients => Set<Patient>();
+    public DbSet<Appointment> Appointments => Set<Appointment>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

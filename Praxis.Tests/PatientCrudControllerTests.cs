@@ -5,7 +5,7 @@ using Moq;
 using Praxis.Client.Logic;
 using Praxis.Client.Logic.UI;
 using Praxis.Domain.Entities;
-using Praxis.Infrastructure.Services;
+using Praxis.Infrastructure.Services.Interface;
 using Xunit;
 
 namespace Praxis.Tests;

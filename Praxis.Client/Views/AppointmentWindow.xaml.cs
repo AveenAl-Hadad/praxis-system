@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Praxis.Domain.Entities;
-using Praxis.Infrastructure.Services;
+using Praxis.Infrastructure.Services.Interface;
 
 namespace Praxis.Client.Views;
 

@@ -2,7 +2,7 @@
 using System.Windows;
 using Praxis.Client.Logic.UI;
 using Praxis.Domain.Entities;
-using Praxis.Infrastructure.Services;
+using Praxis.Infrastructure.Services.Interface;
 
 namespace Praxis.Client.Logic;
 

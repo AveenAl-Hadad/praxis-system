@@ -7,10 +7,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Praxis.Client.Views;
+using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure;
 using Praxis.Infrastructure.Persistence;
 using Praxis.Infrastructure.Services;
+using Praxis.Infrastructure.Services.Interface;
 
 namespace Praxis.Client;
 
@@ -19,34 +21,32 @@ public partial class App : System.Windows.Application
     private IHost? _host;
     public static IServiceProvider ServiceProvider { get; private set; } = null!;
 
-
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
-        this.DispatcherUnhandledException += (s, exArgs) =>
-        {
-            LogError(exArgs.Exception);
-            MessageBox.Show(
-                "Ein unerwarteter Fehler ist aufgetreten.\nDetails stehen in logs\\app.log",
-                "Fehler",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+        //this.DispatcherUnhandledException += (s, exArgs) =>
+        //{
+        //    LogError(exArgs.Exception);
+        //    MessageBox.Show(
+        //        "Ein unerwarteter Fehler ist aufgetreten.\nDetails stehen in logs\\app.log",
+        //        "Fehler",
+        //        MessageBoxButton.OK,
+        //        MessageBoxImage.Error);
+        //         exArgs.Handled = true; // verhindert App-Crash
+        //};
 
-            exArgs.Handled = true; // verhindert App-Crash
-        };
+        //AppDomain.CurrentDomain.UnhandledException += (s, exArgs) =>
+        //{
+        //    if (exArgs.ExceptionObject is Exception ex)
+        //        LogError(ex);
+        //};
 
-        AppDomain.CurrentDomain.UnhandledException += (s, exArgs) =>
-        {
-            if (exArgs.ExceptionObject is Exception ex)
-                LogError(ex);
-        };
-
-        TaskScheduler.UnobservedTaskException += (s, exArgs) =>
-        {
-            LogError(exArgs.Exception);
-            exArgs.SetObserved();
-        };
+        //TaskScheduler.UnobservedTaskException += (s, exArgs) =>
+        //{
+        //    LogError(exArgs.Exception);
+        //    exArgs.SetObserved();
+        //};
 
         _host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(cfg =>
@@ -66,28 +66,28 @@ public partial class App : System.Windows.Application
 
                 // Services
                 services.AddScoped<IPatientService, PatientService>();
+                services.AddScoped<IAppointmentService, AppointmentService>();
+                services.AddScoped<IPasswordService, PasswordService>();
+                services.AddScoped<IAuthService, AuthService>();
 
                 // MainWindow über DI
                 services.AddTransient<MainWindow>();
-
+                services.AddTransient<LoginWindow>();
+                services.AddTransient<WaitingRoomWindow>();
                 services.AddTransient<AddAppointmentWindow>();
                 services.AddTransient<AppointmentWindow>();
-
                 services.AddTransient<AppointmentCalendarWindow>();
-
-                services.AddScoped<IAppointmentService, AppointmentService>();
                 services.AddTransient<AddAppointmentWindow>();
-                services.AddTransient<WaitingRoomWindow>();
+                                           
                 ServiceProvider = services.BuildServiceProvider();
-                base.OnStartup(e);
-
              })
             .Build();
 
-        // DB erstellen + Testdaten einfügen
+        // Datenbank vorbereiten
         using (var scope = _host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<PraxisDbContext>();
+            var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
 
             await db.Database.EnsureCreatedAsync();
 
@@ -104,12 +104,28 @@ public partial class App : System.Windows.Application
 
                 await db.SaveChangesAsync();
             }
+            // Standard Admin erstellen
+            if (!db.Users.Any())
+            {
+                await authService.RegisterUserAsync("admin", "admin123", Roles.Administrator);
+            }
         }
 
-        // UI starten
-        _host.Services.GetRequiredService<MainWindow>().Show();
-    }
+        // LOGIN WINDOW STARTEN
+        var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
+        var loginResult = loginWindow.ShowDialog();
 
+        if (loginResult == true)
+        {
+            var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+        }
+        else
+        {
+            Shutdown();
+        }
+    }
+  
     protected override async void OnExit(ExitEventArgs e)
     {
         if (_host != null)
