@@ -77,6 +77,7 @@ public partial class App : System.Windows.Application
 
                 services.AddScoped<IAppointmentService, AppointmentService>();
                 services.AddTransient<AddAppointmentWindow>();
+                services.AddTransient<WaitingRoomWindow>();
                 ServiceProvider = services.BuildServiceProvider();
                 base.OnStartup(e);
 

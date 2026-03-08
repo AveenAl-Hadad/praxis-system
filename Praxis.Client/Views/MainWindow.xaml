@@ -126,6 +126,11 @@
                         Height="30"
                         Margin="5"
                         Click="OpenCalendar_Click"/>
+                    <Button Content="Wartezimmer"
+                        Width="120"
+                        Height="30"
+                        Margin="5"
+                        Click="OpenWaitingRoom_Click"/>
                 </WrapPanel>
 
             </StackPanel>

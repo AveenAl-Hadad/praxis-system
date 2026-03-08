@@ -78,6 +78,19 @@ public class AppointmentService : IAppointmentService
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
+    public async Task<List<Appointment>> GetWaitingRoomAppointmentsAsync(DateTime date)
+    {
+        var startOfDay = date.Date;
+        var endOfDay = startOfDay.AddDays(1);
+
+        return await _context.Appointments
+            .Include(a => a.Patient)
+            .Where(a => a.StartTime >= startOfDay && a.StartTime < endOfDay)
+            .Where(a => a.Status != "Abgesagt" && a.Status != "Erledigt")
+            .OrderBy(a => a.StartTime)
+            .ToListAsync();
+    }
+
     public async Task UpdateAppointmentAsync(Appointment appointment)
     {
         ValidateAppointment(appointment);
@@ -94,6 +107,20 @@ public class AppointmentService : IAppointmentService
         existing.Reason = appointment.Reason;
         existing.Status = appointment.Status;
 
+        await _context.SaveChangesAsync();
+    }
+    public async Task UpdateAppointmentStatusAsync(int appointmentId, string status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException("Status darf nicht leer sein.");
+
+        var appointment = await _context.Appointments
+            .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+        if (appointment == null)
+            throw new InvalidOperationException("Termin wurde nicht gefunden.");
+
+        appointment.Status = status.Trim();
         await _context.SaveChangesAsync();
     }
     public async Task DeleteAppointmentAsync(int id)

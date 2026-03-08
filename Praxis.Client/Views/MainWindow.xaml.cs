@@ -318,4 +318,11 @@ public partial class MainWindow : Window
         window.Owner = this;
         window.ShowDialog();
     }
+    //Wartezimmer
+    private void OpenWaitingRoom_Click(object sender, RoutedEventArgs e)
+    {
+        var window = App.ServiceProvider.GetRequiredService<WaitingRoomWindow>();
+        window.Owner = this;
+        window.ShowDialog();
+    }
 }

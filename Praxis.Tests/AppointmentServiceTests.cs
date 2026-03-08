@@ -162,4 +162,76 @@ public class AppointmentServiceTests
 
         Assert.Equal(0, count);
     }
+
+    [Fact]
+    public async Task GetWaitingRoomAppointments_ShouldExcludeCancelledAndCompletedAppointments()
+    {
+        var options = new DbContextOptionsBuilder<PraxisDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        using var context = new PraxisDbContext(options);
+        var service = new AppointmentService(context);
+
+        context.Appointments.AddRange(
+            new Appointment
+            {
+                PatientId = 1,
+                StartTime = DateTime.Today.AddHours(8),
+                DurationMinutes = 20,
+                Reason = "Kontrolle",
+                Status = "Geplant"
+            },
+            new Appointment
+            {
+                PatientId = 2,
+                StartTime = DateTime.Today.AddHours(9),
+                DurationMinutes = 20,
+                Reason = "Beratung",
+                Status = "Abgesagt"
+            },
+            new Appointment
+            {
+                PatientId = 3,
+                StartTime = DateTime.Today.AddHours(10),
+                DurationMinutes = 20,
+                Reason = "Impfung",
+                Status = "Erledigt"
+            });
+
+        await context.SaveChangesAsync();
+
+        var result = await service.GetWaitingRoomAppointmentsAsync(DateTime.Today);
+
+        Assert.Single(result);
+        Assert.Equal("Geplant", result[0].Status);
+    }
+
+    [Fact]
+    public async Task UpdateAppointmentStatusAsync_ShouldChangeStatus()
+    {
+        var options = new DbContextOptionsBuilder<PraxisDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        using var context = new PraxisDbContext(options);
+        var service = new AppointmentService(context);
+
+        var appointment = new Appointment
+        {
+            PatientId = 1,
+            StartTime = DateTime.Today.AddHours(11),
+            DurationMinutes = 30,
+            Reason = "Check",
+            Status = "Geplant"
+        };
+
+        context.Appointments.Add(appointment);
+        await context.SaveChangesAsync();
+
+        await service.UpdateAppointmentStatusAsync(appointment.Id, "Im Wartezimmer");
+
+        var updated = await context.Appointments.FirstAsync();
+        Assert.Equal("Im Wartezimmer", updated.Status);
+    }
 }
