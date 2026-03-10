@@ -1,9 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 using Praxis.Client.Session;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
@@ -72,9 +75,10 @@ public partial class MainWindow : Window
         if (!string.IsNullOrWhiteSpace(searchText))
         {
             query = query.Where(p =>
-                (p.Vorname != null && p.Vorname.ToLower().Contains(searchText)) ||
-                (p.Nachname != null && p.Nachname.ToLower().Contains(searchText)) ||
-                (p.Email != null && p.Email.ToLower().Contains(searchText)));
+                (!string.IsNullOrWhiteSpace(p.Vorname) && p.Vorname.ToLower().Contains(searchText)) ||
+                (!string.IsNullOrWhiteSpace(p.Nachname) && p.Nachname.ToLower().Contains(searchText)) ||
+                (!string.IsNullOrWhiteSpace(p.Email) && p.Email.ToLower().Contains(searchText)) ||
+                (!string.IsNullOrWhiteSpace(p.Telefonnummer) && p.Telefonnummer.ToLower().Contains(searchText)));
         }
 
         if (onlyActive)
@@ -97,13 +101,10 @@ public partial class MainWindow : Window
             .Take(PageSize)
             .ToList();
 
+        PatientsGrid.ItemsSource = null;
         PatientsGrid.ItemsSource = pageItems;
-        PageInfoText.Text = $"Seite {_currentPage} / {totalPages}";
-    }
 
-    private async void Refresh_Click(object sender, RoutedEventArgs e)
-    {
-        await LoadPatientsAsync();
+        PageInfoText.Text = $"Seite {_currentPage} / {totalPages}";
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -112,10 +113,46 @@ public partial class MainWindow : Window
         ApplyFilterAndPaging();
     }
 
+
     private void OnlyActiveCheck_Changed(object sender, RoutedEventArgs e)
     {
         _currentPage = 1;
         ApplyFilterAndPaging();
+    }
+    private async void ActiveCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is not CheckBox checkBox)
+                return;
+
+            if (checkBox.DataContext is not Patient patient)
+                return;
+
+            var realPatient = _allPatients.FirstOrDefault(p => p.Id == patient.Id);
+
+            if (realPatient == null)
+                return;
+
+            realPatient.IsActive = checkBox.IsChecked == true;
+
+            await _patientService.UpdatePatientAsync(realPatient);
+
+            await LoadPatientsAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Fehler beim Ändern des Status:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    private async void Refresh_Click(object sender, RoutedEventArgs e)
+    {
+        await LoadPatientsAsync();
     }
 
     private void PrevPage_Click(object sender, RoutedEventArgs e)
@@ -140,66 +177,184 @@ public partial class MainWindow : Window
 
     private Patient? GetSelectedPatient()
     {
-        return PatientsGrid.SelectedItem as Patient;
+        if (PatientsGrid.SelectedItem is Patient patient)
+            return _allPatients.FirstOrDefault(p => p.Id == patient.Id);
+
+        return null;
     }
 
-    private void AddPatient_Click(object sender, RoutedEventArgs e)
+    private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Patient anlegen noch nicht verbunden.");
-    }
-
-    private void EditPatient_Click(object sender, RoutedEventArgs e)
-    {
-        var selectedPatient = GetSelectedPatient();
-
-        if (selectedPatient == null)
+        try
         {
-            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
-            return;
-        }
+            var window = new AddPatientWindow();
+            window.Owner = this;
 
-        MessageBox.Show($"Patient bearbeiten: {selectedPatient.Vorname} {selectedPatient.Nachname}");
+            var result = window.ShowDialog();
+
+            if (result == true && window.CreatedPatient != null)
+            {
+                await _patientService.AddPatientAsync(window.CreatedPatient);
+                await LoadPatientsAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Fehler beim Anlegen:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
-    private void DeletePatient_Click(object sender, RoutedEventArgs e)
+    private async void EditPatient_Click(object sender, RoutedEventArgs e)
     {
-        var selectedPatient = GetSelectedPatient();
-
-        if (selectedPatient == null)
+        try
         {
-            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
-            return;
-        }
+            var selectedPatient = GetSelectedPatient();
 
-        MessageBox.Show($"Patient löschen: {selectedPatient.Vorname} {selectedPatient.Nachname}");
+            if (selectedPatient == null)
+            {
+                MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+                return;
+            }
+
+            var copy = new Patient
+            {
+                Id = selectedPatient.Id,
+                Vorname = selectedPatient.Vorname,
+                Nachname = selectedPatient.Nachname,
+                Geburtsdatum = selectedPatient.Geburtsdatum,
+                Email = selectedPatient.Email,
+                Telefonnummer = selectedPatient.Telefonnummer,
+                IsActive = selectedPatient.IsActive
+            };
+
+            var window = new AddPatientWindow(copy);
+            window.Owner = this;
+
+            var result = window.ShowDialog();
+
+            if (result == true && window.CreatedPatient != null)
+            {
+                await _patientService.UpdatePatientAsync(window.CreatedPatient);
+                await LoadPatientsAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Fehler beim Bearbeiten:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
-    private void ToggleActive_Click(object sender, RoutedEventArgs e)
+    private async void DeletePatient_Click(object sender, RoutedEventArgs e)
     {
-        var selectedPatient = GetSelectedPatient();
-
-        if (selectedPatient == null)
+        try
         {
-            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
-            return;
-        }
+            var selectedPatient = GetSelectedPatient();
 
-        MessageBox.Show($"Aktiv/Inaktiv umschalten für: {selectedPatient.Vorname} {selectedPatient.Nachname}");
+            if (selectedPatient == null)
+            {
+                MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Patient {selectedPatient.Vorname} {selectedPatient.Nachname} wirklich löschen?",
+                "Löschen",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            await _patientService.DeletePatientAsync(selectedPatient.Id);
+            await LoadPatientsAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Fehler beim Löschen:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void ToggleActive_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var selectedPatient = GetSelectedPatient();
+
+            if (selectedPatient == null)
+            {
+                MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+                return;
+            }
+
+            selectedPatient.IsActive = !selectedPatient.IsActive;
+            await _patientService.UpdatePatientAsync(selectedPatient);
+            await LoadPatientsAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Fehler beim Umschalten:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void ExportCsv_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("CSV Export noch nicht verbunden.");
+        try
+        {
+            var exportList = _filteredPatients.Any() ? _filteredPatients : _allPatients;
+
+            if (exportList == null || !exportList.Any())
+            {
+                MessageBox.Show("Keine Patienten vorhanden.");
+                return;
+            }
+
+            var saveFileDialog = new SaveFileDialog
+            {
+                Title = "Patienten als CSV speichern",
+                Filter = "CSV-Datei (*.csv)|*.csv",
+                FileName = $"Patienten_{DateTime.Now:yyyyMMdd_HHmmss}.csv"
+            };
+
+            if (saveFileDialog.ShowDialog() != true)
+                return;
+
+            string Escape(string? value)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return "";
+
+                value = value.Replace("\"", "\"\"");
+                return $"\"{value}\"";
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Id;Vorname;Nachname;Geburtsdatum;Email;Telefonnummer;IstAktiv");
+
+            foreach (var patient in exportList)
+            {
+                sb.AppendLine(
+                    $"{patient.Id};" +
+                    $"{Escape(patient.Vorname)};" +
+                    $"{Escape(patient.Nachname)};" +
+                    $"{patient.Geburtsdatum:yyyy-MM-dd};" +
+                    $"{Escape(patient.Email)};" +
+                    $"{Escape(patient.Telefonnummer)};" +
+                    $"{patient.IsActive}");
+            }
+
+            File.WriteAllText(saveFileDialog.FileName, sb.ToString(), Encoding.UTF8);
+
+            MessageBox.Show("CSV wurde erfolgreich exportiert.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Fehler beim CSV-Export:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void PatientsGrid_DoubleClick(object sender, MouseButtonEventArgs e)
     {
-        var selectedPatient = GetSelectedPatient();
-
-        if (selectedPatient != null)
-        {
-            MessageBox.Show($"Doppelklick auf: {selectedPatient.Vorname} {selectedPatient.Nachname}");
-        }
+        EditPatient_Click(sender, e);
     }
 
     private void PatientsGrid_KeyDown(object sender, KeyEventArgs e)
@@ -212,25 +367,44 @@ public partial class MainWindow : Window
 
     private void PatientsGrid_Sorting(object sender, DataGridSortingEventArgs e)
     {
-        // Optional: eigene Sortierung später ergänzen
+        e.Handled = true;
+
+        Func<Patient, object> keySelector = e.Column.SortMemberPath switch
+        {
+            nameof(Patient.Id) => p => p.Id,
+            nameof(Patient.Nachname) => p => p.Nachname ?? "",
+            nameof(Patient.Vorname) => p => p.Vorname ?? "",
+            nameof(Patient.Geburtsdatum) => p => p.Geburtsdatum,
+            nameof(Patient.Alter) => p => p.Alter,
+            nameof(Patient.Email) => p => p.Email ?? "",
+            nameof(Patient.Telefonnummer) => p => p.Telefonnummer ?? "",
+            nameof(Patient.IsActive) => p => p.IsActive,
+            _ => p => p.Id
+        };
+
+        bool ascending = e.Column.SortDirection != System.ComponentModel.ListSortDirection.Ascending;
+
+        _allPatients = ascending
+            ? _allPatients.OrderBy(keySelector).ToList()
+            : _allPatients.OrderByDescending(keySelector).ToList();
+
+        e.Column.SortDirection = ascending
+            ? System.ComponentModel.ListSortDirection.Ascending
+            : System.ComponentModel.ListSortDirection.Descending;
+
+        ApplyFilterAndPaging();
     }
 
     private void Window_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.F5)
-        {
             Refresh_Click(sender, e);
-        }
 
         if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.N)
-        {
             AddPatient_Click(sender, e);
-        }
 
         if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.E)
-        {
             ExportCsv_Click(sender, e);
-        }
     }
 
     private void OpenAddAppointmentWindow_Click(object sender, RoutedEventArgs e)
@@ -259,5 +433,10 @@ public partial class MainWindow : Window
         var window = App.ServiceProvider.GetRequiredService<WaitingRoomWindow>();
         window.Owner = this;
         window.ShowDialog();
+    }
+
+    private void UserManagementButton_Click(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Benutzerverwaltung ist noch nicht implementiert.");
     }
 }

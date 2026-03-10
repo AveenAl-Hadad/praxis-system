@@ -16,19 +16,29 @@ public partial class LoginWindow : Window
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
-        var user = await _authService.LoginAsync(
-            UsernameTextBox.Text,
-            PasswordBox.Password);
-
-        if (user == null)
+        try
         {
-            MessageBox.Show("Benutzername oder Passwort ist ungültig.");
-            return;
-        }
-        MessageBox.Show($"Login erfolgreich: {user.Username} / {user.Role}");
-        UserSession.Login(user);
+            var user = await _authService.LoginAsync(
+                UsernameTextBox.Text,
+                PasswordBox.Password);
 
-        DialogResult = true;
-        Close();
+            if (user == null)
+            {
+                MessageBox.Show("Benutzername oder Passwort ist ungültig.");
+                return;
+            }
+
+            UserSession.Login(user);
+            DialogResult = true;
+            Close();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Login-Fehler:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 }

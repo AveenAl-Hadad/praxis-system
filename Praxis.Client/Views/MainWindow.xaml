@@ -151,7 +151,8 @@
                             Content="Benutzerverwaltung"
                             Width="150"
                             Height="30"
-                            Margin="5"/>
+                            Margin="5"
+                           />
                 </WrapPanel>
 
             </StackPanel>
@@ -161,7 +162,7 @@
                   x:Name="PatientsGrid"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
-                  IsReadOnly="True"
+                  IsReadOnly="False"
                   SelectionMode="Single"
                   SelectionUnit="FullRow"
                   MouseDoubleClick="PatientsGrid_DoubleClick"
@@ -171,6 +172,7 @@
 
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
+                    <Setter Property="Background" Value="White"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsActive}" Value="False">
                             <Setter Property="Background" Value="#FFF8D7DA"/>
@@ -183,13 +185,25 @@
             </DataGrid.RowStyle>
 
             <DataGrid.Columns>
-                <DataGridTextColumn Header="ID" Binding="{Binding Id}" SortMemberPath="Id" Width="70"/>
-                <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" SortMemberPath="Nachname" Width="2*"/>
-                <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" SortMemberPath="Vorname" Width="2*"/>
-                <DataGridTextColumn Header="Geburt" Binding="{Binding Geburtsdatum, StringFormat=d}" SortMemberPath="Geburtsdatum" Width="120"/>
-                <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" SortMemberPath="Alter" Width="80"/>
-                <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" SortMemberPath="Email" Width="2*"/>
-                <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" SortMemberPath="Telefonnummer" Width="160"/>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" SortMemberPath="Id" Width="70" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" SortMemberPath="Nachname" Width="2*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" SortMemberPath="Vorname" Width="2*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Geburt" Binding="{Binding Geburtsdatum, StringFormat=d}" SortMemberPath="Geburtsdatum" Width="120" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" SortMemberPath="Alter" Width="80" IsReadOnly="True"/>
+                <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" SortMemberPath="Email" Width="2*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" SortMemberPath="Telefonnummer" Width="160" IsReadOnly="True"/>
+
+                <DataGridTemplateColumn Header="Aktiv" Width="70" SortMemberPath="IsActive">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox IsChecked="{Binding IsActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Checked="ActiveCheckBox_Changed"
+                                      Unchecked="ActiveCheckBox_Changed"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
                 <DataGridTemplateColumn Header="Status" Width="110" SortMemberPath="IsActive">
                     <DataGridTemplateColumn.CellTemplate>

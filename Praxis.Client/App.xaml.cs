@@ -24,30 +24,7 @@ public partial class App : System.Windows.Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-
-        //this.DispatcherUnhandledException += (s, exArgs) =>
-        //{
-        //    LogError(exArgs.Exception);
-        //    MessageBox.Show(
-        //        "Ein unerwarteter Fehler ist aufgetreten.\nDetails stehen in logs\\app.log",
-        //        "Fehler",
-        //        MessageBoxButton.OK,
-        //        MessageBoxImage.Error);
-        //         exArgs.Handled = true; // verhindert App-Crash
-        //};
-
-        //AppDomain.CurrentDomain.UnhandledException += (s, exArgs) =>
-        //{
-        //    if (exArgs.ExceptionObject is Exception ex)
-        //        LogError(ex);
-        //};
-
-        //TaskScheduler.UnobservedTaskException += (s, exArgs) =>
-        //{
-        //    LogError(exArgs.Exception);
-        //    exArgs.SetObserved();
-        //};
-
+        
         _host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(cfg =>
             {
@@ -78,7 +55,9 @@ public partial class App : System.Windows.Application
                 services.AddTransient<AppointmentWindow>();
                 services.AddTransient<AppointmentCalendarWindow>();
                 services.AddTransient<AddAppointmentWindow>();
-                                           
+                services.AddTransient<AddPatientWindow>();
+                services.AddTransient<PatientDetailWindow>();
+
                 ServiceProvider = services.BuildServiceProvider();
              })
             .Build();
@@ -110,22 +89,36 @@ public partial class App : System.Windows.Application
                 await authService.RegisterUserAsync("admin", "admin123", Roles.Administrator);
             }
         }
-
-        // LOGIN WINDOW STARTEN
-        var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
-        var loginResult = loginWindow.ShowDialog();
-
-        if (loginResult == true)
+        try
         {
-            var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            // LOGIN WINDOW STARTEN
+            var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
+            MainWindow = loginWindow;
+            var loginResult = loginWindow.ShowDialog();
+            if (loginResult == true)
+            {
+                var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+                MainWindow = mainWindow;
+                ShutdownMode = ShutdownMode.OnMainWindowClose;
+                mainWindow.Show();
+            }
+            else
+            {
+                Shutdown();
+            }
         }
-        else
+        catch (Exception ex)
         {
+            LogError(ex);
+            MessageBox.Show(
+                $"Fehler beim Starten der Anwendung:\n{ex.Message}",
+                "Startfehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
             Shutdown();
         }
     }
-  
     protected override async void OnExit(ExitEventArgs e)
     {
         if (_host != null)

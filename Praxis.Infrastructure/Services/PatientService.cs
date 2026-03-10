@@ -59,11 +59,12 @@ public class PatientService : IPatientService
 
             if (existing == null) return;
 
-            existing.Vorname = patient.Vorname;
-            existing.Nachname = patient.Nachname;
-            existing.Geburtsdatum = patient.Geburtsdatum;
-            existing.Email = patient.Email;
-            existing.Telefonnummer = patient.Telefonnummer;
+        existing.Vorname = patient.Vorname;
+        existing.Nachname = patient.Nachname;
+        existing.Geburtsdatum = patient.Geburtsdatum;
+        existing.Email = patient.Email;
+        existing.Telefonnummer = patient.Telefonnummer;
+        existing.IsActive = patient.IsActive;
         try
         {
             await ExecuteWithRetryAsync(() => _context.SaveChangesAsync());
