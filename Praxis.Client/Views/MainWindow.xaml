@@ -196,11 +196,11 @@
                 <DataGridTemplateColumn Header="Aktiv" Width="70" SortMemberPath="IsActive">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <CheckBox IsChecked="{Binding IsActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <CheckBox IsChecked="{Binding IsActive}"
                                       HorizontalAlignment="Center"
                                       VerticalAlignment="Center"
-                                      Checked="ActiveCheckBox_Changed"
-                                      Unchecked="ActiveCheckBox_Changed"/>
+                                      IsHitTestVisible="False"
+                                      Focusable="False"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

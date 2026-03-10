@@ -38,27 +38,31 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (!UserSession.HasRole(Roles.Administrator))
-        {
-            UserManagementButton.IsEnabled = false;
-        }
+        UserManagementButton.IsEnabled = UserSession.HasRole(Roles.Administrator);
 
         await LoadPatientsAsync();
     }
 
-    private async System.Threading.Tasks.Task LoadPatientsAsync()
+    private async Task LoadPatientsAsync()
     {
         try
         {
             var patients = await _patientService.GetAllPatientsAsync();
             _allPatients = patients.ToList();
+
+            _currentPage = 1;
             ApplyFilterAndPaging();
+
             StatusText.Text = $"Patienten geladen: {_allPatients.Count}";
         }
         catch (Exception ex)
         {
             StatusText.Text = "Fehler beim Laden der Patienten.";
-            MessageBox.Show(ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                $"Fehler beim Laden der Patienten:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -103,6 +107,7 @@ public partial class MainWindow : Window
 
         PatientsGrid.ItemsSource = null;
         PatientsGrid.ItemsSource = pageItems;
+        PatientsGrid.Items.Refresh();
 
         PageInfoText.Text = $"Seite {_currentPage} / {totalPages}";
     }
@@ -113,42 +118,40 @@ public partial class MainWindow : Window
         ApplyFilterAndPaging();
     }
 
-
     private void OnlyActiveCheck_Changed(object sender, RoutedEventArgs e)
     {
         _currentPage = 1;
         ApplyFilterAndPaging();
     }
-    private async void ActiveCheckBox_Changed(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            if (sender is not CheckBox checkBox)
-                return;
 
-            if (checkBox.DataContext is not Patient patient)
-                return;
+    //private async void ActiveCheckBox_Changed(object sender, RoutedEventArgs e)
+    //{
+    //    try
+    //    {
+    //        if (sender is not CheckBox checkBox)
+    //            return;
 
-            var realPatient = _allPatients.FirstOrDefault(p => p.Id == patient.Id);
+    //        if (checkBox.DataContext is not Patient patient)
+    //            return;
 
-            if (realPatient == null)
-                return;
+    //        var realPatient = _allPatients.FirstOrDefault(p => p.Id == patient.Id);
+    //        if (realPatient == null)
+    //            return;
 
-            realPatient.IsActive = checkBox.IsChecked == true;
+    //        realPatient.IsActive = checkBox.IsChecked == true;
 
-            await _patientService.UpdatePatientAsync(realPatient);
-
-            await LoadPatientsAsync();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(
-                $"Fehler beim Ändern des Status:\n{ex.Message}",
-                "Fehler",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
-    }
+    //        await _patientService.UpdatePatientAsync(realPatient);
+    //        await LoadPatientsAsync();
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        MessageBox.Show(
+    //            $"Fehler beim Ändern des Status:\n{ex.Message}",
+    //            "Fehler",
+    //            MessageBoxButton.OK,
+    //            MessageBoxImage.Error);
+    //    }
+    //}
 
     private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
@@ -177,24 +180,19 @@ public partial class MainWindow : Window
 
     private Patient? GetSelectedPatient()
     {
-        if (PatientsGrid.SelectedItem is Patient patient)
-            return _allPatients.FirstOrDefault(p => p.Id == patient.Id);
-
-        return null;
+        return PatientsGrid.SelectedItem as Patient;
     }
 
     private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("AddPatient_Click wurde ausgelöst.");
-
         try
         {
-            var window = new AddPatientWindow();
-            window.Owner = this;
+            var window = new AddPatientWindow
+            {
+                Owner = this
+            };
 
-            var result = window.ShowDialog();
-
-            if (result == true && window.CreatedPatient != null)
+            if (window.ShowDialog() == true && window.CreatedPatient != null)
             {
                 await _patientService.AddPatientAsync(window.CreatedPatient);
                 await LoadPatientsAsync();
@@ -202,7 +200,11 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler beim Anlegen:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                $"Fehler beim Anlegen:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -229,12 +231,12 @@ public partial class MainWindow : Window
                 IsActive = selectedPatient.IsActive
             };
 
-            var window = new AddPatientWindow(copy);
-            window.Owner = this;
+            var window = new AddPatientWindow(copy)
+            {
+                Owner = this
+            };
 
-            var result = window.ShowDialog();
-
-            if (result == true && window.CreatedPatient != null)
+            if (window.ShowDialog() == true && window.CreatedPatient != null)
             {
                 await _patientService.UpdatePatientAsync(window.CreatedPatient);
                 await LoadPatientsAsync();
@@ -242,7 +244,11 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler beim Bearbeiten:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                $"Fehler beim Bearbeiten:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -272,7 +278,11 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler beim Löschen:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                $"Fehler beim Löschen:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -294,7 +304,11 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler beim Umschalten:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                $"Fehler beim Umschalten:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -304,7 +318,7 @@ public partial class MainWindow : Window
         {
             var exportList = _filteredPatients.Any() ? _filteredPatients : _allPatients;
 
-            if (exportList == null || !exportList.Any())
+            if (!exportList.Any())
             {
                 MessageBox.Show("Keine Patienten vorhanden.");
                 return;
@@ -320,7 +334,7 @@ public partial class MainWindow : Window
             if (saveFileDialog.ShowDialog() != true)
                 return;
 
-            string Escape(string? value)
+            static string Escape(string? value)
             {
                 if (string.IsNullOrWhiteSpace(value))
                     return "";
@@ -350,7 +364,11 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler beim CSV-Export:\n{ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                $"Fehler beim CSV-Export:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -362,9 +380,7 @@ public partial class MainWindow : Window
     private void PatientsGrid_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Delete)
-        {
             DeletePatient_Click(sender, e);
-        }
     }
 
     private void PatientsGrid_Sorting(object sender, DataGridSortingEventArgs e)
@@ -439,6 +455,10 @@ public partial class MainWindow : Window
 
     private void UserManagementButton_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Benutzerverwaltung ist noch nicht implementiert.");
+        MessageBox.Show(
+            "Benutzerverwaltung ist noch nicht implementiert.",
+            "Info",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
 }

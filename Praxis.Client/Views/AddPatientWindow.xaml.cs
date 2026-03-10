@@ -50,7 +50,10 @@ public partial class AddPatientWindow : Window
         var phone = (PhoneBox.Text ?? "").Trim();
 
         if (CreatedPatient == null)
-        CreatedPatient = new Patient();
+        {
+            CreatedPatient = new Patient();
+        }
+     
 
         CreatedPatient.Vorname = firstName;
         CreatedPatient.Nachname = lastName;
