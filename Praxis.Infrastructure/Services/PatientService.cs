@@ -3,7 +3,6 @@ using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Persistence;
 using Praxis.Infrastructure.Exceptions;
 using Microsoft.Data.Sqlite;
-using Praxis.Infrastructure.Services.Interface;
 
 namespace Praxis.Infrastructure.Services;
 

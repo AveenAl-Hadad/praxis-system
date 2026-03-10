@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
 using System.Windows;
+using Praxis.Client.Views;
 using Praxis.Client.Logic.UI;
 using Praxis.Domain.Entities;
-using Praxis.Infrastructure.Services.Interface;
+using Praxis.Infrastructure.Services;
 
 namespace Praxis.Client.Logic;
 

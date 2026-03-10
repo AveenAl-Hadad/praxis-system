@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Praxis.Client.Views;
+
 
 namespace Praxis.Client.Logic.UI
 {

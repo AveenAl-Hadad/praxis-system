@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Windows;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,45 +23,37 @@ public partial class App : System.Windows.Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        
+
         _host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(cfg =>
             {
-                cfg.SetBasePath(Directory.GetCurrentDirectory());
+                cfg.SetBasePath(AppContext.BaseDirectory);
                 cfg.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             })
             .ConfigureServices((ctx, services) =>
             {
                 var dbFile = ctx.Configuration["Database:FileName"] ?? "praxis.db";
-                var dbPath = Path.Combine(Directory.GetCurrentDirectory(), dbFile);
-
-                // optional: anzeigen, wo die DB liegt
-                // MessageBox.Show($"DB Pfad:\n{dbPath}");
+                var dbPath = Path.Combine(AppContext.BaseDirectory, dbFile);
 
                 services.AddInfrastructure(dbPath);
 
-                // Services
                 services.AddScoped<IPatientService, PatientService>();
                 services.AddScoped<IAppointmentService, AppointmentService>();
                 services.AddScoped<IPasswordService, PasswordService>();
                 services.AddScoped<IAuthService, AuthService>();
 
-                // MainWindow über DI
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
                 services.AddTransient<WaitingRoomWindow>();
                 services.AddTransient<AddAppointmentWindow>();
                 services.AddTransient<AppointmentWindow>();
                 services.AddTransient<AppointmentCalendarWindow>();
-                services.AddTransient<AddAppointmentWindow>();
                 services.AddTransient<AddPatientWindow>();
-                services.AddTransient<PatientDetailWindow>();
 
                 ServiceProvider = services.BuildServiceProvider();
-             })
+            })
             .Build();
 
-        // Datenbank vorbereiten
         using (var scope = _host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<PraxisDbContext>();
@@ -70,7 +61,6 @@ public partial class App : System.Windows.Application
 
             await db.Database.EnsureCreatedAsync();
 
-            // TESTDATEN (nur wenn Tabelle leer ist)
             if (!db.Patients.Any())
             {
                 db.Patients.Add(new Patient
@@ -78,24 +68,26 @@ public partial class App : System.Windows.Application
                     Vorname = "Max",
                     Nachname = "Mustermann",
                     Geburtsdatum = new DateTime(1980, 1, 1),
-                    Email = "max@test.de"
+                    Email = "max@test.de",
+                    IsActive = true
                 });
 
                 await db.SaveChangesAsync();
             }
-            // Standard Admin erstellen
+
             if (!db.Users.Any())
             {
                 await authService.RegisterUserAsync("admin", "admin123", Roles.Administrator);
             }
         }
+
         try
         {
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            // LOGIN WINDOW STARTEN
+
             var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
-            MainWindow = loginWindow;
             var loginResult = loginWindow.ShowDialog();
+
             if (loginResult == true)
             {
                 var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
@@ -110,7 +102,6 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex)
         {
-            LogError(ex);
             MessageBox.Show(
                 $"Fehler beim Starten der Anwendung:\n{ex.Message}",
                 "Startfehler",
@@ -119,6 +110,7 @@ public partial class App : System.Windows.Application
             Shutdown();
         }
     }
+
     protected override async void OnExit(ExitEventArgs e)
     {
         if (_host != null)
@@ -128,22 +120,5 @@ public partial class App : System.Windows.Application
         }
 
         base.OnExit(e);
-    }
-
-    private static void LogError(Exception ex)
-    {
-        try
-        {
-            var logDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
-            Directory.CreateDirectory(logDir);
-
-            var logPath = Path.Combine(logDir, "app.log");
-            File.AppendAllText(logPath,
-                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex}\n\n");
-        }
-        catch
-        {
-            // Logging darf nie crashen
-        }
     }
 }

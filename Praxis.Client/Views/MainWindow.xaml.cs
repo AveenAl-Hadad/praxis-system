@@ -10,7 +10,7 @@ using Microsoft.Win32;
 using Praxis.Client.Session;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
-using Praxis.Infrastructure.Services.Interface;
+using Praxis.Infrastructure.Services;
 
 namespace Praxis.Client.Views;
 
@@ -185,6 +185,8 @@ public partial class MainWindow : Window
 
     private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
+        MessageBox.Show("AddPatient_Click wurde ausgelöst.");
+
         try
         {
             var window = new AddPatientWindow();

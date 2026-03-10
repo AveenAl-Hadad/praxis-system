@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Praxis.Domain.Entities;
 
-namespace Praxis.Client;
+namespace Praxis.Client.Views;
 
 public partial class PatientDetailWindow : Window
 {

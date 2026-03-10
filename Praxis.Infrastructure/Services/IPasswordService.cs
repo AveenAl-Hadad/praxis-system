@@ -1,4 +1,4 @@
-﻿namespace Praxis.Infrastructure.Services.Interface;
+﻿namespace Praxis.Infrastructure.Services;
 
 public interface IPasswordService
 {

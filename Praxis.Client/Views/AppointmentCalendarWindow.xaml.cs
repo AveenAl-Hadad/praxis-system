@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Praxis.Domain.Entities;
+using Praxis.Infrastructure.Services;
 using Praxis.Infrastructure.Services.Interface;
 
 namespace Praxis.Client.Views;
@@ -44,7 +45,7 @@ public partial class AppointmentCalendarWindow : Window
         if (WeekDatePicker.SelectedDate == null)
             return;
 
-        int? patientId = PatientFilterComboBox.SelectedValue as int?;
+        int? patientId = PatientFilterComboBox.SelectedValue is int id ? id : null;
         var appointments = await _appointmentService
             .GetAppointmentsByWeekAndPatientAsync(WeekDatePicker.SelectedDate.Value, patientId);
 

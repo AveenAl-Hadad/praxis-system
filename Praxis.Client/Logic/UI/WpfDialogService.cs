@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using Praxis.Domain.Entities;
+using Praxis.Client.Views;
 
 namespace Praxis.Client.Logic.UI;
 

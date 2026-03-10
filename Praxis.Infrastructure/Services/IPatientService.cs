@@ -1,6 +1,6 @@
 ﻿using Praxis.Domain.Entities;
 
-namespace Praxis.Infrastructure.Services.Interface;
+namespace Praxis.Infrastructure.Services;
 
 public interface IPatientService
 {

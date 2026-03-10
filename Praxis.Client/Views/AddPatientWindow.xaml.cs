@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using Praxis.Domain.Entities;
 
-namespace Praxis.Client;
+namespace Praxis.Client.Views;
 
 public partial class AddPatientWindow : Window
 {
@@ -50,14 +50,15 @@ public partial class AddPatientWindow : Window
         var phone = (PhoneBox.Text ?? "").Trim();
 
         if (CreatedPatient == null)
-            CreatedPatient = new Patient();
+        CreatedPatient = new Patient();
 
         CreatedPatient.Vorname = firstName;
         CreatedPatient.Nachname = lastName;
         CreatedPatient.Geburtsdatum = DobPicker.SelectedDate ?? DateTime.Today;
-        CreatedPatient.Email = string.IsNullOrWhiteSpace(email) ? null : email;
-        CreatedPatient.Telefonnummer = string.IsNullOrWhiteSpace(phone) ? null : phone;
+        CreatedPatient.Email = string.IsNullOrWhiteSpace(email) ? string.Empty : email;
+        CreatedPatient.Telefonnummer = string.IsNullOrWhiteSpace(phone) ? string.Empty : phone;
         CreatedPatient.IsActive = IsActiveCheck.IsChecked == true;
+
 
         DialogResult = true;
         Close();
