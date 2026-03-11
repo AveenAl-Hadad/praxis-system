@@ -22,4 +22,5 @@ public static class UserSession
     {
         return CurrentUser?.Role == role;
     }
+   
 }

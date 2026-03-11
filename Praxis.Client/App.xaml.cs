@@ -41,6 +41,8 @@ public partial class App : System.Windows.Application
                 services.AddScoped<IAppointmentService, AppointmentService>();
                 services.AddScoped<IPasswordService, PasswordService>();
                 services.AddScoped<IAuthService, AuthService>();
+                services.AddScoped<IUserManagementService, UserManagementService>();
+
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
@@ -49,7 +51,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<AppointmentWindow>();
                 services.AddTransient<AppointmentCalendarWindow>();
                 services.AddTransient<AddPatientWindow>();
-
+                services.AddTransient<UserManagementWindow>();
                 ServiceProvider = services.BuildServiceProvider();
             })
             .Build();

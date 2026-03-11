@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using Praxis.Client.Session;
@@ -21,7 +22,7 @@ public partial class MainWindow : Window
     private List<Patient> _filteredPatients = new();
 
     private int _currentPage = 1;
-    private const int PageSize = 10;
+    private const int PageSize = 20;
 
     public MainWindow(IPatientService patientService)
     {
@@ -38,10 +39,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        LoggedInUserText.Text = $"Angemeldet: {UserSession.CurrentUser?.Username} ({UserSession.CurrentUser?.Role})";
         UserManagementButton.IsEnabled = UserSession.HasRole(Roles.Administrator);
-
         await LoadPatientsAsync();
-    }
+
+     }
+
 
     private async Task LoadPatientsAsync()
     {
@@ -49,10 +52,8 @@ public partial class MainWindow : Window
         {
             var patients = await _patientService.GetAllPatientsAsync();
             _allPatients = patients.ToList();
-
             _currentPage = 1;
             ApplyFilterAndPaging();
-
             StatusText.Text = $"Patienten geladen: {_allPatients.Count}";
         }
         catch (Exception ex)
@@ -123,36 +124,7 @@ public partial class MainWindow : Window
         _currentPage = 1;
         ApplyFilterAndPaging();
     }
-
-    //private async void ActiveCheckBox_Changed(object sender, RoutedEventArgs e)
-    //{
-    //    try
-    //    {
-    //        if (sender is not CheckBox checkBox)
-    //            return;
-
-    //        if (checkBox.DataContext is not Patient patient)
-    //            return;
-
-    //        var realPatient = _allPatients.FirstOrDefault(p => p.Id == patient.Id);
-    //        if (realPatient == null)
-    //            return;
-
-    //        realPatient.IsActive = checkBox.IsChecked == true;
-
-    //        await _patientService.UpdatePatientAsync(realPatient);
-    //        await LoadPatientsAsync();
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        MessageBox.Show(
-    //            $"Fehler beim Ändern des Status:\n{ex.Message}",
-    //            "Fehler",
-    //            MessageBoxButton.OK,
-    //            MessageBoxImage.Error);
-    //    }
-    //}
-
+   
     private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
         await LoadPatientsAsync();
@@ -182,7 +154,7 @@ public partial class MainWindow : Window
     {
         return PatientsGrid.SelectedItem as Patient;
     }
-
+    //CRUD
     private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -311,7 +283,7 @@ public partial class MainWindow : Window
                 MessageBoxImage.Error);
         }
     }
-
+    //EXPORT
     private void ExportCsv_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -455,10 +427,45 @@ public partial class MainWindow : Window
 
     private void UserManagementButton_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show(
-            "Benutzerverwaltung ist noch nicht implementiert.",
-            "Info",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        try
+        {
+            if (!UserSession.HasRole(Roles.Administrator))
+            {
+                MessageBox.Show("Nur Administratoren dürfen die Benutzerverwaltung öffnen.");
+                return;
+            }
+
+            var window = App.ServiceProvider.GetRequiredService<UserManagementWindow>();
+            window.Owner = this;
+            window.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Fehler beim Öffnen der Benutzerverwaltung:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+    //Logout-Methode
+    private void Logout_Click(object sender, RoutedEventArgs e)
+    {
+        var result = MessageBox.Show(
+            "Möchten Sie sich wirklich abmelden?",
+            "Abmelden",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        UserSession.Logout();
+
+        var loginWindow = App.ServiceProvider.GetRequiredService<LoginWindow>();
+        Application.Current.MainWindow = loginWindow;
+
+        loginWindow.Show();
+        Close();
     }
 }
