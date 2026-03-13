@@ -36,7 +36,7 @@ public class UserManagementService : IUserManagementService
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("Passwort darf nicht leer sein.");
 
-        if (role != Roles.Administrator && role != Roles.Mitarbeiter)
+        if (role != Roles.Administrator && role != Roles.Mitarbeiter && role != Roles.Arzt)
             throw new ArgumentException("Ungültige Rolle.");
 
         var exists = await _context.Users.AnyAsync(u => u.Username.ToLower() == username.ToLower());
@@ -84,6 +84,7 @@ public class UserManagementService : IUserManagementService
 
         user.PasswordHash = _passwordService.HashPassword(newPassword);
         await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
     }
 
     public async Task DeleteUserAsync(int userId)

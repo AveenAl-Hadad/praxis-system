@@ -37,12 +37,11 @@ public partial class App : System.Windows.Application
 
                 services.AddInfrastructure(dbPath);
 
-                services.AddScoped<IPatientService, PatientService>();
-                services.AddScoped<IAppointmentService, AppointmentService>();
-                services.AddScoped<IPasswordService, PasswordService>();
-                services.AddScoped<IAuthService, AuthService>();
-                services.AddScoped<IUserManagementService, UserManagementService>();
-
+                services.AddTransient<IPatientService, PatientService>();
+                services.AddTransient<IAppointmentService, AppointmentService>();
+                services.AddTransient<IPasswordService, PasswordService>();
+                services.AddTransient<IAuthService, AuthService>();
+                services.AddTransient<IUserManagementService, UserManagementService>();
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
@@ -52,14 +51,17 @@ public partial class App : System.Windows.Application
                 services.AddTransient<AppointmentCalendarWindow>();
                 services.AddTransient<AddPatientWindow>();
                 services.AddTransient<UserManagementWindow>();
-                ServiceProvider = services.BuildServiceProvider();
+                
+                services.AddTransient<ChangePasswordWindow>();
             })
             .Build();
 
-        using (var scope = _host.Services.CreateScope())
+        ServiceProvider = _host.Services;
+
+        using (var initScope = _host.Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<PraxisDbContext>();
-            var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+            var db = initScope.ServiceProvider.GetRequiredService<PraxisDbContext>();
+            var authService = initScope.ServiceProvider.GetRequiredService<IAuthService>();
 
             await db.Database.EnsureCreatedAsync();
 
@@ -71,6 +73,7 @@ public partial class App : System.Windows.Application
                     Nachname = "Mustermann",
                     Geburtsdatum = new DateTime(1980, 1, 1),
                     Email = "max@test.de",
+                    Telefonnummer = "0000000000",
                     IsActive = true
                 });
 

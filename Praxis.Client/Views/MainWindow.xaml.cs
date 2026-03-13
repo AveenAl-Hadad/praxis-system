@@ -20,14 +20,16 @@ public partial class MainWindow : Window
     private readonly IPatientService _patientService;
     private List<Patient> _allPatients = new();
     private List<Patient> _filteredPatients = new();
+    private readonly IAuthService _authService;
 
     private int _currentPage = 1;
     private const int PageSize = 20;
 
-    public MainWindow(IPatientService patientService)
+    public MainWindow(IPatientService patientService, IAuthService authService)
     {
         InitializeComponent();
         _patientService = patientService;
+        _authService = authService;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -40,7 +42,7 @@ public partial class MainWindow : Window
         }
 
         LoggedInUserText.Text = $"Angemeldet: {UserSession.CurrentUser?.Username} ({UserSession.CurrentUser?.Role})";
-        UserManagementButton.IsEnabled = UserSession.HasRole(Roles.Administrator);
+        UserManagementButton.IsEnabled = UserSession.HasRole(Roles.Administrator) || UserSession.HasRole(Roles.Arzt);
         await LoadPatientsAsync();
 
      }
@@ -462,10 +464,67 @@ public partial class MainWindow : Window
 
         UserSession.Logout();
 
-        var loginWindow = App.ServiceProvider.GetRequiredService<LoginWindow>();
-        Application.Current.MainWindow = loginWindow;
+        Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        loginWindow.Show();
-        Close();
+        Hide();
+
+        var loginWindow = App.ServiceProvider.GetRequiredService<LoginWindow>();
+        var loginResult = loginWindow.ShowDialog();
+
+        if (loginResult == true)
+        {
+            var newMainWindow = App.ServiceProvider.GetRequiredService<MainWindow>();
+            Application.Current.MainWindow = newMainWindow;
+            Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+            newMainWindow.Show();
+            Close();
+        }
+        else
+        {
+            Application.Current.Shutdown();
+        }
+    }
+    /// <summary>
+    /// Passwort änderen
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private async void ChangePassword_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (UserSession.CurrentUser == null)
+            {
+                MessageBox.Show("Kein Benutzer ist angemeldet.");
+                return;
+            }
+
+            var window = new ChangePasswordWindow
+            {
+                Owner = this
+            };
+
+            if (window.ShowDialog() != true ||
+                string.IsNullOrWhiteSpace(window.OldPassword) ||
+                string.IsNullOrWhiteSpace(window.NewPassword))
+            {
+                return;
+            }
+
+            await _authService.ChangePasswordAsync(
+                UserSession.CurrentUser.Id,
+                window.OldPassword,
+                window.NewPassword);
+
+            MessageBox.Show("Passwort wurde erfolgreich geändert.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Fehler beim Ändern des Passworts:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 }

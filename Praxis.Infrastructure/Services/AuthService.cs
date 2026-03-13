@@ -46,18 +46,36 @@ public class AuthService : IAuthService
 
     public async Task<User?> LoginAsync(string username, string password)
     {
+        username = (username ?? "").Trim();
+        password = (password ?? "").Trim();
+
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             return null;
 
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        var user = await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Username == username);
 
         if (user == null)
             return null;
 
-        var validPassword = _passwordService.VerifyPassword(password, user.PasswordHash);
-        if (!validPassword)
-            return null;
+        return _passwordService.VerifyPassword(password, user.PasswordHash)
+            ? user
+            : null;
+    }
 
-        return user;
+    public async Task ChangePasswordAsync(int userId, string oldPassword, string newPassword)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+            throw new InvalidOperationException("Benutzer wurde nicht gefunden.");
+
+        var passwordMatches = _passwordService.VerifyPassword(oldPassword, user.PasswordHash);
+        if (!passwordMatches)
+            throw new InvalidOperationException("Das alte Passwort ist falsch.");
+
+        user.PasswordHash = _passwordService.HashPassword(newPassword);
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
     }
 }

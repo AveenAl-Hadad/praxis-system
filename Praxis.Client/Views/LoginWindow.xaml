@@ -10,7 +10,7 @@
 
         <StackPanel>
 
-            <TextBlock Text="Login"
+            <TextBlock Text="Anmelden"
                        FontSize="22"
                        FontWeight="Bold"
                        Margin="0,0,0,20"
@@ -21,14 +21,34 @@
                      Height="30"
                      Margin="0,5,0,10"/>
 
-            <TextBlock Text="Passwort"/>
-            <PasswordBox x:Name="PasswordBox"
-                         Height="30"
-                         Margin="0,5,0,20"/>
+            <StackPanel Margin="0,0,0,12">
+                <TextBlock Text="Passwort" Margin="0,0,0,5"/>
 
+                <Grid>
+                    <PasswordBox x:Name="PasswordBox"
+                                 Height="30"
+                                 PasswordChanged="PasswordBox_PasswordChanged"/>
+
+                    <TextBox x:Name="VisiblePasswordTextBox"
+                             Height="30"
+                             Visibility="Collapsed"
+                             TextChanged="VisiblePasswordTextBox_TextChanged"/>
+                </Grid>
+
+                <CheckBox x:Name="ShowPasswordCheckBox"
+                          Content="Passwort anzeigen"
+                          Margin="0,8,0,0"
+                          Checked="ShowPasswordCheckBox_Checked"
+                          Unchecked="ShowPasswordCheckBox_Checked"/>
+            </StackPanel>
+            
             <Button Content="Login"
                     Height="35"
                     Click="LoginButton_Click"/>
+            <Button Content="Passwort vergessen?"
+                    HorizontalAlignment="Left"
+                    Margin="0,8,0,0"
+                    Click="ForgotPassword_Click"/>
 
         </StackPanel>
 

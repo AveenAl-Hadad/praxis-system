@@ -15,8 +15,8 @@ public partial class UserManagementWindow : Window
         InitializeComponent();
         _userManagementService = userManagementService;
 
-        RoleComboBox.ItemsSource = new[] { Roles.Administrator, Roles.Mitarbeiter };
-        EditRoleComboBox.ItemsSource = new[] { Roles.Administrator, Roles.Mitarbeiter };
+        RoleComboBox.ItemsSource = new[] { Roles.Administrator, Roles.Mitarbeiter,Roles.Arzt };
+        EditRoleComboBox.ItemsSource = new[] { Roles.Administrator, Roles.Mitarbeiter,Roles.Arzt };
 
         RoleComboBox.SelectedIndex = 1;
         EditRoleComboBox.SelectedIndex = 1;
