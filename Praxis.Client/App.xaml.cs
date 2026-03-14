@@ -42,6 +42,8 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IPasswordService, PasswordService>();
                 services.AddTransient<IAuthService, AuthService>();
                 services.AddTransient<IUserManagementService, UserManagementService>();
+                services.AddTransient<IInvoiceService, InvoiceService>();
+                services.AddTransient<IInvoicePdfService, InvoicePdfService>();
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
@@ -51,7 +53,9 @@ public partial class App : System.Windows.Application
                 services.AddTransient<AppointmentCalendarWindow>();
                 services.AddTransient<AddPatientWindow>();
                 services.AddTransient<UserManagementWindow>();
-                
+                services.AddTransient<InvoiceWindow>();
+                services.AddTransient<AddInvoiceWindow>();
+
                 services.AddTransient<ChangePasswordWindow>();
             })
             .Build();

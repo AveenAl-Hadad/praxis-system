@@ -21,15 +21,17 @@ public partial class MainWindow : Window
     private List<Patient> _allPatients = new();
     private List<Patient> _filteredPatients = new();
     private readonly IAuthService _authService;
+    private readonly IServiceProvider _serviceProvider;
 
     private int _currentPage = 1;
     private const int PageSize = 20;
 
-    public MainWindow(IPatientService patientService, IAuthService authService)
+    public MainWindow(IPatientService patientService, IAuthService authService, IServiceProvider serviceProvider)
     {
         InitializeComponent();
         _patientService = patientService;
         _authService = authService;
+        _serviceProvider = serviceProvider;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -526,5 +528,11 @@ public partial class MainWindow : Window
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
+    }
+    private void OpenInvoices_Click(object sender, RoutedEventArgs e)
+    {
+        var window = (InvoiceWindow)_serviceProvider.GetRequiredService(typeof(InvoiceWindow));
+        window.Owner = this;
+        window.ShowDialog();
     }
 }

@@ -10,6 +10,8 @@ public class PraxisDbContext : DbContext
     public DbSet<Patient> Patients => Set<Patient>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,5 +30,25 @@ public class PraxisDbContext : DbContext
             .WithMany(p => p.Appointments)
             .HasForeignKey(a => a.PatientId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Invoice>()
+            .HasOne(i => i.Patient)
+            .WithMany(p => p.Invoices)
+            .HasForeignKey(i => i.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<InvoiceItem>()
+            .HasOne(ii => ii.Invoice)
+            .WithMany(i => i.Items)
+            .HasForeignKey(ii => ii.InvoiceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Invoice>()
+            .Property(i => i.TotalAmount)
+            .HasColumnType("TEXT");
+
+        modelBuilder.Entity<InvoiceItem>()
+            .Property(i => i.UnitPrice)
+            .HasColumnType("TEXT");
     }
 }

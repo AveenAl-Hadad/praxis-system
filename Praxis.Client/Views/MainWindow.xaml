@@ -153,6 +153,7 @@
                 </WrapPanel>
             </GroupBox>
         </WrapPanel>
+        
 
         <!-- Aktionsbereich Zeile 2 -->
         <WrapPanel Grid.Row="3" Margin="0,0,0,10" VerticalAlignment="Top">
@@ -173,6 +174,11 @@
                     Height="32"
                     Margin="0,0,10,0"
                     Click="OpenWaitingRoom_Click"/>
+            <Button Content="Rechnungen"
+                     Width="120"
+                     Height="32"
+                     Margin="0,0,10,0"
+                     Click="OpenInvoices_Click"/>
 
             <Button x:Name="UserManagementButton"
                     Content="Benutzerverwaltung"
