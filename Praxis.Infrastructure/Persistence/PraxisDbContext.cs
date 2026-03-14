@@ -12,6 +12,7 @@ public class PraxisDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+    public DbSet<Prescription> Prescriptions => Set<Prescription>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,5 +51,11 @@ public class PraxisDbContext : DbContext
         modelBuilder.Entity<InvoiceItem>()
             .Property(i => i.UnitPrice)
             .HasColumnType("TEXT");
+
+        modelBuilder.Entity<Prescription>()
+            .HasOne(p => p.Patient)
+            .WithMany(x => x.Prescriptions)
+            .HasForeignKey(p => p.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -22,6 +23,11 @@ public partial class App : System.Windows.Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        var culture = new CultureInfo("de-DE");
+
+        Thread.CurrentThread.CurrentCulture = culture;
+        Thread.CurrentThread.CurrentUICulture = culture;
+
         base.OnStartup(e);
 
         _host = Host.CreateDefaultBuilder()
@@ -44,6 +50,8 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IUserManagementService, UserManagementService>();
                 services.AddTransient<IInvoiceService, InvoiceService>();
                 services.AddTransient<IInvoicePdfService, InvoicePdfService>();
+                services.AddTransient<IPrescriptionService, PrescriptionService>();
+                services.AddTransient<IPrescriptionPdfService, PrescriptionPdfService>();
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
@@ -55,8 +63,9 @@ public partial class App : System.Windows.Application
                 services.AddTransient<UserManagementWindow>();
                 services.AddTransient<InvoiceWindow>();
                 services.AddTransient<AddInvoiceWindow>();
-
                 services.AddTransient<ChangePasswordWindow>();
+                services.AddTransient<PrescriptionWindow>();
+                services.AddTransient<AddPrescriptionWindow>();
             })
             .Build();
 

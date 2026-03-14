@@ -1,0 +1,54 @@
+﻿<Window x:Class="Praxis.Client.Views.PrescriptionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Rezepte"
+        Height="600"
+        Width="950"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Rezeptübersicht"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   Margin="0,0,0,12"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <TextBlock Text="Patient:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox x:Name="PatientFilterBox"
+                     Width="180"
+                     Margin="0,0,12,0"
+                     TextChanged="Filter_Changed"/>
+
+            <Button Content="Neues Rezept"
+                    Width="130"
+                    Margin="12,0,0,0"
+                    Click="NewPrescription_Click"/>
+
+            <Button Content="PDF exportieren"
+                    Width="140"
+                    Margin="8,0,0,0"
+                    Click="ExportPdf_Click"/>
+        </StackPanel>
+
+        <DataGrid x:Name="PrescriptionsGrid"
+                  Grid.Row="2"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nr." Binding="{Binding PrescriptionNumber}" Width="180"/>
+                <DataGridTextColumn Header="Datum" Binding="{Binding IssueDate, StringFormat=dd.MM.yyyy}" Width="120"/>
+                <DataGridTextColumn Header="Patient" Binding="{Binding Patient.FullName}" Width="*"/>
+                <DataGridTextColumn Header="Medikament" Binding="{Binding MedicationName}" Width="180"/>
+                <DataGridTextColumn Header="Dosierung" Binding="{Binding Dosage}" Width="140"/>
+                <DataGridTextColumn Header="Arzt" Binding="{Binding DoctorName}" Width="140"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>

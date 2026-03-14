@@ -535,4 +535,10 @@ public partial class MainWindow : Window
         window.Owner = this;
         window.ShowDialog();
     }
+    private void OpenPrescriptions_Click(object sender, RoutedEventArgs e)
+    {
+        var window = _serviceProvider.GetRequiredService<PrescriptionWindow>();
+        window.Owner = this;
+        window.ShowDialog();
+    }
 }
