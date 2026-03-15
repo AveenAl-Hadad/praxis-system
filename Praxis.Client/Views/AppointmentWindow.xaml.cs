@@ -96,6 +96,7 @@ public partial class AppointmentWindow : Window
             MessageBox.Show("Termin wurde gelöscht.");
 
             await LoadAppointmentsAsync();
+            await ((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
         }
         catch (Exception ex)
         {

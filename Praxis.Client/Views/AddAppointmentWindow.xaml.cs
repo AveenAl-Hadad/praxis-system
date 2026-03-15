@@ -103,6 +103,7 @@ public partial class AddAppointmentWindow : Window
 
                 await _appointmentService.AddAppointmentAsync(newAppointment);
                 MessageBox.Show("Termin wurde gespeichert.");
+                await ((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
             }
             else
             {

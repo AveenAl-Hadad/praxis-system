@@ -53,7 +53,8 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IPrescriptionService, PrescriptionService>();
                 services.AddTransient<IPrescriptionPdfService, PrescriptionPdfService>();
                 services.AddTransient<IDocumentService, DocumentService>();
-                
+                services.AddTransient<IDashboardService, DashboardService>();
+
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();

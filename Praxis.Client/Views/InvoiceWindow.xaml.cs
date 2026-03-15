@@ -82,6 +82,8 @@ public partial class InvoiceWindow : Window
 
         await _invoiceService.AddInvoiceAsync(invoice);
         await LoadInvoicesAsync();
+        await ((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
+
     }
     private void ExportPdf_Click(object sender, RoutedEventArgs e)
     {

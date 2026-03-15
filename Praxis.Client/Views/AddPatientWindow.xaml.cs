@@ -36,7 +36,7 @@ public partial class AddPatientWindow : Window
         Close();
     }
 
-    private void Save_Click(object sender, RoutedEventArgs e)
+    private async void Save_Click(object sender, RoutedEventArgs e)
     {
         if (!ValidateInputs(out var error))
         {
@@ -65,6 +65,7 @@ public partial class AddPatientWindow : Window
 
         DialogResult = true;
         Close();
+        await((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
     }
 
     private bool ValidateInputs(out string error)

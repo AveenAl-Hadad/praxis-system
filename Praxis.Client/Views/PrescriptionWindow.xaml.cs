@@ -79,6 +79,7 @@ public partial class PrescriptionWindow : Window
 
         await _prescriptionService.AddPrescriptionAsync(prescription);
         await LoadPrescriptionsAsync();
+        await ((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
     }
 
     private void ExportPdf_Click(object sender, RoutedEventArgs e)

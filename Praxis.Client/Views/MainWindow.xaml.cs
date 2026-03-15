@@ -22,16 +22,21 @@ public partial class MainWindow : Window
     private List<Patient> _filteredPatients = new();
     private readonly IAuthService _authService;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IDashboardService _dashboardService;
 
     private int _currentPage = 1;
     private const int PageSize = 20;
 
-    public MainWindow(IPatientService patientService, IAuthService authService, IServiceProvider serviceProvider)
+    public MainWindow(IPatientService patientService,
+                      IAuthService authService,
+                      IServiceProvider serviceProvider,
+                      IDashboardService dashboardService)
     {
         InitializeComponent();
         _patientService = patientService;
         _authService = authService;
         _serviceProvider = serviceProvider;
+        _dashboardService = dashboardService;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -46,8 +51,9 @@ public partial class MainWindow : Window
         LoggedInUserText.Text = $"Angemeldet: {UserSession.CurrentUser?.Username} ({UserSession.CurrentUser?.Role})";
         UserManagementButton.IsEnabled = UserSession.HasRole(Roles.Administrator) || UserSession.HasRole(Roles.Arzt);
         await LoadPatientsAsync();
+        await LoadDashboardAsync();
 
-     }
+    }
 
 
     private async Task LoadPatientsAsync()
@@ -69,6 +75,16 @@ public partial class MainWindow : Window
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
+    }
+    public async Task LoadDashboardAsync()
+    {
+        var stats = await _dashboardService.GetStatsAsync();
+
+        TotalPatientsText.Text = stats.TotalPatients.ToString();
+        TotalAppointmentsText.Text = stats.TotalAppointments.ToString();
+        TotalInvoicesText.Text = stats.TotalInvoices.ToString();
+        TotalPrescriptionsText.Text = stats.TotalPrescriptions.ToString();
+        TotalRevenueText.Text = $"{stats.TotalRevenue:N2} €";
     }
 
     private void ApplyFilterAndPaging()
@@ -172,6 +188,7 @@ public partial class MainWindow : Window
             {
                 await _patientService.AddPatientAsync(window.CreatedPatient);
                 await LoadPatientsAsync();
+                await LoadDashboardAsync();
             }
         }
         catch (Exception ex)
@@ -251,6 +268,7 @@ public partial class MainWindow : Window
 
             await _patientService.DeletePatientAsync(selectedPatient.Id);
             await LoadPatientsAsync();
+            //await LoadDashboardAsync();
         }
         catch (Exception ex)
         {
@@ -552,5 +570,9 @@ public partial class MainWindow : Window
         var window = ActivatorUtilities.CreateInstance<DocumentWindow>(_serviceProvider, patient);
         window.Owner = this;
         window.ShowDialog();
+    }
+    private async void RefreshDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        await LoadDashboardAsync();
     }
 }
