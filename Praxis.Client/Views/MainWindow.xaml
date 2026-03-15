@@ -10,12 +10,14 @@
 
     <Grid Margin="12">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/> <!-- Kopf -->
+            <RowDefinition Height="Auto"/> <!-- Suche -->
+            <RowDefinition Height="Auto"/> <!-- Aktionen 1 -->
+            <RowDefinition Height="Auto"/> <!-- Dashboard -->
+            <RowDefinition Height="Auto"/> <!-- Aktionen 2 -->
+            <RowDefinition Height="*"/>    <!-- DataGrid -->
+            <RowDefinition Height="Auto"/> <!-- Pagination -->
+            <RowDefinition Height="Auto"/> <!-- Status -->
         </Grid.RowDefinitions>
 
         <!-- Kopfzeile -->
@@ -38,17 +40,18 @@
                        VerticalAlignment="Center"
                        FontWeight="SemiBold"
                        FontSize="14"/>
-            <Button Content="Passwort ändern"
-                    Width="140"
-                    Height="32"
-                    Margin="0,0,10,0"
-                    Click="ChangePassword_Click"/>
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Button Content="Passwort ändern"
+                        Width="140"
+                        Height="32"
+                        Margin="0,0,10,0"
+                        Click="ChangePassword_Click"/>
 
-            <Button Grid.Column="2"
-                    Content="Abmelden"
-                    Width="110"
-                    Height="32"
-                    Click="Logout_Click"/>
+                <Button Content="Abmelden"
+                        Width="110"
+                        Height="32"
+                        Click="Logout_Click"/>
+            </StackPanel>
         </Grid>
 
         <!-- Suche / Filter -->
@@ -94,7 +97,7 @@
         </Grid>
 
         <!-- Aktionsbereich Zeile 1 -->
-        <WrapPanel Grid.Row="2" Margin="0,0,0,8" ItemHeight="80">
+        <WrapPanel Grid.Row="2" Margin="0,0,0,8" VerticalAlignment="Top">
 
             <GroupBox Header="Patient" Margin="0,0,10,8" Padding="8,6">
                 <WrapPanel>
@@ -143,7 +146,6 @@
                             Click="Refresh_Click"/>
                 </WrapPanel>
             </GroupBox>
-
             <GroupBox Header="Termin" Margin="0,0,10,8" Padding="8,6">
                 <WrapPanel>
                     <Button Content="Termin anlegen"
@@ -152,7 +154,18 @@
                             Click="OpenAddAppointmentWindow_Click"/>
                 </WrapPanel>
             </GroupBox>
-            <GroupBox Header="Dashboard / Statistik" Margin="0,10,0,10" Padding="10">
+        </WrapPanel>
+
+        <!-- Dashboard -->
+        <Grid Grid.Row="3" Margin="0,0,0,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <GroupBox Header="Dashboard / Statistik" Grid.Row="0" Margin="0,0,0,10" Padding="10">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -164,60 +177,82 @@
 
                     <StackPanel Grid.Column="0" Margin="10">
                         <TextBlock Text="Patienten" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalPatientsText"
-                       Text="0"
-                       FontSize="26"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="TotalPatientsText" Text="0" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Margin="10">
                         <TextBlock Text="Termine" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalAppointmentsText"
-                       Text="0"
-                       FontSize="26"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="TotalAppointmentsText" Text="0" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Margin="10">
                         <TextBlock Text="Rechnungen" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalInvoicesText"
-                       Text="0"
-                       FontSize="26"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="TotalInvoicesText" Text="0" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="3" Margin="10">
                         <TextBlock Text="Rezepte" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalPrescriptionsText"
-                       Text="0"
-                       FontSize="26"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="TotalPrescriptionsText" Text="0" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="4" Margin="10">
                         <TextBlock Text="Umsatz" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalRevenueText"
-                       Text="0,00 €"
-                       FontSize="26"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="TotalRevenueText" Text="0,00 €" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
             </GroupBox>
-            <Button Content="Dashboard aktualisieren"
-                    Width="170"
-                    Height="30"
-                    Margin="0,0,10,0"
-                    Click="RefreshDashboard_Click"/>
-        </WrapPanel>
-        
+
+            <GroupBox Header="Monatsstatistik" Grid.Row="1" Margin="0,0,0,10" Padding="10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="10">
+                        <TextBlock Text="Termine diesen Monat" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="CurrentMonthAppointmentsText" Text="0" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="10">
+                        <TextBlock Text="Rechnungen diesen Monat" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="CurrentMonthInvoicesText" Text="0" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Margin="10">
+                        <TextBlock Text="Umsatz diesen Monat" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="CurrentMonthRevenueText" Text="0,00 €" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Header="Diagramm – Monatsübersicht" Grid.Row="2" Margin="0,0,0,10" Padding="10">
+                <StackPanel>
+                    <TextBlock Text="Termine" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <ProgressBar x:Name="AppointmentsChartBar" Height="22" Minimum="0" Maximum="100" Value="0"/>
+                    <TextBlock x:Name="AppointmentsChartLabel" Text="0" Margin="0,2,0,10"/>
+
+                    <TextBlock Text="Rechnungen" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <ProgressBar x:Name="InvoicesChartBar" Height="22" Minimum="0" Maximum="100" Value="0"/>
+                    <TextBlock x:Name="InvoicesChartLabel" Text="0" Margin="0,2,0,10"/>
+
+                    <TextBlock Text="Umsatz" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <ProgressBar x:Name="RevenueChartBar" Height="22" Minimum="0" Maximum="100" Value="0"/>
+                    <TextBlock x:Name="RevenueChartLabel" Text="0,00 €" Margin="0,2,0,0"/>
+                </StackPanel>
+            </GroupBox>
+
+            <Button Grid.Row="3"
+            Content="Dashboard aktualisieren"
+            Width="170"
+            Height="30"
+            HorizontalAlignment="Left"
+            Click="RefreshDashboard_Click"/>
+        </Grid>
 
         <!-- Aktionsbereich Zeile 2 -->
-        <WrapPanel Grid.Row="3" Margin="0,0,0,10" VerticalAlignment="Top">
+        <WrapPanel Grid.Row="4" Margin="0,0,0,10" VerticalAlignment="Top">
             <Button Content="Termine"
                     Width="120"
                     Height="32"
@@ -257,7 +292,7 @@
         </WrapPanel>
 
         <!-- Datagrid -->
-        <Grid Grid.Row="3" Margin="0,50,0,0">
+        <Grid Grid.Row="5">
             <DataGrid x:Name="PatientsGrid"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
@@ -266,7 +301,7 @@
                       SelectionUnit="FullRow"
                       MouseDoubleClick="PatientsGrid_DoubleClick"
                       KeyDown="PatientsGrid_KeyDown"
-                      Sorting="PatientsGrid_Sorting">
+                      Sorting="PatientsGrid_Sorting" SelectionChanged="PatientsGrid_SelectionChanged">
 
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
@@ -293,7 +328,7 @@
         </Grid>
 
         <!-- Pagination -->
-        <StackPanel Grid.Row="4"
+        <StackPanel Grid.Row="6"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Margin="0,10,0,0">
@@ -315,7 +350,7 @@
         </StackPanel>
 
         <!-- Status -->
-        <TextBlock Grid.Row="5"
+        <TextBlock Grid.Row="7"
                    x:Name="StatusText"
                    Margin="0,10,0,0"
                    Foreground="Gray"/>

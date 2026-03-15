@@ -85,6 +85,36 @@ public partial class MainWindow : Window
         TotalInvoicesText.Text = stats.TotalInvoices.ToString();
         TotalPrescriptionsText.Text = stats.TotalPrescriptions.ToString();
         TotalRevenueText.Text = $"{stats.TotalRevenue:N2} €";
+
+        CurrentMonthAppointmentsText.Text = stats.CurrentMonthAppointments.ToString();
+        CurrentMonthInvoicesText.Text = stats.CurrentMonthInvoices.ToString();
+        CurrentMonthRevenueText.Text = $"{stats.CurrentMonthRevenue:N2} €";
+
+        UpdateChart(stats);
+    }
+    private void UpdateChart(DashboardStats stats)
+    {
+        var maxValue = new[]
+                            {
+                            stats.CurrentMonthAppointments,
+                            stats.CurrentMonthInvoices,
+                            (int)Math.Ceiling(stats.CurrentMonthRevenue)
+                            }.Max();
+
+        if (maxValue <= 0)
+            maxValue = 1;
+
+        AppointmentsChartBar.Maximum = maxValue;
+        InvoicesChartBar.Maximum = maxValue;
+        RevenueChartBar.Maximum = maxValue;
+
+        AppointmentsChartBar.Value = stats.CurrentMonthAppointments;
+        InvoicesChartBar.Value = stats.CurrentMonthInvoices;
+        RevenueChartBar.Value = (double)stats.CurrentMonthRevenue;
+
+        AppointmentsChartLabel.Text = $"{stats.CurrentMonthAppointments} Termine";
+        InvoicesChartLabel.Text = $"{stats.CurrentMonthInvoices} Rechnungen";
+        RevenueChartLabel.Text = $"{stats.CurrentMonthRevenue:N2} € Umsatz";
     }
 
     private void ApplyFilterAndPaging()
@@ -574,5 +604,10 @@ public partial class MainWindow : Window
     private async void RefreshDashboard_Click(object sender, RoutedEventArgs e)
     {
         await LoadDashboardAsync();
+    }
+
+    private void PatientsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+
     }
 }
