@@ -601,7 +601,7 @@ public partial class MainWindow : Window
         window.Owner = this;
         window.ShowDialog();
     }
-    private async void RefreshDashboard_Click(object sender, RoutedEventArgs e)
+    public async void RefreshDashboard_Click(object sender, RoutedEventArgs e)
     {
         await LoadDashboardAsync();
     }

@@ -2,358 +2,480 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="PraxisSystem"
-        Height="700"
-        Width="1150"
+        Height="850"
+        Width="1300"
         WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}"
         KeyDown="Window_KeyDown"
         Loaded="Window_Loaded">
 
-    <Grid Margin="12">
+    <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Kopf -->
-            <RowDefinition Height="Auto"/> <!-- Suche -->
-            <RowDefinition Height="Auto"/> <!-- Aktionen 1 -->
-            <RowDefinition Height="Auto"/> <!-- Dashboard -->
-            <RowDefinition Height="Auto"/> <!-- Aktionen 2 -->
-            <RowDefinition Height="*"/>    <!-- DataGrid -->
-            <RowDefinition Height="Auto"/> <!-- Pagination -->
-            <RowDefinition Height="Auto"/> <!-- Status -->
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Kopfzeile -->
-        <Grid Grid.Row="0" Margin="0,0,0,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <!-- Kopf -->
+        <Border Grid.Row="0"
+                Style="{StaticResource CardBorderStyle}"
+                Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0"
-                       Text="Patientenliste"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       VerticalAlignment="Center"/>
-
-            <TextBlock x:Name="LoggedInUserText"
-                       Grid.Column="1"
-                       Margin="0,0,12,0"
-                       VerticalAlignment="Center"
-                       FontWeight="SemiBold"
-                       FontSize="14"/>
-            <StackPanel Grid.Column="2" Orientation="Horizontal">
-                <Button Content="Passwort ändern"
-                        Width="140"
-                        Height="32"
-                        Margin="0,0,10,0"
-                        Click="ChangePassword_Click"/>
-
-                <Button Content="Abmelden"
-                        Width="110"
-                        Height="32"
-                        Click="Logout_Click"/>
-            </StackPanel>
-        </Grid>
-
-        <!-- Suche / Filter -->
-        <Grid Grid.Row="1" Margin="0,0,0,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Grid Grid.Column="0" Height="32">
-                <TextBox x:Name="SearchBox"
-                         VerticalContentAlignment="Center"
-                         Padding="8,0,8,0"
-                         TextChanged="SearchBox_TextChanged"/>
-
-                <TextBlock Text="Suche..."
-                           Margin="10,0,0,0"
-                           VerticalAlignment="Center"
-                           Foreground="Gray"
-                           IsHitTestVisible="False">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </Grid>
-
-            <CheckBox x:Name="OnlyActiveCheck"
-                      Grid.Column="1"
-                      Margin="12,0,0,0"
-                      VerticalAlignment="Center"
-                      Content="Nur aktive"
-                      IsChecked="True"
-                      Checked="OnlyActiveCheck_Changed"
-                      Unchecked="OnlyActiveCheck_Changed"/>
-        </Grid>
-
-        <!-- Aktionsbereich Zeile 1 -->
-        <WrapPanel Grid.Row="2" Margin="0,0,0,8" VerticalAlignment="Top">
-
-            <GroupBox Header="Patient" Margin="0,0,10,8" Padding="8,6">
-                <WrapPanel>
-                    <Button Content="Neu"
-                            Width="90"
-                            Height="30"
-                            Margin="0,0,8,0"
-                            Click="AddPatient_Click"/>
-
-                    <Button Content="Bearbeiten"
-                            Width="90"
-                            Height="30"
-                            Margin="0,0,8,0"
-                            Click="EditPatient_Click"/>
-
-                    <Button Content="Löschen"
-                            Width="90"
-                            Height="30"
-                            Click="DeletePatient_Click"/>
-                </WrapPanel>
-            </GroupBox>
-
-            <GroupBox Header="Status" Margin="0,0,10,8" Padding="8,6">
-                <WrapPanel>
-                    <Button Content="Toggle"
-                            Width="90"
-                            Height="30"
-                            Click="ToggleActive_Click"/>
-                </WrapPanel>
-            </GroupBox>
-
-            <GroupBox Header="Export" Margin="0,0,10,8" Padding="8,6">
-                <WrapPanel>
-                    <Button Content="CSV"
-                            Width="90"
-                            Height="30"
-                            Click="ExportCsv_Click"/>
-                </WrapPanel>
-            </GroupBox>
-
-            <GroupBox Header="Ansicht" Margin="0,0,10,8" Padding="8,6">
-                <WrapPanel>
-                    <Button Content="Refresh"
-                            Width="90"
-                            Height="30"
-                            Click="Refresh_Click"/>
-                </WrapPanel>
-            </GroupBox>
-            <GroupBox Header="Termin" Margin="0,0,10,8" Padding="8,6">
-                <WrapPanel>
-                    <Button Content="Termin anlegen"
-                            Width="140"
-                            Height="30"
-                            Click="OpenAddAppointmentWindow_Click"/>
-                </WrapPanel>
-            </GroupBox>
-        </WrapPanel>
-
-        <!-- Dashboard -->
-        <Grid Grid.Row="3" Margin="0,0,0,10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <GroupBox Header="Dashboard / Statistik" Grid.Row="0" Margin="0,0,0,10" Padding="10">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" Margin="10">
-                        <TextBlock Text="Patienten" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalPatientsText" Text="0" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1" Margin="10">
-                        <TextBlock Text="Termine" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalAppointmentsText" Text="0" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="2" Margin="10">
-                        <TextBlock Text="Rechnungen" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalInvoicesText" Text="0" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="3" Margin="10">
-                        <TextBlock Text="Rezepte" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalPrescriptionsText" Text="0" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="4" Margin="10">
-                        <TextBlock Text="Umsatz" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalRevenueText" Text="0,00 €" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Grid>
-            </GroupBox>
-
-            <GroupBox Header="Monatsstatistik" Grid.Row="1" Margin="0,0,0,10" Padding="10">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" Margin="10">
-                        <TextBlock Text="Termine diesen Monat" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="CurrentMonthAppointmentsText" Text="0" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1" Margin="10">
-                        <TextBlock Text="Rechnungen diesen Monat" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="CurrentMonthInvoicesText" Text="0" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="2" Margin="10">
-                        <TextBlock Text="Umsatz diesen Monat" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="CurrentMonthRevenueText" Text="0,00 €" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Grid>
-            </GroupBox>
-
-            <GroupBox Header="Diagramm – Monatsübersicht" Grid.Row="2" Margin="0,0,0,10" Padding="10">
                 <StackPanel>
-                    <TextBlock Text="Termine" FontWeight="Bold" Margin="0,0,0,5"/>
-                    <ProgressBar x:Name="AppointmentsChartBar" Height="22" Minimum="0" Maximum="100" Value="0"/>
-                    <TextBlock x:Name="AppointmentsChartLabel" Text="0" Margin="0,2,0,10"/>
-
-                    <TextBlock Text="Rechnungen" FontWeight="Bold" Margin="0,0,0,5"/>
-                    <ProgressBar x:Name="InvoicesChartBar" Height="22" Minimum="0" Maximum="100" Value="0"/>
-                    <TextBlock x:Name="InvoicesChartLabel" Text="0" Margin="0,2,0,10"/>
-
-                    <TextBlock Text="Umsatz" FontWeight="Bold" Margin="0,0,0,5"/>
-                    <ProgressBar x:Name="RevenueChartBar" Height="22" Minimum="0" Maximum="100" Value="0"/>
-                    <TextBlock x:Name="RevenueChartLabel" Text="0,00 €" Margin="0,2,0,0"/>
+                    <TextBlock Text="Praxisverwaltung"
+                               Style="{StaticResource SectionTitleStyle}"
+                               FontSize="30"/>
+                    <TextBlock Text="Patientenübersicht und Verwaltung"
+                               FontSize="14"
+                               Foreground="{StaticResource MutedTextBrush}"/>
                 </StackPanel>
-            </GroupBox>
 
-            <Button Grid.Row="3"
-            Content="Dashboard aktualisieren"
-            Width="170"
-            Height="30"
-            HorizontalAlignment="Left"
-            Click="RefreshDashboard_Click"/>
-        </Grid>
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <TextBlock x:Name="LoggedInUserText"
+                               Margin="0,0,16,0"
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               FontSize="14"/>
 
-        <!-- Aktionsbereich Zeile 2 -->
-        <WrapPanel Grid.Row="4" Margin="0,0,0,10" VerticalAlignment="Top">
+                    <Button Content="Passwort ändern"
+                            Width="140"
+                            Margin="0,0,10,0"
+                            Style="{StaticResource WarningButtonStyle}"
+                            Click="ChangePassword_Click"/>
+
+                    <Button Content="Abmelden"
+                            Width="110"
+                            Style="{StaticResource DangerButtonStyle}"
+                            Click="Logout_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Suche + Toolbar -->
+        <Border Grid.Row="1"
+                Style="{StaticResource CardBorderStyle}"
+                Margin="0,0,0,12">
+            <DockPanel LastChildFill="False">
+
+                <StackPanel DockPanel.Dock="Left"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+
+                    <Grid Width="320"
+                          Height="34"
+                          Margin="0,0,12,0">
+                        <TextBox x:Name="SearchBox"
+                                 VerticalContentAlignment="Center"
+                                 TextChanged="SearchBox_TextChanged"/>
+
+                        <TextBlock Text="Patient suchen..."
+                                   Margin="12,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="Gray"
+                                   IsHitTestVisible="False">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+
+                    <CheckBox x:Name="OnlyActiveCheck"
+                              Margin="0,0,16,0"
+                              Content="Nur aktive"
+                              IsChecked="True"
+                              Checked="OnlyActiveCheck_Changed"
+                              Unchecked="OnlyActiveCheck_Changed"/>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Right"
+                            Orientation="Horizontal">
+
+                    <Button Style="{StaticResource SuccessButtonStyle}"
+                            Width="38"
+                            Height="38"
+                            Margin="0,0,8,0"
+                            ToolTip="Patient hinzufügen"
+                            Click="AddPatient_Click">
+                        <TextBlock Text="+"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Button>
+
+                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                            Width="38"
+                            Height="38"
+                            Margin="0,0,8,0"
+                            ToolTip="Patient bearbeiten"
+                            Click="EditPatient_Click">
+                        <TextBlock Text="✎"
+                                   FontSize="16"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Button>
+
+                    <Button Style="{StaticResource DangerButtonStyle}"
+                            Width="38"
+                            Height="38"
+                            Margin="0,0,8,0"
+                            ToolTip="Patient löschen"
+                            Click="DeletePatient_Click">
+                        <TextBlock Text="X"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Button>
+
+                    <Button Style="{StaticResource WarningButtonStyle}"
+                            Width="38"
+                            Height="38"
+                            Margin="0,0,8,0"
+                            ToolTip="Aktiv/Inaktiv umschalten"
+                            Click="ToggleActive_Click">
+                        <TextBlock Text="✓"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Button>
+
+                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                            Width="38"
+                            Height="38"
+                            Margin="0,0,8,0"
+                            ToolTip="Liste aktualisieren"
+                            Click="Refresh_Click">
+                        <TextBlock Text="↻"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Button>
+
+                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                            Width="38"
+                            Height="38"
+                            Margin="0,0,8,0"
+                            ToolTip="CSV exportieren"
+                            Click="ExportCsv_Click">
+                        <TextBlock Text="⇩"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Button>
+
+                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                            Width="38"
+                            Height="38"
+                            Margin="0,0,8,0"
+                            ToolTip="Termin anlegen"
+                            Click="OpenAddAppointmentWindow_Click">
+                        <TextBlock Text="T"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Button>
+
+                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                            Width="90"
+                            Margin="0,0,8,0"
+                            ToolTip="Rechnungen öffnen"
+                            Click="OpenInvoices_Click"
+                            Content="Rechnung"/>
+
+                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                            Width="80"
+                            Margin="0,0,8,0"
+                            ToolTip="Rezepte öffnen"
+                            Click="OpenPrescriptions_Click"
+                            Content="Rezept"/>
+
+                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                            Width="95"
+                            Margin="0,0,8,0"
+                            ToolTip="Dokumente öffnen"
+                            Click="OpenDocuments_Click"
+                            Content="Dokument"/>
+
+                    <Button x:Name="UserManagementButton"
+                            Style="{StaticResource WarningButtonStyle}"
+                            Width="120"
+                            ToolTip="Benutzerverwaltung"
+                            Click="UserManagementButton_Click"
+                            Content="Benutzer"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Statistik -->
+        <Expander Grid.Row="2"
+                  Header="Dashboard und Statistik"
+                  IsExpanded="False"
+                  Margin="0,0,0,12">
+            <StackPanel Margin="12">
+
+                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="8">
+                            <TextBlock Text="Patienten" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TotalPatientsText"
+                                       Text="0"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="8">
+                            <TextBlock Text="Termine" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TotalAppointmentsText"
+                                       Text="0"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Margin="8">
+                            <TextBlock Text="Rechnungen" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TotalInvoicesText"
+                                       Text="0"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3" Margin="8">
+                            <TextBlock Text="Rezepte" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TotalPrescriptionsText"
+                                       Text="0"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="4" Margin="8">
+                            <TextBlock Text="Gesamtumsatz" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TotalRevenueText"
+                                       Text="0,00 €"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="8">
+                            <TextBlock Text="Termine diesen Monat" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="CurrentMonthAppointmentsText"
+                                       Text="0"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="8">
+                            <TextBlock Text="Rechnungen diesen Monat" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="CurrentMonthInvoicesText"
+                                       Text="0"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Margin="8">
+                            <TextBlock Text="Umsatz diesen Monat" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="CurrentMonthRevenueText"
+                                       Text="0,00 €"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource CardBorderStyle}">
+                    <StackPanel>
+                        <Button Content="Dashboard aktualisieren"
+                                Width="160"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Left"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Click="RefreshDashboard_Click"/>
+
+                        <TextBlock Text="Termine" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <ProgressBar x:Name="AppointmentsChartBar"
+                                     Height="18"
+                                     Minimum="0"
+                                     Maximum="100"
+                                     Value="0"/>
+                        <TextBlock x:Name="AppointmentsChartLabel"
+                                   Text="0 Termine"
+                                   Margin="0,4,0,10"/>
+
+                        <TextBlock Text="Rechnungen" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <ProgressBar x:Name="InvoicesChartBar"
+                                     Height="18"
+                                     Minimum="0"
+                                     Maximum="100"
+                                     Value="0"/>
+                        <TextBlock x:Name="InvoicesChartLabel"
+                                   Text="0 Rechnungen"
+                                   Margin="0,4,0,10"/>
+
+                        <TextBlock Text="Umsatz" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <ProgressBar x:Name="RevenueChartBar"
+                                     Height="18"
+                                     Minimum="0"
+                                     Maximum="100"
+                                     Value="0"/>
+                        <TextBlock x:Name="RevenueChartLabel"
+                                   Text="0,00 € Umsatz"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Expander>
+
+        <!-- Patientenliste -->
+        <Border Grid.Row="3"
+                Style="{StaticResource CardBorderStyle}"
+                Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Text="Patientenliste"
+                           Style="{StaticResource SectionTitleStyle}"
+                           Margin="0,0,0,10"/>
+
+                <DataGrid x:Name="PatientsGrid"
+                          Grid.Row="1"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow"
+                          MouseDoubleClick="PatientsGrid_DoubleClick"
+                          KeyDown="PatientsGrid_KeyDown"
+                          Sorting="PatientsGrid_Sorting">
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
+                        <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" Width="2*"/>
+                        <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" Width="2*"/>
+                        <DataGridTextColumn Header="Geburtsdatum" Binding="{Binding Geburtsdatum, StringFormat=dd.MM.yyyy}" Width="130"/>
+                        <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" Width="80"/>
+                        <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" Width="2*"/>
+                        <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" Width="160"/>
+
+                        <DataGridTemplateColumn Header="Aktiv" Width="70">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsActive}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              IsHitTestVisible="False"
+                                              Focusable="False"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+        <!-- Untere Navigation -->
+        <WrapPanel Grid.Row="4" Margin="0,0,0,10">
             <Button Content="Termine"
                     Width="120"
-                    Height="32"
                     Margin="0,0,10,0"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     Click="OpenAppointments_Click"/>
 
             <Button Content="Kalender"
                     Width="120"
-                    Height="32"
                     Margin="0,0,10,0"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     Click="OpenCalendar_Click"/>
 
             <Button Content="Wartezimmer"
                     Width="120"
-                    Height="32"
                     Margin="0,0,10,0"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     Click="OpenWaitingRoom_Click"/>
-            <Button Content="Rechnungen"
-                     Width="120"
-                     Height="32"
-                     Margin="0,0,10,0"
-                     Click="OpenInvoices_Click"/>
-            <Button Content="Rezepte"
-                    Width="120"
-                    Height="32"
-                    Margin="0,0,10,0"
-                    Click="OpenPrescriptions_Click"/>
-            <Button Content="Dokumente"
-                    Width="120"
-                    Click="OpenDocuments_Click"/>
-
-            <Button x:Name="UserManagementButton"
-                    Content="Benutzerverwaltung"
-                    Width="160"
-                    Height="32"
-                    Click="UserManagementButton_Click"/>
         </WrapPanel>
 
-        <!-- Datagrid -->
-        <Grid Grid.Row="5">
-            <DataGrid x:Name="PatientsGrid"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      IsReadOnly="True"
-                      SelectionMode="Single"
-                      SelectionUnit="FullRow"
-                      MouseDoubleClick="PatientsGrid_DoubleClick"
-                      KeyDown="PatientsGrid_KeyDown"
-                      Sorting="PatientsGrid_Sorting" SelectionChanged="PatientsGrid_SelectionChanged">
-
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
-                    <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" Width="2*"/>
-                    <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" Width="2*"/>
-                    <DataGridTextColumn Header="Geburt" Binding="{Binding Geburtsdatum, StringFormat=d}" Width="120"/>
-                    <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" Width="80"/>
-                    <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" Width="2*"/>
-                    <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" Width="160"/>
-
-                    <DataGridTemplateColumn Header="Aktiv" Width="70">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <CheckBox IsChecked="{Binding IsActive}"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          IsHitTestVisible="False"
-                                          Focusable="False"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Grid>
-
         <!-- Pagination -->
-        <StackPanel Grid.Row="6"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Margin="0,10,0,0">
+        <Grid Grid.Row="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock x:Name="StatusText"
+                       Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource MutedTextBrush}"/>
+
             <Button Content="Zurück"
+                    Grid.Column="1"
                     Width="100"
-                    Height="30"
                     Margin="0,0,10,0"
+                    Style="{StaticResource WarningButtonStyle}"
                     Click="PrevPage_Click"/>
 
             <TextBlock x:Name="PageInfoText"
+                       Grid.Column="2"
                        VerticalAlignment="Center"
                        Margin="0,0,10,0"
                        FontWeight="SemiBold"/>
 
             <Button Content="Weiter"
+                    Grid.Column="3"
                     Width="100"
-                    Height="30"
+                    Style="{StaticResource WarningButtonStyle}"
                     Click="NextPage_Click"/>
-        </StackPanel>
-
-        <!-- Status -->
-        <TextBlock Grid.Row="7"
-                   x:Name="StatusText"
-                   Margin="0,10,0,0"
-                   Foreground="Gray"/>
+        </Grid>
     </Grid>
-    
 </Window>
