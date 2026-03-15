@@ -13,6 +13,7 @@ public class PraxisDbContext : DbContext
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
     public DbSet<Prescription> Prescriptions => Set<Prescription>();
+    public DbSet<PatientDocument> PatientDocuments => Set<PatientDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -56,6 +57,11 @@ public class PraxisDbContext : DbContext
             .HasOne(p => p.Patient)
             .WithMany(x => x.Prescriptions)
             .HasForeignKey(p => p.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<PatientDocument>()
+            .HasOne(d => d.Patient)
+            .WithMany(p => p.Documents)
+            .HasForeignKey(d => d.PatientId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

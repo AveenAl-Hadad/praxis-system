@@ -37,4 +37,5 @@ public class Patient
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
     public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
     public ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();
+    public ICollection<PatientDocument> Documents { get; set; } = new List<PatientDocument>();
 }

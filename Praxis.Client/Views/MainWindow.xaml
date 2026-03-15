@@ -184,6 +184,9 @@
                     Height="32"
                     Margin="0,0,10,0"
                     Click="OpenPrescriptions_Click"/>
+            <Button Content="Dokumente"
+                    Width="120"
+                    Click="OpenDocuments_Click"/>
 
             <Button x:Name="UserManagementButton"
                     Content="Benutzerverwaltung"

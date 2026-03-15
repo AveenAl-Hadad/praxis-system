@@ -52,6 +52,8 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IInvoicePdfService, InvoicePdfService>();
                 services.AddTransient<IPrescriptionService, PrescriptionService>();
                 services.AddTransient<IPrescriptionPdfService, PrescriptionPdfService>();
+                services.AddTransient<IDocumentService, DocumentService>();
+                
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
@@ -66,6 +68,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<ChangePasswordWindow>();
                 services.AddTransient<PrescriptionWindow>();
                 services.AddTransient<AddPrescriptionWindow>();
+                services.AddTransient<DocumentWindow>();
             })
             .Build();
 

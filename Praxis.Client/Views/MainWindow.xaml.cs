@@ -541,4 +541,16 @@ public partial class MainWindow : Window
         window.Owner = this;
         window.ShowDialog();
     }
+    private void OpenDocuments_Click(object sender, RoutedEventArgs e)
+    {
+        if (PatientsGrid.SelectedItem is not Patient patient)
+        {
+            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+            return;
+        }
+            
+        var window = ActivatorUtilities.CreateInstance<DocumentWindow>(_serviceProvider, patient);
+        window.Owner = this;
+        window.ShowDialog();
+    }
 }
