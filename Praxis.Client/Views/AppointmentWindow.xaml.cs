@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Praxis.Domain.Entities;
+using Praxis.Infrastructure.Services;
 using Praxis.Infrastructure.Services.Interface;
 
 namespace Praxis.Client.Views;
@@ -8,11 +9,13 @@ namespace Praxis.Client.Views;
 public partial class AppointmentWindow : Window
 {
     private readonly IAppointmentService _appointmentService;
+    private readonly IReminderService _reminderService;
 
-    public AppointmentWindow(IAppointmentService appointmentService)
+    public AppointmentWindow(IAppointmentService appointmentService, IReminderService reminderService)
     {
         InitializeComponent();
         _appointmentService = appointmentService;
+        _reminderService = reminderService;
 
         Loaded += AppointmentWindow_Loaded;
     }
@@ -101,6 +104,24 @@ public partial class AppointmentWindow : Window
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message);
+        }
+    }
+    private async void SendReminder_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (AppointmentsDataGrid.SelectedItem is not Appointment appointment)
+            {
+                MessageBox.Show("Bitte zuerst einen Termin auswählen.");
+                return;
+            }
+
+            await _reminderService.SendAppointmentReminderAsync(appointment);
+            MessageBox.Show("Erinnerung wurde gesendet.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"E-Mail konnte nicht gesendet werden:\n{ex.Message}");
         }
     }
 

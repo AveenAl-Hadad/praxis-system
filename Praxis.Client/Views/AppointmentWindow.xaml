@@ -34,6 +34,9 @@
             Width="110"
             Height="30"
             Click="DeleteAppointmentButton_Click"/>
+            <Button Content="Erinnerung senden"
+                    Width="160"
+                    Click="SendReminder_Click"/>
         </StackPanel>
 
         <DataGrid x:Name="AppointmentsDataGrid"
