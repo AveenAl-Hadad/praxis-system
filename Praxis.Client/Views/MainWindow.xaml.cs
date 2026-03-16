@@ -49,7 +49,9 @@ public partial class MainWindow : Window
         }
 
         LoggedInUserText.Text = $"Angemeldet: {UserSession.CurrentUser?.Username} ({UserSession.CurrentUser?.Role})";
-        UserManagementButton.IsEnabled = UserSession.HasRole(Roles.Administrator) || UserSession.HasRole(Roles.Arzt);
+     //   UserManagementButton.IsEnabled = UserSession.HasRole(Roles.Administrator) || UserSession.HasRole(Roles.Arzt);
+        
+        ApplyRolePermissions();
         await LoadPatientsAsync();
         await LoadDashboardAsync();
 
@@ -91,6 +93,50 @@ public partial class MainWindow : Window
         CurrentMonthRevenueText.Text = $"{stats.CurrentMonthRevenue:N2} €";
 
         UpdateChart(stats);
+    }
+    private void ApplyRolePermissions()
+    {
+        bool canManagePatients = UserSession.HasAnyRole(
+            Roles.Administrator,
+            Roles.Arzt,
+            Roles.Mitarbeiter);
+
+        bool canManageAppointments = UserSession.HasAnyRole(
+            Roles.Administrator,
+            Roles.Arzt,
+            Roles.Mitarbeiter);
+
+        bool canManageInvoices = UserSession.HasAnyRole(
+            Roles.Administrator,
+            Roles.Mitarbeiter);
+
+        bool canManagePrescriptions = UserSession.HasAnyRole(
+            Roles.Administrator,
+            Roles.Arzt);
+
+        bool canManageDocuments = UserSession.HasAnyRole(
+            Roles.Administrator,
+            Roles.Arzt,
+            Roles.Mitarbeiter);
+
+        bool canManageUsers = UserSession.HasRole(Roles.Administrator);
+
+        AddPatientButton.IsEnabled = canManagePatients;
+        EditPatientButton.IsEnabled = canManagePatients;
+        DeletePatientButton.IsEnabled = canManagePatients;
+        ToggleActiveButton.IsEnabled = canManagePatients;
+        ExportCsvButton.IsEnabled = canManagePatients;
+
+        AddAppointmentButton.IsEnabled = canManageAppointments;
+        AppointmentsNavigationButton.IsEnabled = canManageAppointments;
+        CalendarButton.IsEnabled = canManageAppointments;
+        WaitingRoomButton.IsEnabled = canManageAppointments;
+
+        InvoiceButton.IsEnabled = canManageInvoices;
+        PrescriptionButton.IsEnabled = canManagePrescriptions;
+        DocumentsButton.IsEnabled = canManageDocuments;
+
+        UserManagementButton.IsEnabled = canManageUsers;
     }
     private void UpdateChart(DashboardStats stats)
     {

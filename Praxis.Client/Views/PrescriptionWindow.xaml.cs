@@ -26,15 +26,17 @@ public partial class PrescriptionWindow : Window
 
     private async void PrescriptionWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        if (!UserSession.HasRole(Roles.Arzt) && !UserSession.HasRole(Roles.Administrator))
+        CheckAccess();
+        await LoadPrescriptionsAsync();
+    }
+    private void CheckAccess()
+    {
+        if (!UserSession.HasAnyRole(Roles.Administrator, Roles.Arzt))
         {
             MessageBox.Show("Sie haben keine Berechtigung für Rezepte.");
             Close();
-            return;
         }
-        await LoadPrescriptionsAsync();
     }
-
     private async Task LoadPrescriptionsAsync()
     {
         _allPrescriptions = await _prescriptionService.GetAllPrescriptionsAsync();

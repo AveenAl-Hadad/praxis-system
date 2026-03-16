@@ -136,7 +136,8 @@
                 <StackPanel DockPanel.Dock="Right"
                             Orientation="Horizontal">
 
-                    <Button Style="{StaticResource SuccessButtonStyle}"
+                    <Button x:Name="AddPatientButton"
+                            Style="{StaticResource SuccessButtonStyle}"
                             Width="38"
                             Height="38"
                             Margin="0,0,8,0"
@@ -149,7 +150,8 @@
                                    VerticalAlignment="Center"/>
                     </Button>
 
-                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                    <Button x:Name="EditPatientButton"
+                            Style="{StaticResource PrimaryButtonStyle}"
                             Width="38"
                             Height="38"
                             Margin="0,0,8,0"
@@ -161,7 +163,8 @@
                                    VerticalAlignment="Center"/>
                     </Button>
 
-                    <Button Style="{StaticResource DangerButtonStyle}"
+                    <Button x:Name="DeletePatientButton"
+                            Style="{StaticResource DangerButtonStyle}"
                             Width="38"
                             Height="38"
                             Margin="0,0,8,0"
@@ -174,7 +177,8 @@
                                    VerticalAlignment="Center"/>
                     </Button>
 
-                    <Button Style="{StaticResource WarningButtonStyle}"
+                    <Button x:Name="ToggleActiveButton"
+                            Style="{StaticResource WarningButtonStyle}"
                             Width="38"
                             Height="38"
                             Margin="0,0,8,0"
@@ -187,7 +191,8 @@
                                    VerticalAlignment="Center"/>
                     </Button>
 
-                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                    <Button x:Name="RefrchButton"
+                            Style="{StaticResource PrimaryButtonStyle}"
                             Width="38"
                             Height="38"
                             Margin="0,0,8,0"
@@ -200,7 +205,8 @@
                                    VerticalAlignment="Center"/>
                     </Button>
 
-                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                    <Button x:Name="ExportCsvButton"
+                            Style="{StaticResource PrimaryButtonStyle}"
                             Width="38"
                             Height="38"
                             Margin="0,0,8,0"
@@ -220,7 +226,8 @@
 
                     </Button>
 
-                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                    <Button x:Name="AddAppointmentButton"
+                            Style="{StaticResource PrimaryButtonStyle}"
                             Width="38"
                             Height="38"
                             Margin="0,0,8,0"
@@ -238,7 +245,8 @@
                         </Viewbox>
                     </Button>
 
-                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                    <Button x:Name="InvoiceButton"
+                            Style="{StaticResource PrimaryButtonStyle}"
                             Width="38"
                             Height="38"
                             Margin="0,0,8,0"
@@ -255,7 +263,8 @@
                             </Canvas>
                         </Viewbox>
                     </Button>
-                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                    <Button x:Name="PrescriptionButton"
+                            Style="{StaticResource PrimaryButtonStyle}"
                             Width="38"
                             Height="38"
                             Margin="0,0,8,0"
@@ -273,7 +282,8 @@
                         </Viewbox>
                     </Button>
 
-                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                    <Button x:Name="DocumentsButton"
+                            Style="{StaticResource PrimaryButtonStyle}"
                             Width="38"
                             Height="38"
                             Margin="0,0,8,0"
@@ -511,14 +521,15 @@
         <WrapPanel Grid.Row="4"
            Margin="0,0,0,10"
            HorizontalAlignment="Left">
-
+            
             <!-- Termine -->
-            <Button Width="44"
-            Height="44"
-            Margin="0,0,10,0"
-            Style="{StaticResource PrimaryButtonStyle}"
-            ToolTip="Termine"
-            Click="OpenAppointments_Click">
+            <Button x:Name="AppointmentsNavigationButton"
+                    Width="44"
+                    Height="44"
+                    Margin="0,0,10,0"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    ToolTip="Termine"
+                    Click="OpenAppointments_Click"> 
 
                 <Viewbox Width="22" Height="22">
                     <Canvas Width="24" Height="24">
@@ -534,12 +545,13 @@
             </Button>
 
             <!-- Kalender -->
-            <Button Width="44"
-            Height="44"
-            Margin="0,0,10,0"
-            Style="{StaticResource PrimaryButtonStyle}"
-            ToolTip="Kalender"
-            Click="OpenCalendar_Click">
+            <Button x:Name="CalendarButton"
+                    Width="44"
+                    Height="44"
+                    Margin="0,0,10,0"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    ToolTip="Kalender"
+                    Click="OpenCalendar_Click">
 
                 <Viewbox Width="22" Height="22">
                     <Canvas Width="24" Height="24">
@@ -555,11 +567,12 @@
             </Button>
 
             <!-- Wartezimmer -->
-            <Button Width="44"
-            Height="44"
-            Style="{StaticResource PrimaryButtonStyle}"
-            ToolTip="Wartezimmer"
-            Click="OpenWaitingRoom_Click">
+            <Button x:Name="WaitingRoomButton"
+                    Width="44"
+                    Height="44"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    ToolTip="Wartezimmer"
+                    Click="OpenWaitingRoom_Click">
 
             <Viewbox Width="24" Height="24">
                <Canvas Width="24" Height="24">

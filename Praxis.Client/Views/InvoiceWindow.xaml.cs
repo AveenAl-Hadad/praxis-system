@@ -1,5 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using Praxis.Client.Session;
+using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 
@@ -23,6 +25,7 @@ public partial class InvoiceWindow : Window
 
     private async void InvoiceWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        CheckAccess();
         await LoadInvoicesAsync();
     }
 
@@ -103,6 +106,15 @@ public partial class InvoiceWindow : Window
         {
             _invoicePdfService.ExportInvoiceToPdf(invoice, dialog.FileName);
             MessageBox.Show("PDF wurde erfolgreich exportiert.");
+        }
+    }
+
+    private void CheckAccess()
+    {
+        if (!UserSession.HasAnyRole(Roles.Administrator, Roles.Mitarbeiter))
+        {
+            MessageBox.Show("Sie haben keine Berechtigung für Rechnungen.");
+            Close();
         }
     }
 }

@@ -18,9 +18,20 @@ public static class UserSession
         CurrentUser = null;
     }
 
+    //public static bool HasRole(string role)
+    //{
+    //    return CurrentUser?.Role == role;
+    //}
     public static bool HasRole(string role)
     {
-        return CurrentUser?.Role == role;
+        return CurrentUser != null &&
+               string.Equals(CurrentUser.Role, role, StringComparison.OrdinalIgnoreCase);
     }
-   
+
+    public static bool HasAnyRole(params string[] roles)
+    {
+        return CurrentUser != null &&
+               roles.Any(r => string.Equals(CurrentUser.Role, r, StringComparison.OrdinalIgnoreCase));
+    }
+
 }

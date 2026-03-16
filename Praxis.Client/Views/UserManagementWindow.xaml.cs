@@ -26,16 +26,18 @@ public partial class UserManagementWindow : Window
 
     private async void UserManagementWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        if (!UserSession.HasRole(Roles.Administrator))
-        {
-            MessageBox.Show("Nur Administratoren dürfen die Benutzerverwaltung öffnen.");
-            Close();
-            return;
-        }
+        CheckAccess();
 
         await LoadUsersAsync();
     }
-
+    private void CheckAccess()
+    {
+        if (!UserSession.HasRole(Roles.Administrator))
+        {
+            MessageBox.Show("Nur Administratoren dürfen Benutzer verwalten.");
+            Close();
+        }
+    }
     private async Task LoadUsersAsync()
     {
         try
