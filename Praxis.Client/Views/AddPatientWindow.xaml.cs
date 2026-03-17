@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Windows;
 using Praxis.Domain.Entities;
+using Praxis.Infrastructure.Services;
 
 namespace Praxis.Client.Views;
 
@@ -65,7 +66,9 @@ public partial class AddPatientWindow : Window
 
         DialogResult = true;
         Close();
-        await((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
+       
+
+        await ((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
     }
 
     private bool ValidateInputs(out string error)

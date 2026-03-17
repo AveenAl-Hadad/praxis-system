@@ -83,7 +83,7 @@ public partial class InvoiceWindow : Window
     {
         if (invoice == null) return;
 
-        await _invoiceService.AddInvoiceAsync(invoice);
+        await _invoiceService.AddInvoiceAsync(invoice, UserSession.CurrentUser?.Username ?? "System");
         await LoadInvoicesAsync();
         await ((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
 
@@ -115,6 +115,39 @@ public partial class InvoiceWindow : Window
         {
             MessageBox.Show("Sie haben keine Berechtigung für Rechnungen.");
             Close();
+        }
+    }
+    private async void DeleteInvoice_Click(object sender, RoutedEventArgs e)
+    {
+        if (InvoicesGrid.SelectedItem is not Invoice invoice)
+        {
+            MessageBox.Show("Bitte zuerst eine Rechnung auswählen.");
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"Möchten Sie die Rechnung '{invoice.InvoiceNumber}' wirklich löschen?",
+            "Rechnung löschen",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            await _invoiceService.DeleteInvoiceAsync(
+                invoice.Id,
+                UserSession.CurrentUser?.Username ?? "System");
+
+            await LoadInvoicesAsync();
+            await ((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
+
+            MessageBox.Show("Rechnung wurde erfolgreich gelöscht.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Fehler beim Löschen der Rechnung:\n{ex.Message}");
         }
     }
 }

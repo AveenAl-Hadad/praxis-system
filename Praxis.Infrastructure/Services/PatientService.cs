@@ -9,23 +9,27 @@ namespace Praxis.Infrastructure.Services;
 public class PatientService : IPatientService
 {
     private readonly PraxisDbContext _context;
+    private readonly IAuditService _auditService;
 
-    public PatientService(PraxisDbContext context)
+    public PatientService(PraxisDbContext context, IAuditService auditService)
     {
         _context = context;
+        _auditService = auditService;
     }
 
     public async Task<IEnumerable<Patient>> GetAllPatientsAsync()
     {
         return await _context.Patients.AsNoTracking().ToListAsync();
     }
-    public async Task AddPatientAsync(Patient patient)
+    public async Task AddPatientAsync(Patient patient,string userName)
     {
              await EnsureNoDuplicatesAsync(patient);
             _context.Patients.Add(patient);
         try
         {
             await ExecuteWithRetryAsync(() => _context.SaveChangesAsync());
+            await _auditService.LogAsync(userName,
+                "CREATE","Patient",$"Patient {patient.Vorname} {patient.Nachname} erstellt");
         }
         catch (DbUpdateException ex) when (ex.InnerException is SqliteException se && se.SqliteErrorCode == 19)
         {
@@ -34,15 +38,21 @@ public class PatientService : IPatientService
                 ex);
         }
     }
-    public async Task DeletePatientAsync(int id)
+    public async Task DeletePatientAsync(int id, string userName)
     {
         var patient = await _context.Patients.FindAsync(id);
         if (patient != null)
         {
             try
-            { 
-            _context.Patients.Remove(patient);
-            await _context.SaveChangesAsync();
+            {
+                var patientName = $"{patient.Vorname} {patient.Nachname}";
+                _context.Patients.Remove(patient);
+                await _context.SaveChangesAsync();
+                await _auditService.LogAsync(
+                                            userName,
+                                            "DELETE",
+                                            "Patient",
+                                            $"Patient {patientName} gelöscht");
             }
             catch (DbUpdateConcurrencyException ex)
             {

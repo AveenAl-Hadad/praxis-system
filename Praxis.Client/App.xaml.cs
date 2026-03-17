@@ -56,6 +56,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IDashboardService, DashboardService>();
                 services.AddTransient<IEmailService, EmailService>();
                 services.AddTransient<IReminderService, ReminderService>();
+                services.AddTransient<IAuditService, AuditService>();
 
 
                 services.AddTransient<MainWindow>();
@@ -72,6 +73,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<PrescriptionWindow>();
                 services.AddTransient<AddPrescriptionWindow>();
                 services.AddTransient<DocumentWindow>();
+                services.AddTransient<AuditLogWindow>();
             })
             .Build();
 

@@ -27,6 +27,7 @@
             <DatePicker x:Name="ToDatePicker" Width="140" SelectedDateChanged="Filter_Changed"/>
             <Button Content="Neu" Width="100" Margin="20,0,0,0" Click="NewInvoice_Click"/>
             <Button Content="PDF exportieren" Width="140" Margin="10,0,0,0" Click="ExportPdf_Click"/>
+            <Button Content="Rechnung löschen" Width="140" Margin="8,0,0,0" Click="DeleteInvoice_Click"></Button>
 
         </StackPanel>
 

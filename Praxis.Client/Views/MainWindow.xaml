@@ -318,6 +318,14 @@
                             </Canvas>
                         </Viewbox>
                     </Button>
+                    <Button Style="{StaticResource WarningButtonStyle}"
+                            Width="38"
+                            Height="38"
+                            Margin="0,0,8,0"
+                            ToolTip="Systemprotokoll"
+                            Click="OpenAuditLog_Click">
+                        <TextBlock Text="📝"/>
+                    </Button>
                 </StackPanel>
             </DockPanel>
         </Border>

@@ -4,6 +4,7 @@ using Praxis.Client.Views;
 using Praxis.Client.Logic.UI;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
+using Praxis.Client.Session;
 
 namespace Praxis.Client.Logic;
 
@@ -34,7 +35,8 @@ public class PatientCrudController
             if (!_dialogs.TryCreatePatient(owner, out var patient) || patient == null)
                 return false;
 
-            await _patientService.AddPatientAsync(patient);
+            await _patientService.AddPatientAsync(patient, UserSession.CurrentUser?.Username ?? "System");
+
             return true;
         }
         catch (Exception ex)
@@ -74,7 +76,8 @@ public class PatientCrudController
 
         try
         {
-            await _patientService.DeletePatientAsync(selected.Id);
+            await _patientService.DeletePatientAsync(selected.Id, UserSession.CurrentUser?.Username ?? "System");
+
             return true;
         }
         catch (Exception ex)

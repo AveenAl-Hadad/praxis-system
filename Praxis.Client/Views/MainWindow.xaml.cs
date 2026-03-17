@@ -262,7 +262,7 @@ public partial class MainWindow : Window
 
             if (window.ShowDialog() == true && window.CreatedPatient != null)
             {
-                await _patientService.AddPatientAsync(window.CreatedPatient);
+                await _patientService.AddPatientAsync(window.CreatedPatient, UserSession.CurrentUser?.Username ?? "System");
                 await LoadPatientsAsync();
                 await LoadDashboardAsync();
             }
@@ -342,7 +342,7 @@ public partial class MainWindow : Window
             if (result != MessageBoxResult.Yes)
                 return;
 
-            await _patientService.DeletePatientAsync(selectedPatient.Id);
+            await _patientService.DeletePatientAsync(selectedPatient.Id,UserSession.CurrentUser?.Username ?? "System");
             await LoadPatientsAsync();
             //await LoadDashboardAsync();
         }
@@ -655,5 +655,11 @@ public partial class MainWindow : Window
     private void PatientsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
 
+    }
+    private void OpenAuditLog_Click(object sender, RoutedEventArgs e)
+    {
+        var window = _serviceProvider.GetRequiredService<AuditLogWindow>();
+        window.Owner = this;
+        window.ShowDialog();
     }
 }

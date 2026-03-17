@@ -79,7 +79,7 @@ public partial class PrescriptionWindow : Window
     {
         if (prescription == null) return;
 
-        await _prescriptionService.AddPrescriptionAsync(prescription);
+        await _prescriptionService.AddPrescriptionAsync(prescription, UserSession.CurrentUser?.Username ?? "System");
         await LoadPrescriptionsAsync();
         await ((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
     }
@@ -102,6 +102,39 @@ public partial class PrescriptionWindow : Window
         {
             _pdfService.ExportPrescriptionToPdf(prescription, dialog.FileName);
             MessageBox.Show("Rezept wurde als PDF exportiert.");
+        }
+    }
+    private async void DeletePrescription_Click(object sender, RoutedEventArgs e)
+    {
+        if (PrescriptionsGrid.SelectedItem is not Prescription prescription)
+        {
+            MessageBox.Show("Bitte zuerst ein Rezept auswählen.");
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"Möchten Sie das Rezept '{prescription.PrescriptionNumber}' wirklich löschen?",
+            "Rezept löschen",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            await _prescriptionService.DeletePrescriptionAsync(
+                prescription.Id,
+                UserSession.CurrentUser?.Username ?? "System");
+
+            await LoadPrescriptionsAsync();
+            await ((MainWindow)Application.Current.MainWindow).LoadDashboardAsync();
+
+            MessageBox.Show("Rezept wurde erfolgreich gelöscht.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Fehler beim Löschen des Rezepts:\n{ex.Message}");
         }
     }
 }

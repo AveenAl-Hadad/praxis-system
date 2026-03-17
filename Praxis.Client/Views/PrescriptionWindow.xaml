@@ -34,6 +34,10 @@
                     Width="140"
                     Margin="8,0,0,0"
                     Click="ExportPdf_Click"/>
+            <Button Content="Rezept löschen"
+                    Width="140"
+                    Margin="8,0,0,0"
+                    Click="DeletePrescription_Click"/>
         </StackPanel>
 
         <DataGrid x:Name="PrescriptionsGrid"
