@@ -14,6 +14,9 @@ public interface IAppointmentService
     Task UpdateAppointmentAsync(Appointment appointment);
     Task UpdateAppointmentStatusAsync(int appointmentId, string status);
     Task DeleteAppointmentAsync(int id);
+    // Erweitern mit online Buhchung
+    Task<List<DateTime>> GetAvailableSlotsAsync(DateTime date, int durationMinutes);
+    Task<bool> IsTimeSlotAvailableAsync(DateTime startTime, int durationMinutes, int? excludeAppointmentId = null);
 
 
 }

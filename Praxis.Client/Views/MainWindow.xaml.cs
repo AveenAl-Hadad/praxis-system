@@ -14,6 +14,7 @@ using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 using Praxis.Infrastructure.Services.Interface;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Praxis.Client.Views;
 
@@ -776,5 +777,19 @@ public partial class MainWindow : Window
                 VerticalAlignment = VerticalAlignment.Center
             };
         }
+    }
+    private async void OnlineBookingButton_Click(object sender, RoutedEventArgs e)
+    {
+        var bookingWindow = App.ServiceProvider.GetRequiredService<OnlineBookingWindow>();
+        bookingWindow.Owner = this;
+
+        var result = bookingWindow.ShowDialog();
+
+        if (result == true)
+        {
+           await LoadDashboardAsync();
+        }
+      
+
     }
 }

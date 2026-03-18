@@ -306,6 +306,20 @@
                         <TextBlock Text="Dashboard neu laden"/>
                     </StackPanel>
                 </Button>
+                <Button x:Name="OnlineBookingButton"
+                        Width="150"
+                        Height="36"
+                        Margin="0,0,10,10"
+                        Click="OnlineBookingButton_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE8A7;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="13"
+                                   Margin="0,0,6,0"/>
+                        <TextBlock Text="Online Buchung"
+                                   FontSize="13"/>
+                    </StackPanel>
+                </Button>
 
             </WrapPanel>
         </Border>

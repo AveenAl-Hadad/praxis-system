@@ -77,6 +77,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<AddPrescriptionWindow>();
                 services.AddTransient<DocumentWindow>();
                 services.AddTransient<AuditLogWindow>();
+                services.AddTransient<OnlineBookingWindow>();
             })
             .Build();
 

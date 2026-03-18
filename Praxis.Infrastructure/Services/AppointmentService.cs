@@ -152,16 +152,108 @@ public class AppointmentService : IAppointmentService
 
     private async Task CheckForConflictAsync(Appointment appointment)
     {
-        var newStart = appointment.StartTime;
-        var newEnd = appointment.StartTime.AddMinutes(appointment.DurationMinutes);
+        var isAvailable = await IsTimeSlotAvailableAsync(
+            appointment.StartTime,
+            appointment.DurationMinutes,
+            appointment.Id == 0 ? null : appointment.Id);
+
+        if (!isAvailable)
+            throw new InvalidOperationException("Es existiert bereits ein Termin in diesem Zeitraum.");
+    }
+    public async Task<List<DateTime>> GetAvailableSlotsAsync(DateTime date, int durationMinutes)
+    {
+        var availableSlots = new List<DateTime>();
+        if (date.Date < DateTime.Today)
+            return new List<DateTime>();
+
+        if (durationMinutes <= 0)
+            return availableSlots;
+
+        var workingRanges = GetWorkingTimeRanges(date);
+        var now = DateTime.Now;
+        var isToday = date.Date == now.Date;
+
+        foreach (var range in workingRanges)
+        {
+            var firstPossibleSlot = range.Start;
+
+            if (isToday)
+            {
+                var nextPossibleTime = RoundUpToNext15Minutes(now);
+
+                if (nextPossibleTime > firstPossibleSlot)
+                {
+                    firstPossibleSlot = nextPossibleTime;
+                }
+            }
+
+            for (var slot = firstPossibleSlot; slot.AddMinutes(durationMinutes) <= range.End; slot = slot.AddMinutes(15))
+            {
+                var isAvailable = await IsTimeSlotAvailableAsync(slot, durationMinutes);
+                if (isAvailable)
+                {
+                    availableSlots.Add(slot);
+                }
+            }
+        }
+
+        return availableSlots;
+    }
+    private List<(DateTime Start, DateTime End)> GetWorkingTimeRanges(DateTime date)
+    {
+        var ranges = new List<(DateTime Start, DateTime End)>();
+
+        switch (date.DayOfWeek)
+        {
+            case DayOfWeek.Monday:
+            case DayOfWeek.Tuesday:
+            case DayOfWeek.Thursday:
+                ranges.Add((date.Date.AddHours(8), date.Date.AddHours(12)));
+                ranges.Add((date.Date.AddHours(15), date.Date.AddHours(18)));
+                break;
+
+            case DayOfWeek.Wednesday:
+                ranges.Add((date.Date.AddHours(8), date.Date.AddHours(12)));
+                break;
+
+            case DayOfWeek.Friday:
+                ranges.Add((date.Date.AddHours(8), date.Date.AddHours(14)));
+                break;
+
+            case DayOfWeek.Saturday:
+            case DayOfWeek.Sunday:
+                break;
+        }
+
+        return ranges;
+    }
+    private DateTime RoundUpToNext15Minutes(DateTime dateTime)
+    {
+        var trimmed = new DateTime(
+            dateTime.Year,
+            dateTime.Month,
+            dateTime.Day,
+            dateTime.Hour,
+            dateTime.Minute,
+            0);
+
+        var remainder = trimmed.Minute % 15;
+
+        if (remainder == 0)
+            return trimmed > dateTime ? trimmed : trimmed;
+
+        return trimmed.AddMinutes(15 - remainder);
+    }
+    public async Task<bool> IsTimeSlotAvailableAsync(DateTime startTime, int durationMinutes, int? excludeAppointmentId = null)
+    {
+        var endTime = startTime.AddMinutes(durationMinutes);
 
         var conflict = await _context.Appointments.AnyAsync(a =>
-            a.Id != appointment.Id &&
-            newStart < a.StartTime.AddMinutes(a.DurationMinutes) &&
-            newEnd > a.StartTime);
+            (!excludeAppointmentId.HasValue || a.Id != excludeAppointmentId.Value) &&
+            startTime < a.StartTime.AddMinutes(a.DurationMinutes) &&
+            endTime > a.StartTime);
 
-        if (conflict)
-            throw new InvalidOperationException("Es existiert bereits ein Termin in diesem Zeitraum.");
+        return !conflict;
     }
 
 }
