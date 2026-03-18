@@ -6,6 +6,7 @@ using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Praxis.Client.Logic.UI;
 using Praxis.Client.Views;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
@@ -58,6 +59,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IReminderService, ReminderService>();
                 services.AddTransient<IAuditService, AuditService>();
                 services.AddTransient<IBackupService, BackupService>();
+                services.AddSingleton<IThemeService, ThemeService>();
 
 
                 services.AddTransient<MainWindow>();

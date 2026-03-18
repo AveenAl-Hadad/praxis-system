@@ -1,14 +1,13 @@
 ﻿<Window x:Class="Praxis.Client.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:svg="http://sharpvectors.codeplex.com/svg"
-        Title="PraxisSystem"
-        Height="850"
-        Width="1300"
-        WindowStartupLocation="CenterScreen"
+        Title="Praxis System"
+        Height="780"
+        Width="1400"
         Background="{StaticResource BackgroundBrush}"
-        KeyDown="Window_KeyDown"
-        Loaded="Window_Loaded">
+        WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded"
+        KeyDown="Window_KeyDown">
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -17,690 +16,436 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Kopf -->
-        <Border Grid.Row="0"
-                Style="{StaticResource CardBorderStyle}"
-                Margin="0,0,0,12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <!-- HEADER -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-                <StackPanel>
-                    <TextBlock Text="Praxisverwaltung"
-                               Style="{StaticResource SectionTitleStyle}"
-                               FontSize="30"/>
-                    <TextBlock Text="Patientenübersicht und Verwaltung"
-                               FontSize="14"
-                               Foreground="{StaticResource MutedTextBrush}"/>
-                </StackPanel>
+            <TextBlock Text="Praxis Verwaltungssystem"
+               FontSize="24"
+               FontWeight="Bold"
+               VerticalAlignment="Center" />
 
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center">
-                    <TextBlock x:Name="LoggedInUserText"
-                               Margin="0,0,16,0"
-                               VerticalAlignment="Center"
-                               FontWeight="SemiBold"
-                               FontSize="14"/>
+            <StackPanel Grid.Column="1"
+                Orientation="Horizontal"
+                VerticalAlignment="Center">
 
-                    <Button Width="40"
-                            Height="36"
-                            Margin="0,0,10,0"
-                            Style="{StaticResource WarningButtonStyle}"
-                            ToolTip="Passwort ändern"
-                            Click="ChangePassword_Click">
+                <TextBlock x:Name="LoggedInUserText"
+                   VerticalAlignment="Center"
+                   Margin="0,0,12,0"
+                   FontWeight="SemiBold" />
 
-                        <Viewbox Width="20" Height="20">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="M15.75 5.25A3.75 3.75 0 1 0 15.75 12.75A3.75 3.75 0 0 0 15.75 5.25ZM12 9H3.75M6 9V12M9 9V12"
-                                      Stroke="White"
-                                      StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
-                            </Canvas>
-                        </Viewbox>
+                <Button x:Name="ThemeToggleButton"
+                Width="40"
+                Height="36"
+                Margin="0,0,10,0"
+                Click="ThemeToggle_Click">
+                    <TextBlock Text="🌙"
+                       FontSize="16"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                </Button>
 
-                    </Button>
+                <Button Width="150"
+                Margin="0,0,10,0"
+                Click="ChangePassword_Click">
+                    <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE72E;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="16"
+                           Margin="0,0,8,0" />
+                        <TextBlock Text="Passwort ändern" />
+                    </StackPanel>
+                </Button>
 
-                    <Button Width="40"
-                            Height="36"
-                            Style="{StaticResource DangerButtonStyle}"
-                            ToolTip="Abmelden"
-                            Click="Logout_Click">
+                <Button Width="110"
+                Style="{StaticResource DangerButtonStyle}"
+                Click="Logout_Click">
+                    <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE8AC;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="16"
+                           Margin="0,0,8,0" />
+                        <TextBlock Text="Logout" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
 
-                        <Viewbox Width="20" Height="20">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3H6.75A2.25 2.25 0 0 0 4.5 5.25V18.75A2.25 2.25 0 0 0 6.75 21H13.5A2.25 2.25 0 0 0 15.75 18.75V15M12 12H21M21 12L18 9M21 12L18 15"
-                                      Stroke="White"
-                                      StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                  StrokeEndLineCap="Round"/>
-                            </Canvas>
-                        </Viewbox>
-
-                    </Button>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- Suche + Toolbar -->
+        <!-- TOOLBAR 1 -->
         <Border Grid.Row="1"
-                Style="{StaticResource CardBorderStyle}"
-                Margin="0,0,0,12">
-            <DockPanel LastChildFill="False">
+        Style="{StaticResource CardBorderStyle}"
+        Margin="0,0,0,12">
+            <WrapPanel>
 
-                <StackPanel DockPanel.Dock="Left"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center">
+                <Button x:Name="AddPatientButton"
+                Width="160"
+                Height="40"
+                Margin="0,0,10,10"
+                Style="{StaticResource PrimaryButtonStyle}"
+                Click="AddPatient_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="15" Margin="0,0,8,0"/>
+                        <TextBlock Text="Patient hinzufügen"/>
+                    </StackPanel>
+                </Button>
 
-                    <Grid Width="320"
-                          Height="34"
-                          Margin="0,0,12,0">
-                        <TextBox x:Name="SearchBox"
-                                 VerticalContentAlignment="Center"
-                                 TextChanged="SearchBox_TextChanged"/>
+                <Button x:Name="EditPatientButton"
+                Width="155"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="EditPatient_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Patient bearbeiten"/>
+                    </StackPanel>
+                </Button>
 
-                        <TextBlock Text="Patient suchen..."
-                                   Margin="12,0,0,0"
-                                   VerticalAlignment="Center"
-                                   Foreground="Gray"
-                                   IsHitTestVisible="False">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Grid>
+                <Button x:Name="DeletePatientButton"
+                Width="145"
+                Height="40"
+                Margin="0,0,10,10"
+                Style="{StaticResource DangerButtonStyle}"
+                Click="DeletePatient_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="Patient löschen"/>
+                    </StackPanel>
+                </Button>
 
-                    <CheckBox x:Name="OnlyActiveCheck"
-                              Margin="0,0,16,0"
-                              Content="Nur aktive"
-                              IsChecked="True"
-                              Checked="OnlyActiveCheck_Changed"
-                              Unchecked="OnlyActiveCheck_Changed"/>
-                </StackPanel>
+                <Button x:Name="ToggleActiveButton"
+                Width="135"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="ToggleActive_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="Aktiv/Inaktiv"/>
+                    </StackPanel>
+                </Button>
 
-                <StackPanel DockPanel.Dock="Right"
-                            Orientation="Horizontal">
+                <Button x:Name="ExportCsvButton"
+                Width="120"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="ExportCsv_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xEDE1;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="CSV Export"/>
+                    </StackPanel>
+                </Button>
 
-                    <Button x:Name="AddPatientButton"
-                            Style="{StaticResource SuccessButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Patient hinzufügen"
-                            Click="AddPatient_Click">
-                        <TextBlock Text="➕"
-                                   FontSize="20"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Button>
+                <Button Width="120"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="Refresh_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Aktualisieren"/>
+                    </StackPanel>
+                </Button>
 
-                    <Button x:Name="EditPatientButton"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Patient bearbeiten"
-                            Click="EditPatient_Click">
-                        <TextBlock Text="✎"
-                                   FontSize="16"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Button>
+                <TextBox x:Name="SearchBox"
+                         Style="{StaticResource SearchTextBoxStyle}"
+                         Width="220"
+                         Height="32"
+                         Margin="20,4,10,10"
+                         VerticalAlignment="Center"
+                         TextChanged="SearchBox_TextChanged"
+                         Tag="Suche..." />
 
-                    <Button x:Name="DeletePatientButton"
-                            Style="{StaticResource DangerButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Patient löschen"
-                            Click="DeletePatient_Click">
-                        <TextBlock Text="🗑"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Button>
-
-                    <Button x:Name="ToggleActiveButton"
-                            Style="{StaticResource WarningButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Aktiv/Inaktiv umschalten"
-                            Click="ToggleActive_Click">
-                        <TextBlock Text="✓"
-                                   FontSize="16"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Button>
-
-                    <Button x:Name="RefrchButton"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Liste aktualisieren"
-                            Click="Refresh_Click">
-                        <TextBlock Text="↻"
-                                   FontSize="16"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Button>
-
-                    <Button x:Name="ExportCsvButton"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="CSV exportieren"
-                            Click="ExportCsv_Click">
-                        
-                        <Viewbox Width="24" Height="24">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="M9 3.75H6.912a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859M12 3v8.25m0 0-3-3m3 3 3-3"
-                                      Stroke="White"
-                                      StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
-                             </Canvas>
-                        </Viewbox>
-
-                    </Button>
-
-                    <Button x:Name="AddAppointmentButton"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Termin anlegen"
-                            Click="OpenAddAppointmentWindow_Click">
-                        <Viewbox>
-                            <Canvas Width="24" Height="24">
-                                <Path Data="M8.25 3V5.25M15.75 3V5.25M6.75 4.5H17.25A2.25 2.25 0 0 1 19.5 6.75V18A2.25 2.25 0 0 1 17.25 20.25H6.75A2.25 2.25 0 0 1 4.5 18V6.75A2.25 2.25 0 0 1 6.75 4.5ZM4.5 8.25H19.5M12 11.25V16.5M9.375 13.875H14.625"
-                                  Stroke="White"
-                                  StrokeThickness="1.5"
-                                  StrokeLineJoin="Round"
-                                  StrokeStartLineCap="Round"
-                                  StrokeEndLineCap="Round"/>
-                            </Canvas>
-                        </Viewbox>
-                    </Button>
-
-                    <Button x:Name="InvoiceButton"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Rechnungen öffnen"
-                            Click="OpenInvoices_Click">
-                        <Viewbox Width="24" Height="24">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="M6 3.75H15.75L19.5 7.5V18.75A2.25 2.25 0 0 1 17.25 21H6.75A2.25 2.25 0 0 1 4.5 18.75V6A2.25 2.25 0 0 1 6.75 3.75H6ZM15.75 3.75V7.5H19.5M8.25 11.25H15.75M8.25 14.25H15.75M8.25 17.25H12"
-                                      Stroke="White"
-                                      StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
-                            </Canvas>
-                        </Viewbox>
-                    </Button>
-                    <Button x:Name="PrescriptionButton"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Rezepte öffnen"
-                            Click="OpenPrescriptions_Click">
-                        <Viewbox Width="24" Height="24">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="M6.75 3.75H14.25L18.75 8.25V18.75A1.5 1.5 0 0 1 17.25 20.25H6.75A1.5 1.5 0 0 1 5.25 18.75V5.25A1.5 1.5 0 0 1 6.75 3.75ZM14.25 3.75V8.25H18.75M12 10.5V15M9.75 12.75H14.25M8.25 17.25H15.75"
-                                      Stroke="White"
-                                      StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
-                            </Canvas>
-                        </Viewbox>
-                    </Button>
-
-                    <Button x:Name="DocumentsButton"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Dokumente öffnen"
-                            Click="OpenDocuments_Click">
-                        <Viewbox Width="24" Height="24">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="M6.75 3.75H14.25L18.75 8.25V18.75A1.5 1.5 0 0 1 17.25 20.25H6.75A1.5 1.5 0 0 1 5.25 18.75V5.25A1.5 1.5 0 0 1 6.75 3.75ZM14.25 3.75V8.25H18.75M8.25 11.25H15.75M8.25 14.25H15.75M8.25 17.25H12.75"
-                                      Stroke="White"
-                                      StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
-                            </Canvas>
-                        </Viewbox>
-                    </Button>
-
-                    <Button x:Name="UserManagementButton"
-                            Style="{StaticResource WarningButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            ToolTip="Benutzerverwaltung"
-                            Click="UserManagementButton_Click">
-                        <Viewbox Width="24" Height="24">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="M9 10.5A2.25 2.25 0 1 0 9 6A2.25 2.25 0 0 0 9 10.5ZM15.75 9.75A1.875 1.875 0 1 0 15.75 6A1.875 1.875 0 0 0 15.75 9.75ZM5.25 17.25A3.75 3.75 0 0 1 12.75 17.25M13.5 16.5A3 3 0 0 1 18.75 17.25"
-                                      Stroke="White"
-                                      StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
-                            </Canvas>
-                        </Viewbox>
-                    </Button>
-                    <Button Style="{StaticResource WarningButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Systemprotokoll"
-                            Click="OpenAuditLog_Click">
-                        <TextBlock Text="📝"/>
-                    </Button>
-                    <Button x:Name="BackupButton"
-                            Style="{StaticResource WarningButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Backup erstellen"
-                            Click="CreateBackup_Click">
-                        <Viewbox Width="24" Height="24">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="M12 3V12M12 12L8.25 8.25M12 12L15.75 8.25M4.5 15.75V18A2.25 2.25 0 0 0 6.75 20.25H17.25A2.25 2.25 0 0 0 19.5 18V15.75"
-                                      Stroke="White"
-                                      StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
-                            </Canvas>
-                        </Viewbox>
-                    </Button>
-                    <Button x:Name="RestoreButton"
-                            Style="{StaticResource DangerButtonStyle}"
-                            Width="38"
-                            Height="38"
-                            Margin="0,0,8,0"
-                            ToolTip="Backup wiederherstellen"
-                            Click="RestoreBackup_Click">
-                        <Viewbox Width="24" Height="24">
-                            <Canvas Width="24" Height="24">
-                                <Path Data="M12 21V12M12 12L8.25 15.75M12 12L15.75 15.75M4.5 8.25V6A2.25 2.25 0 0 1 6.75 3.75H17.25A2.25 2.25 0 0 1 19.5 6V8.25"
-                                      Stroke="White"
-                                      StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
-                            </Canvas>
-                        </Viewbox>
-                    </Button>
-                </StackPanel>
-            </DockPanel>
+                <CheckBox x:Name="OnlyActiveCheck"
+                  Content="Nur aktive Patienten"
+                  VerticalAlignment="Center"
+                  Margin="0,0,10,10"
+                  Checked="OnlyActiveCheck_Changed"
+                  Unchecked="OnlyActiveCheck_Changed"/>
+            </WrapPanel>
         </Border>
 
-        <!-- Statistik -->
-        <Expander Grid.Row="2"
-                  Header="Dashboard und Statistik"
-                  IsExpanded="False"
-                  Margin="0,0,0,12">
-            <StackPanel Margin="12">
+        <!-- TOOLBAR 2 -->
+        <Border Grid.Row="2"
+        Style="{StaticResource CardBorderStyle}"
+        Margin="0,0,0,12">
+            <WrapPanel>
 
-                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,10">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                <Button x:Name="AddAppointmentButton"
+                Width="145"
+                Height="40"
+                Margin="0,0,10,10"
+                Style="{StaticResource SuccessButtonStyle}"
+                Click="OpenAddAppointmentWindow_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE8B5;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Termin erstellen"/>
+                    </StackPanel>
+                </Button>
 
-                        <StackPanel Grid.Column="0" Margin="8">
-                            <TextBlock Text="Patienten" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="TotalPatientsText"
-                                       Text="0"
-                                       FontSize="22"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
+                <Button x:Name="AppointmentsNavigationButton"
+                Width="110"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="OpenAppointments_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Termine"/>
+                    </StackPanel>
+                </Button>
 
-                        <StackPanel Grid.Column="1" Margin="8">
-                            <TextBlock Text="Termine" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="TotalAppointmentsText"
-                                       Text="0"
-                                       FontSize="22"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
+                <Button x:Name="CalendarButton"
+                Width="110"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="OpenCalendar_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Kalender"/>
+                    </StackPanel>
+                </Button>
 
-                        <StackPanel Grid.Column="2" Margin="8">
-                            <TextBlock Text="Rechnungen" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="TotalInvoicesText"
-                                       Text="0"
-                                       FontSize="22"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
+                <Button x:Name="WaitingRoomButton"
+                Width="125"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="OpenWaitingRoom_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE8BD;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Wartezimmer"/>
+                    </StackPanel>
+                </Button>
 
-                        <StackPanel Grid.Column="3" Margin="8">
-                            <TextBlock Text="Rezepte" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="TotalPrescriptionsText"
-                                       Text="0"
-                                       FontSize="22"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
+                <Button x:Name="InvoiceButton"
+                Width="120"
+                Height="40"
+                Margin="0,0,10,10"
+                Style="{StaticResource WarningButtonStyle}"
+                Click="OpenInvoices_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Rechnungen"/>
+                    </StackPanel>
+                </Button>
 
-                        <StackPanel Grid.Column="4" Margin="8">
-                            <TextBlock Text="Gesamtumsatz" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="TotalRevenueText"
-                                       Text="0,00 €"
-                                       FontSize="22"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Grid>
+                <Button x:Name="PrescriptionButton"
+                Width="110"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="OpenPrescriptions_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE91D;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Rezepte"/>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="DocumentsButton"
+                Width="120"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="OpenDocuments_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Dokumente"/>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="UserManagementButton"
+                Width="120"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="UserManagementButton_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Benutzer"/>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="BackupButton"
+                Width="110"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="CreateBackup_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Backup"/>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="RestoreButton"
+                Width="110"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="RestoreBackup_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE72D;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Restore"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Width="110"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="OpenAuditLog_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Audit Log"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Width="165"
+                Height="40"
+                Margin="0,0,10,10"
+                Click="RefreshDashboard_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xE895;" FontFamily="Segoe MDL2 Assets" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Dashboard neu laden"/>
+                    </StackPanel>
+                </Button>
+
+            </WrapPanel>
+        </Border>
+        <!-- INHALT -->
+        <Grid Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- DASHBOARD -->
+            <UniformGrid Grid.Row="0" Columns="3" Margin="0,0,0,12">
+                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="Patienten gesamt"
+                                   Foreground="{StaticResource MutedTextBrush}"/>
+                        <TextBlock x:Name="TotalPatientsText"
+                                   Text="0"
+                                   FontSize="28"
+                                   FontWeight="Bold"/>
+                    </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,10">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="8">
-                            <TextBlock Text="Termine diesen Monat" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="CurrentMonthAppointmentsText"
-                                       Text="0"
-                                       FontSize="22"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="8">
-                            <TextBlock Text="Rechnungen diesen Monat" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="CurrentMonthInvoicesText"
-                                       Text="0"
-                                       FontSize="22"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" Margin="8">
-                            <TextBlock Text="Umsatz diesen Monat" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="CurrentMonthRevenueText"
-                                       Text="0,00 €"
-                                       FontSize="22"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Grid>
+                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="Aktive Patienten"
+                                   Foreground="{StaticResource MutedTextBrush}"/>
+                        <TextBlock x:Name="ActivePatientsText"
+                                   Text="0"
+                                   FontSize="28"
+                                   FontWeight="Bold"/>
+                    </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource CardBorderStyle}">
                     <StackPanel>
-                        <Button Content="Dashboard aktualisieren"
-                                Width="160"
-                                Margin="0,0,0,10"
-                                HorizontalAlignment="Left"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Click="RefreshDashboard_Click"/>
-
-                        <TextBlock Text="Termine" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <ProgressBar x:Name="AppointmentsChartBar"
-                                     Height="18"
-                                     Minimum="0"
-                                     Maximum="100"
-                                     Value="0"/>
-                        <TextBlock x:Name="AppointmentsChartLabel"
-                                   Text="0 Termine"
-                                   Margin="0,4,0,10"/>
-
-                        <TextBlock Text="Rechnungen" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <ProgressBar x:Name="InvoicesChartBar"
-                                     Height="18"
-                                     Minimum="0"
-                                     Maximum="100"
-                                     Value="0"/>
-                        <TextBlock x:Name="InvoicesChartLabel"
-                                   Text="0 Rechnungen"
-                                   Margin="0,4,0,10"/>
-
-                        <TextBlock Text="Umsatz" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <ProgressBar x:Name="RevenueChartBar"
-                                     Height="18"
-                                     Minimum="0"
-                                     Maximum="100"
-                                     Value="0"/>
-                        <TextBlock x:Name="RevenueChartLabel"
-                                   Text="0,00 € Umsatz"
-                                   Margin="0,4,0,0"/>
+                        <TextBlock Text="Termine heute"
+                                   Foreground="{StaticResource MutedTextBrush}"/>
+                        <TextBlock x:Name="TodayAppointmentsText"
+                                   Text="0"
+                                   FontSize="28"
+                                   FontWeight="Bold"/>
                     </StackPanel>
                 </Border>
-            </StackPanel>
-        </Expander>
+            </UniformGrid>
 
-        <!-- Patientenliste -->
-        <Border Grid.Row="3"
-                Style="{StaticResource CardBorderStyle}"
-                Margin="0,0,0,12">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <TextBlock Grid.Row="0"
-                           Text="Patientenliste"
-                           Style="{StaticResource SectionTitleStyle}"
-                           Margin="0,0,0,10"/>
-
+            <!-- PATIENTENLISTE -->
+            <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}">
                 <DataGrid x:Name="PatientsGrid"
-                          Grid.Row="1"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
                           IsReadOnly="True"
-                          SelectionMode="Single"
-                          SelectionUnit="FullRow"
+                          SelectionChanged="PatientsGrid_SelectionChanged"
                           MouseDoubleClick="PatientsGrid_DoubleClick"
                           KeyDown="PatientsGrid_KeyDown"
                           Sorting="PatientsGrid_Sorting">
-
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
-                        <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" Width="2*"/>
-                        <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" Width="2*"/>
-                        <DataGridTextColumn Header="Geburtsdatum" Binding="{Binding Geburtsdatum, StringFormat=dd.MM.yyyy}" Width="130"/>
-                        <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" Width="80"/>
-                        <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" Width="2*"/>
-                        <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" Width="160"/>
+                        <DataGridTextColumn Header="ID"
+                                            Binding="{Binding Id}"
+                                            SortMemberPath="Id"
+                                            Width="70"/>
 
-                        <DataGridTemplateColumn Header="Aktiv" Width="70">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <CheckBox IsChecked="{Binding IsActive}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              IsHitTestVisible="False"
-                                              Focusable="False"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Vorname"
+                                            Binding="{Binding Vorname}"
+                                            SortMemberPath="Vorname"
+                                            Width="*"/>
+
+                        <DataGridTextColumn Header="Nachname"
+                                            Binding="{Binding Nachname}"
+                                            SortMemberPath="Nachname"
+                                            Width="*"/>
+
+                        <DataGridTextColumn Header="Geburtsdatum"
+                                            Binding="{Binding Geburtsdatum, StringFormat=dd.MM.yyyy}"
+                                            SortMemberPath="Geburtsdatum"
+                                            Width="140"/>
+
+                        <DataGridTextColumn Header="Alter"
+                                            Binding="{Binding Alter}"
+                                            SortMemberPath="Alter"
+                                            Width="80"/>
+
+                        <DataGridTextColumn Header="E-Mail"
+                                            Binding="{Binding Email}"
+                                            SortMemberPath="Email"
+                                            Width="220"/>
+
+                        <DataGridTextColumn Header="Telefon"
+                                            Binding="{Binding Telefonnummer}"
+                                            SortMemberPath="Telefonnummer"
+                                            Width="160"/>
+
+                        <DataGridCheckBoxColumn Header="Aktiv"
+                                                Binding="{Binding IsActive}"
+                                                SortMemberPath="IsActive"
+                                                Width="80"/>
                     </DataGrid.Columns>
                 </DataGrid>
+            </Border>
+
+            <!-- PAGING -->
+            <Grid Grid.Row="2" Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock x:Name="StatusText"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource MutedTextBrush}"/>
+
+                <Button Grid.Column="1"
+                        Content="Zurück"
+                        Width="90"
+                        Margin="0,0,10,0"
+                        Click="PrevPage_Click"/>
+
+                <TextBlock x:Name="PageInfoText"
+                           Grid.Column="2"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"
+                           FontWeight="SemiBold"
+                           Text="Seite 1 / 1"/>
+
+                <Button Grid.Column="3"
+                        Content="Weiter"
+                        Width="90"
+                        Click="NextPage_Click"/>
             </Grid>
-        </Border>
-
-        <!-- Untere Navigation -->
-        <WrapPanel Grid.Row="4"
-           Margin="0,0,0,10"
-           HorizontalAlignment="Left">
-            
-            <!-- Termine -->
-            <Button x:Name="AppointmentsNavigationButton"
-                    Width="44"
-                    Height="44"
-                    Margin="0,0,10,0"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    ToolTip="Termine"
-                    Click="OpenAppointments_Click"> 
-
-                <Viewbox Width="22" Height="22">
-                    <Canvas Width="24" Height="24">
-                        <Path Data="M8.25 3V5.25M15.75 3V5.25M6.75 4.5H17.25A2.25 2.25 0 0 1 19.5 6.75V18A2.25 2.25 0 0 1 17.25 20.25H6.75A2.25 2.25 0 0 1 4.5 18V6.75A2.25 2.25 0 0 1 6.75 4.5ZM4.5 8.25H19.5M8.25 12.75L10.5 15L15.75 9.75"
-                      Stroke="White"
-                      StrokeThickness="1.5"
-                      StrokeLineJoin="Round"
-                      StrokeStartLineCap="Round"
-                      StrokeEndLineCap="Round"/>
-                    </Canvas>
-                </Viewbox>
-
-            </Button>
-
-            <!-- Kalender -->
-            <Button x:Name="CalendarButton"
-                    Width="44"
-                    Height="44"
-                    Margin="0,0,10,0"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    ToolTip="Kalender"
-                    Click="OpenCalendar_Click">
-
-                <Viewbox Width="22" Height="22">
-                    <Canvas Width="24" Height="24">
-                        <Path Data="M8.25 3V5.25M15.75 3V5.25M6.75 4.5H17.25A2.25 2.25 0 0 1 19.5 6.75V18A2.25 2.25 0 0 1 17.25 20.25H6.75A2.25 2.25 0 0 1 4.5 18V6.75A2.25 2.25 0 0 1 6.75 4.5ZM4.5 8.25H19.5M8.25 11.25H10.5M13.5 11.25H15.75M8.25 14.25H10.5M13.5 14.25H15.75"
-                      Stroke="White"
-                      StrokeThickness="1.5"
-                      StrokeLineJoin="Round"
-                      StrokeStartLineCap="Round"
-                      StrokeEndLineCap="Round"/>
-                    </Canvas>
-                </Viewbox>
-
-            </Button>
-
-            <!-- Wartezimmer -->
-            <Button x:Name="WaitingRoomButton"
-                    Width="44"
-                    Height="44"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    ToolTip="Wartezimmer"
-                    Click="OpenWaitingRoom_Click">
-
-            <Viewbox Width="24" Height="24">
-               <Canvas Width="24" Height="24">
-
-                <!-- Uhr (nach oben verschoben) -->
-                    <Path Canvas.Top="-1"
-                          Data="M12 3.75A3.75 3.75 0 1 1 12 11.25A3.75 3.75 0 0 1 12 3.75ZM12 6V7.875L13.5 9"
-                          Stroke="White"
-                          StrokeThickness="1.5"
-                          StrokeLineJoin="Round"
-                          StrokeStartLineCap="Round"
-                          StrokeEndLineCap="Round"/>
-
-                <!-- Bank (etwas nach unten verschoben) -->
-                    <Path Canvas.Top="2"
-                          Data="M4.5 16.5H19.5M6 16.5V13.5A1.5 1.5 0 0 1 7.5 12H9A1.5 1.5 0 0 1 10.5 13.5V16.5M13.5 16.5V13.5A1.5 1.5 0 0 1 15 12H16.5A1.5 1.5 0 0 1 18 13.5V16.5M4.5 19.5H19.5"
-                          Stroke="White"
-                          StrokeThickness="1.5"
-                          StrokeLineJoin="Round"
-                          StrokeStartLineCap="Round"
-                          StrokeEndLineCap="Round"/>
-
-                    </Canvas>
-                </Viewbox>
-            </Button>
-
-        </WrapPanel>
-
-        <!-- Pagination -->
-        <Grid Grid.Row="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock x:Name="StatusText"
-                       Grid.Column="0"
-                       VerticalAlignment="Center"
-                       Foreground="{StaticResource MutedTextBrush}"/>
-
-            <Button Grid.Column="1"
-                    Width="40"
-                    Height="38"
-                    Margin="0,0,10,0"
-                    Style="{StaticResource WarningButtonStyle}"
-                    ToolTip="Zurück"
-                    Click="PrevPage_Click">
-                <Viewbox Width="20" Height="20">
-                    <Canvas Width="24" Height="24">
-                        <Path Data="M15.75 19.5L8.25 12L15.75 4.5"
-                              Stroke="White"
-                              StrokeThickness="1.5"
-                              StrokeLineJoin="Round"
-                              StrokeStartLineCap="Round"
-                              StrokeEndLineCap="Round"/>
-                    </Canvas>
-                </Viewbox>
-            </Button>
-
-            <TextBlock x:Name="PageInfoText"
-                       Grid.Column="2"
-                       VerticalAlignment="Center"
-                       Margin="0,0,10,0"
-                       FontWeight="SemiBold"/>
-
-            <Button Grid.Column="3"
-                    Width="40"
-                    Height="38"
-                    Style="{StaticResource WarningButtonStyle}"
-                    ToolTip="Weiter"
-                    Click="NextPage_Click">
-                <Viewbox Width="20" Height="20">
-                    <Canvas Width="24" Height="24">
-                        <Path Data="M8.25 4.5L15.75 12L8.25 19.5"
-                              Stroke="White"
-                              StrokeThickness="1.5"
-                              StrokeLineJoin="Round"
-                              StrokeStartLineCap="Round"
-                              StrokeEndLineCap="Round"/>
-                    </Canvas>
-                </Viewbox>
-            </Button>
         </Grid>
+
+        <!-- FOOTER -->
+        <TextBlock Grid.Row="4"
+                   Margin="0,10,0,0"
+                   HorizontalAlignment="Right"
+                   Foreground="{StaticResource MutedTextBrush}"
+                   Text="F5 = Aktualisieren | Ctrl+N = Neuer Patient | Ctrl+E = CSV Export"/>
     </Grid>
 </Window>

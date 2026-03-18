@@ -4,45 +4,55 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using Praxis.Client.Logic.UI;
 using Praxis.Client.Session;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
+using Praxis.Infrastructure.Services.Interface;
 
 namespace Praxis.Client.Views;
 
 public partial class MainWindow : Window
 {
     private readonly IPatientService _patientService;
-    private List<Patient> _allPatients = new();
-    private List<Patient> _filteredPatients = new();
+    private readonly IAppointmentService _appointmentService;
     private readonly IAuthService _authService;
     private readonly IServiceProvider _serviceProvider;
     private readonly IDashboardService _dashboardService;
     private readonly IBackupService _backupService;
     private readonly IAuditService _auditService;
+    private readonly IThemeService _themeService;
+
+    private List<Patient> _allPatients = new();
+    private List<Patient> _filteredPatients = new();
 
     private int _currentPage = 1;
     private const int PageSize = 10;
 
-    public MainWindow(IPatientService patientService,
-                      IAuthService authService,
-                      IServiceProvider serviceProvider,
-                      IDashboardService dashboardService,
-                      IBackupService backupService,
-                      IAuditService auditService)
+    public MainWindow(
+        IPatientService patientService,
+        IAppointmentService appointmentService,
+        IAuthService authService,
+        IServiceProvider serviceProvider,
+        IDashboardService dashboardService,
+        IBackupService backupService,
+        IAuditService auditService,
+        IThemeService themeService)
     {
         InitializeComponent();
         _patientService = patientService;
+        _appointmentService = appointmentService;
         _authService = authService;
         _serviceProvider = serviceProvider;
         _dashboardService = dashboardService;
         _backupService = backupService;
-        this._auditService = auditService;
+        _auditService = auditService;
+        _themeService = themeService;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -55,14 +65,22 @@ public partial class MainWindow : Window
         }
 
         LoggedInUserText.Text = $"Angemeldet: {UserSession.CurrentUser?.Username} ({UserSession.CurrentUser?.Role})";
-     //   UserManagementButton.IsEnabled = UserSession.HasRole(Roles.Administrator) || UserSession.HasRole(Roles.Arzt);
-        
+
         ApplyRolePermissions();
         await LoadPatientsAsync();
         await LoadDashboardAsync();
-
     }
 
+    public async Task LoadDashboardAsync()
+    {
+        var patients = await _patientService.GetAllPatientsAsync();
+        TotalPatientsText.Text = patients.Count().ToString();
+        ActivePatientsText.Text = patients.Count(p => p.IsActive).ToString();
+
+        var today = DateTime.Today;
+        var appointments = await _appointmentService.GetAllAppointmentsAsync();
+        TodayAppointmentsText.Text = appointments.Count(a => a.StartTime.Date == today).ToString();
+    }
 
     private async Task LoadPatientsAsync()
     {
@@ -84,22 +102,7 @@ public partial class MainWindow : Window
                 MessageBoxImage.Error);
         }
     }
-    public async Task LoadDashboardAsync()
-    {
-        var stats = await _dashboardService.GetStatsAsync();
 
-        TotalPatientsText.Text = stats.TotalPatients.ToString();
-        TotalAppointmentsText.Text = stats.TotalAppointments.ToString();
-        TotalInvoicesText.Text = stats.TotalInvoices.ToString();
-        TotalPrescriptionsText.Text = stats.TotalPrescriptions.ToString();
-        TotalRevenueText.Text = $"{stats.TotalRevenue:N2} €";
-
-        CurrentMonthAppointmentsText.Text = stats.CurrentMonthAppointments.ToString();
-        CurrentMonthInvoicesText.Text = stats.CurrentMonthInvoices.ToString();
-        CurrentMonthRevenueText.Text = $"{stats.CurrentMonthRevenue:N2} €";
-
-        UpdateChart(stats);
-    }
     private void ApplyRolePermissions()
     {
         bool canManagePatients = UserSession.HasAnyRole(
@@ -126,8 +129,7 @@ public partial class MainWindow : Window
             Roles.Mitarbeiter);
 
         bool canManageBackup = UserSession.HasRole(Roles.Administrator);
-
-       bool canManageUsers = UserSession.HasRole(Roles.Administrator);
+        bool canManageUsers = UserSession.HasRole(Roles.Administrator);
 
         BackupButton.IsEnabled = canManageBackup;
         RestoreButton.IsEnabled = canManageBackup;
@@ -148,30 +150,31 @@ public partial class MainWindow : Window
 
         UserManagementButton.IsEnabled = canManageUsers;
     }
-    private void UpdateChart(DashboardStats stats)
-    {
-        var maxValue = new[]
-                            {
-                            stats.CurrentMonthAppointments,
-                            stats.CurrentMonthInvoices,
-                            (int)Math.Ceiling(stats.CurrentMonthRevenue)
-                            }.Max();
 
-        if (maxValue <= 0)
-            maxValue = 1;
+    //private void UpdateChart(DashboardStats stats)
+    //{
+    //    var maxValue = new[]
+    //    {
+    //        stats.CurrentMonthAppointments,
+    //        stats.CurrentMonthInvoices,
+    //        (int)Math.Ceiling(stats.CurrentMonthRevenue)
+    //    }.Max();
 
-        AppointmentsChartBar.Maximum = maxValue;
-        InvoicesChartBar.Maximum = maxValue;
-        RevenueChartBar.Maximum = maxValue;
+    //    if (maxValue <= 0)
+    //        maxValue = 1;
 
-        AppointmentsChartBar.Value = stats.CurrentMonthAppointments;
-        InvoicesChartBar.Value = stats.CurrentMonthInvoices;
-        RevenueChartBar.Value = (double)stats.CurrentMonthRevenue;
+    //    AppointmentsChartBar.Maximum = maxValue;
+    //    InvoicesChartBar.Maximum = maxValue;
+    //    RevenueChartBar.Maximum = maxValue;
 
-        AppointmentsChartLabel.Text = $"{stats.CurrentMonthAppointments} Termine";
-        InvoicesChartLabel.Text = $"{stats.CurrentMonthInvoices} Rechnungen";
-        RevenueChartLabel.Text = $"{stats.CurrentMonthRevenue:N2} € Umsatz";
-    }
+    //    AppointmentsChartBar.Value = stats.CurrentMonthAppointments;
+    //    InvoicesChartBar.Value = stats.CurrentMonthInvoices;
+    //    RevenueChartBar.Value = (double)stats.CurrentMonthRevenue;
+
+    //    AppointmentsChartLabel.Text = $"{stats.CurrentMonthAppointments} Termine";
+    //    InvoicesChartLabel.Text = $"{stats.CurrentMonthInvoices} Rechnungen";
+    //    RevenueChartLabel.Text = $"{stats.CurrentMonthRevenue:N2} € Umsatz";
+    //}
 
     private void ApplyFilterAndPaging()
     {
@@ -230,10 +233,11 @@ public partial class MainWindow : Window
         _currentPage = 1;
         ApplyFilterAndPaging();
     }
-   
+
     private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
         await LoadPatientsAsync();
+        await LoadDashboardAsync();
     }
 
     private void PrevPage_Click(object sender, RoutedEventArgs e)
@@ -260,7 +264,7 @@ public partial class MainWindow : Window
     {
         return PatientsGrid.SelectedItem as Patient;
     }
-    //CRUD
+
     private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -319,6 +323,7 @@ public partial class MainWindow : Window
             {
                 await _patientService.UpdatePatientAsync(window.CreatedPatient);
                 await LoadPatientsAsync();
+                await LoadDashboardAsync();
             }
         }
         catch (Exception ex)
@@ -352,9 +357,9 @@ public partial class MainWindow : Window
             if (result != MessageBoxResult.Yes)
                 return;
 
-            await _patientService.DeletePatientAsync(selectedPatient.Id,UserSession.CurrentUser?.Username ?? "System");
+            await _patientService.DeletePatientAsync(selectedPatient.Id, UserSession.CurrentUser?.Username ?? "System");
             await LoadPatientsAsync();
-            //await LoadDashboardAsync();
+            await LoadDashboardAsync();
         }
         catch (Exception ex)
         {
@@ -381,6 +386,7 @@ public partial class MainWindow : Window
             selectedPatient.IsActive = !selectedPatient.IsActive;
             await _patientService.UpdatePatientAsync(selectedPatient);
             await LoadPatientsAsync();
+            await LoadDashboardAsync();
         }
         catch (Exception ex)
         {
@@ -391,7 +397,7 @@ public partial class MainWindow : Window
                 MessageBoxImage.Error);
         }
     }
-    //EXPORT
+
     private void ExportCsv_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -556,7 +562,7 @@ public partial class MainWindow : Window
                 MessageBoxImage.Error);
         }
     }
-    //Logout-Methode
+
     private void Logout_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(
@@ -590,11 +596,7 @@ public partial class MainWindow : Window
             Application.Current.Shutdown();
         }
     }
-    /// <summary>
-    /// Passwort änderen
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
+
     private async void ChangePassword_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -633,18 +635,21 @@ public partial class MainWindow : Window
                 MessageBoxImage.Error);
         }
     }
+
     private void OpenInvoices_Click(object sender, RoutedEventArgs e)
     {
         var window = (InvoiceWindow)_serviceProvider.GetRequiredService(typeof(InvoiceWindow));
         window.Owner = this;
         window.ShowDialog();
     }
+
     private void OpenPrescriptions_Click(object sender, RoutedEventArgs e)
     {
         var window = _serviceProvider.GetRequiredService<PrescriptionWindow>();
         window.Owner = this;
         window.ShowDialog();
     }
+
     private void OpenDocuments_Click(object sender, RoutedEventArgs e)
     {
         if (PatientsGrid.SelectedItem is not Patient patient)
@@ -652,11 +657,12 @@ public partial class MainWindow : Window
             MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
             return;
         }
-            
+
         var window = ActivatorUtilities.CreateInstance<DocumentWindow>(_serviceProvider, patient);
         window.Owner = this;
         window.ShowDialog();
     }
+
     public async void RefreshDashboard_Click(object sender, RoutedEventArgs e)
     {
         await LoadDashboardAsync();
@@ -664,15 +670,15 @@ public partial class MainWindow : Window
 
     private void PatientsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-
     }
+
     private void OpenAuditLog_Click(object sender, RoutedEventArgs e)
     {
         var window = _serviceProvider.GetRequiredService<AuditLogWindow>();
         window.Owner = this;
         window.ShowDialog();
     }
-    // Backup erstellen
+
     private async void CreateBackup_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -684,8 +690,8 @@ public partial class MainWindow : Window
             }
 
             var backupFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "PraxisBackups");
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "PraxisBackups");
 
             Directory.CreateDirectory(backupFolder);
 
@@ -694,10 +700,11 @@ public partial class MainWindow : Window
                 $"praxis_backup_{DateTime.Now:yyyy-MM-dd_HHmmss}.db");
 
             await _backupService.CreateBackupAsync(filePath);
-            await _auditService.LogAsync(   UserSession.CurrentUser?.Username ?? "System",
-                                           "BACKUP",
-                                           "Database",
-                                           $"Backup erstellt: {filePath}");
+            await _auditService.LogAsync(
+                UserSession.CurrentUser?.Username ?? "System",
+                "BACKUP",
+                "Database",
+                $"Backup erstellt: {filePath}");
 
             MessageBox.Show($"Backup wurde erfolgreich erstellt:\n{filePath}");
         }
@@ -706,7 +713,7 @@ public partial class MainWindow : Window
             MessageBox.Show($"Fehler beim Backup:\n{ex.Message}");
         }
     }
-    // Restore
+
     private async void RestoreBackup_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -735,11 +742,6 @@ public partial class MainWindow : Window
                 return;
 
             await _backupService.RestoreBackupAsync(dialog.FileName);
-            //await _auditService.LogAsync(UserSession.CurrentUser?.Username ?? "System",
-            //                            "RESTORE",
-            //                            "Database",
-            //                            $"Backup wiederhergestellt: {dialog.FileName}");
-                        
 
             MessageBox.Show("Backup wurde erfolgreich wiederhergestellt.\nDie Anwendung wird jetzt beendet.");
             Application.Current.Shutdown();
@@ -750,4 +752,29 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ThemeToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (_themeService.IsDarkMode)
+        {
+            _themeService.ApplyLightTheme();
+            ThemeToggleButton.Content = new TextBlock
+            {
+                Text = "🌙",
+                FontSize = 16,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+        }
+        else
+        {
+            _themeService.ApplyDarkTheme();
+            ThemeToggleButton.Content = new TextBlock
+            {
+                Text = "☀",
+                FontSize = 16,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+        }
+    }
 }

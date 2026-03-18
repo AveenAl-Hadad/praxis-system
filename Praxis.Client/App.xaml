@@ -4,8 +4,11 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Praxis.Client;component/Styles/Colors.xaml"/>
-                <ResourceDictionary Source="/Praxis.Client;component/Styles/Controls.xaml"/>
+                <!-- Light Theme (Standard) -->
+                <ResourceDictionary Source="Styles/Colors.xaml"/>
+
+                <!-- Controls -->
+                <ResourceDictionary Source="Styles/Controls.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
