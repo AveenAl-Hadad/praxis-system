@@ -23,20 +23,26 @@ public partial class MainWindow : Window
     private readonly IAuthService _authService;
     private readonly IServiceProvider _serviceProvider;
     private readonly IDashboardService _dashboardService;
+    private readonly IBackupService _backupService;
+    private readonly IAuditService _auditService;
 
     private int _currentPage = 1;
-    private const int PageSize = 20;
+    private const int PageSize = 10;
 
     public MainWindow(IPatientService patientService,
                       IAuthService authService,
                       IServiceProvider serviceProvider,
-                      IDashboardService dashboardService)
+                      IDashboardService dashboardService,
+                      IBackupService backupService,
+                      IAuditService auditService)
     {
         InitializeComponent();
         _patientService = patientService;
         _authService = authService;
         _serviceProvider = serviceProvider;
         _dashboardService = dashboardService;
+        _backupService = backupService;
+        this._auditService = auditService;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -119,8 +125,12 @@ public partial class MainWindow : Window
             Roles.Arzt,
             Roles.Mitarbeiter);
 
-        bool canManageUsers = UserSession.HasRole(Roles.Administrator);
+        bool canManageBackup = UserSession.HasRole(Roles.Administrator);
 
+       bool canManageUsers = UserSession.HasRole(Roles.Administrator);
+
+        BackupButton.IsEnabled = canManageBackup;
+        RestoreButton.IsEnabled = canManageBackup;
         AddPatientButton.IsEnabled = canManagePatients;
         EditPatientButton.IsEnabled = canManagePatients;
         DeletePatientButton.IsEnabled = canManagePatients;
@@ -662,4 +672,82 @@ public partial class MainWindow : Window
         window.Owner = this;
         window.ShowDialog();
     }
+    // Backup erstellen
+    private async void CreateBackup_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!UserSession.HasRole(Roles.Administrator))
+            {
+                MessageBox.Show("Nur Administratoren dürfen ein Backup erstellen.");
+                return;
+            }
+
+            var backupFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "PraxisBackups");
+
+            Directory.CreateDirectory(backupFolder);
+
+            var filePath = Path.Combine(
+                backupFolder,
+                $"praxis_backup_{DateTime.Now:yyyy-MM-dd_HHmmss}.db");
+
+            await _backupService.CreateBackupAsync(filePath);
+            await _auditService.LogAsync(   UserSession.CurrentUser?.Username ?? "System",
+                                           "BACKUP",
+                                           "Database",
+                                           $"Backup erstellt: {filePath}");
+
+            MessageBox.Show($"Backup wurde erfolgreich erstellt:\n{filePath}");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Fehler beim Backup:\n{ex.Message}");
+        }
+    }
+    // Restore
+    private async void RestoreBackup_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!UserSession.HasRole(Roles.Administrator))
+            {
+                MessageBox.Show("Nur Administratoren dürfen ein Backup wiederherstellen.");
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "ACHTUNG: Alle aktuellen Daten werden überschrieben!\n\nFortfahren?",
+                "Restore",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            var dialog = new OpenFileDialog
+            {
+                Filter = "SQLite Backup (*.db)|*.db|Alle Dateien (*.*)|*.*"
+            };
+
+            if (dialog.ShowDialog() != true)
+                return;
+
+            await _backupService.RestoreBackupAsync(dialog.FileName);
+            //await _auditService.LogAsync(UserSession.CurrentUser?.Username ?? "System",
+            //                            "RESTORE",
+            //                            "Database",
+            //                            $"Backup wiederhergestellt: {dialog.FileName}");
+                        
+
+            MessageBox.Show("Backup wurde erfolgreich wiederhergestellt.\nDie Anwendung wird jetzt beendet.");
+            Application.Current.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Fehler beim Wiederherstellen:\n{ex.Message}");
+        }
+    }
+
 }

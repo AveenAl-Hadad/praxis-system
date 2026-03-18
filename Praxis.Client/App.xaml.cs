@@ -57,6 +57,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IEmailService, EmailService>();
                 services.AddTransient<IReminderService, ReminderService>();
                 services.AddTransient<IAuditService, AuditService>();
+                services.AddTransient<IBackupService, BackupService>();
 
 
                 services.AddTransient<MainWindow>();

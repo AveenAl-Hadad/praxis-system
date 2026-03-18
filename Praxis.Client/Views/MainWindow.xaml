@@ -326,6 +326,42 @@
                             Click="OpenAuditLog_Click">
                         <TextBlock Text="📝"/>
                     </Button>
+                    <Button x:Name="BackupButton"
+                            Style="{StaticResource WarningButtonStyle}"
+                            Width="38"
+                            Height="38"
+                            Margin="0,0,8,0"
+                            ToolTip="Backup erstellen"
+                            Click="CreateBackup_Click">
+                        <Viewbox Width="24" Height="24">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="M12 3V12M12 12L8.25 8.25M12 12L15.75 8.25M4.5 15.75V18A2.25 2.25 0 0 0 6.75 20.25H17.25A2.25 2.25 0 0 0 19.5 18V15.75"
+                                      Stroke="White"
+                                      StrokeThickness="1.5"
+                                      StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
+                    <Button x:Name="RestoreButton"
+                            Style="{StaticResource DangerButtonStyle}"
+                            Width="38"
+                            Height="38"
+                            Margin="0,0,8,0"
+                            ToolTip="Backup wiederherstellen"
+                            Click="RestoreBackup_Click">
+                        <Viewbox Width="24" Height="24">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="M12 21V12M12 12L8.25 15.75M12 12L15.75 15.75M4.5 8.25V6A2.25 2.25 0 0 1 6.75 3.75H17.25A2.25 2.25 0 0 1 19.5 6V8.25"
+                                      Stroke="White"
+                                      StrokeThickness="1.5"
+                                      StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
                 </StackPanel>
             </DockPanel>
         </Border>
