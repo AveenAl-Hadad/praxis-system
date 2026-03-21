@@ -4,24 +4,34 @@ using Praxis.Infrastructure.Persistence;
 using Praxis.Infrastructure.Services.Interface;
 
 namespace Praxis.Infrastructure.Services;
-
+/// <summary>
+/// Service zur Verwaltung von Terminen (Appointments).
+/// Enthält CRUD-Operationen sowie Logik für Validierung und Konfliktprüfung.
+/// </summary>
 public class AppointmentService : IAppointmentService
 {
     private readonly PraxisDbContext _context;
 
+    /// <summary>
+    /// Konstruktor mit Dependency Injection für den DbContext.
+    /// </summary>
     public AppointmentService(PraxisDbContext context)
     {
         _context = context;
     }
-
+    /// <summary>
+    /// Fügt einen neuen Termin hinzu.
+    /// </summary>
     public async Task AddAppointmentAsync(Appointment appointment)
     {
-        ValidateAppointment(appointment);
-        await CheckForConflictAsync(appointment);
+        ValidateAppointment(appointment);  // Eingaben prüfen
+        await CheckForConflictAsync(appointment); // Zeitkonflikte prüfen
         _context.Appointments.Add(appointment);
         await _context.SaveChangesAsync();
     }
-
+    /// <summary>
+    /// Gibt alle Termine sortiert nach Startzeit zurück.
+    /// </summary>
     public async Task<List<Appointment>> GetAllAppointmentsAsync()
     {
         return await _context.Appointments
@@ -29,7 +39,9 @@ public class AppointmentService : IAppointmentService
             .OrderBy(a => a.StartTime)
             .ToListAsync();
     }
-
+    /// <summary>
+    /// Gibt alle Termine für einen bestimmten Tag zurück.
+    /// </summary>
     public async Task<List<Appointment>> GetAppointmentsByDateAsync(DateTime date)
     {
         var startOfDay = date.Date;
@@ -41,7 +53,9 @@ public class AppointmentService : IAppointmentService
             .OrderBy(a => a.StartTime)
             .ToListAsync();
     }
-
+    /// <summary>
+    /// Gibt alle Termine einer Woche zurück.
+    /// </summary>
     public async Task<List<Appointment>> GetAppointmentsByWeekAsync(DateTime startOfWeek)
     {
         var start = startOfWeek.Date;
@@ -53,6 +67,9 @@ public class AppointmentService : IAppointmentService
             .OrderBy(a => a.StartTime)
             .ToListAsync();
     }
+    /// <summary>
+    /// Gibt Termine einer Woche optional gefiltert nach Patient zurück.
+    /// </summary>
     public async Task<List<Appointment>> GetAppointmentsByWeekAndPatientAsync(DateTime startOfWeek, int? patientId)
     {
         var start = startOfWeek.Date;
@@ -71,14 +88,18 @@ public class AppointmentService : IAppointmentService
             .OrderBy(a => a.StartTime)
             .ToListAsync();
     }
-
+    /// <summary>
+    /// Holt einen Termin anhand seiner ID.
+    /// </summary>
     public async Task<Appointment?> GetAppointmentByIdAsync(int id)
     {
         return await _context.Appointments
             .Include(a => a.Patient)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
-
+    /// <summary>
+    /// Gibt alle "aktiven" Termine eines Tages zurück (z.B. fürs Wartezimmer).
+    /// </summary>
     public async Task<List<Appointment>> GetWaitingRoomAppointmentsAsync(DateTime date)
     {
         var startOfDay = date.Date;
@@ -91,7 +112,9 @@ public class AppointmentService : IAppointmentService
             .OrderBy(a => a.StartTime)
             .ToListAsync();
     }
-
+    /// <summary>
+    /// Aktualisiert einen bestehenden Termin.
+    /// </summary>
     public async Task UpdateAppointmentAsync(Appointment appointment)
     {
         ValidateAppointment(appointment);
@@ -102,6 +125,7 @@ public class AppointmentService : IAppointmentService
         if (existing == null)
             throw new InvalidOperationException("Termin wurde nicht gefunden.");
 
+        //Felder aktualisieren
         existing.PatientId = appointment.PatientId;
         existing.StartTime = appointment.StartTime;
         existing.DurationMinutes = appointment.DurationMinutes;
@@ -110,6 +134,9 @@ public class AppointmentService : IAppointmentService
 
         await _context.SaveChangesAsync();
     }
+    /// <summary>
+    /// Aktualisiert nur den Status eines Termins.
+    /// </summary>
     public async Task UpdateAppointmentStatusAsync(int appointmentId, string status)
     {
         if (string.IsNullOrWhiteSpace(status))
@@ -124,6 +151,9 @@ public class AppointmentService : IAppointmentService
         appointment.Status = status.Trim();
         await _context.SaveChangesAsync();
     }
+    /// <summary>
+    /// Löscht einen Termin.
+    /// </summary>
     public async Task DeleteAppointmentAsync(int id)
     {
         var appointment = await _context.Appointments.FindAsync(id);
@@ -134,7 +164,9 @@ public class AppointmentService : IAppointmentService
         _context.Appointments.Remove(appointment);
         await _context.SaveChangesAsync();
     }
-
+    /// <summary>
+    /// Validiert die Eingabedaten eines Termins.
+    /// </summary>
     private void ValidateAppointment(Appointment appointment)
     {
         if (appointment.PatientId <= 0)
@@ -149,7 +181,9 @@ public class AppointmentService : IAppointmentService
         if (string.IsNullOrWhiteSpace(appointment.Reason))
             throw new ArgumentException("Grund darf nicht leer sein.");
     }
-
+    /// <summary>
+    /// Prüft, ob ein Termin mit bestehenden Terminen kollidiert.
+    /// </summary>
     private async Task CheckForConflictAsync(Appointment appointment)
     {
         var isAvailable = await IsTimeSlotAvailableAsync(
@@ -160,6 +194,9 @@ public class AppointmentService : IAppointmentService
         if (!isAvailable)
             throw new InvalidOperationException("Es existiert bereits ein Termin in diesem Zeitraum.");
     }
+    /// <summary>
+    /// Gibt verfügbare Zeitfenster für einen Tag zurück.
+    /// </summary>
     public async Task<List<DateTime>> GetAvailableSlotsAsync(DateTime date, int durationMinutes)
     {
         var availableSlots = new List<DateTime>();
@@ -177,6 +214,7 @@ public class AppointmentService : IAppointmentService
         {
             var firstPossibleSlot = range.Start;
 
+            // Falls heute → keine Slots in der Vergangenheit
             if (isToday)
             {
                 var nextPossibleTime = RoundUpToNext15Minutes(now);
@@ -199,6 +237,9 @@ public class AppointmentService : IAppointmentService
 
         return availableSlots;
     }
+    /// <summary>
+    /// Gibt die Arbeitszeiten je Wochentag zurück.
+    /// </summary>
     private List<(DateTime Start, DateTime End)> GetWorkingTimeRanges(DateTime date)
     {
         var ranges = new List<(DateTime Start, DateTime End)>();
@@ -227,6 +268,9 @@ public class AppointmentService : IAppointmentService
 
         return ranges;
     }
+    /// <summary>
+    /// Rundet eine Uhrzeit auf das nächste 15-Minuten-Intervall auf.
+    /// </summary>
     private DateTime RoundUpToNext15Minutes(DateTime dateTime)
     {
         var trimmed = new DateTime(
@@ -244,6 +288,9 @@ public class AppointmentService : IAppointmentService
 
         return trimmed.AddMinutes(15 - remainder);
     }
+    /// <summary>
+    /// Prüft, ob ein Zeitfenster frei ist (keine Überschneidung).
+    /// </summary>
     public async Task<bool> IsTimeSlotAvailableAsync(DateTime startTime, int durationMinutes, int? excludeAppointmentId = null)
     {
         var endTime = startTime.AddMinutes(durationMinutes);
