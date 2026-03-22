@@ -11,10 +11,27 @@ using Xunit;
 
 namespace Praxis.Tests;
 
+/// <summary>
+/// Diese Testklasse prüft die Funktionen des UserManagementService.
+/// 
+/// Getestet werden unter anderem:
+/// - Benutzer abrufen
+/// - Benutzer erstellen
+/// - Rollen ändern
+/// - Passwörter zurücksetzen
+/// - Benutzer löschen
+/// 
+/// Für die Tests wird eine InMemory-Datenbank verwendet,
+/// damit keine echte Datenbank benötigt wird.
+/// </summary>
 public class UserManagementServiceTests
 {
-    // Erstellt eine InMemory-Datenbank für Tests.
-    // Jeder Test bekommt eine eigene Datenbank.
+    /// <summary>
+    /// Erstellt für jeden Test eine eigene InMemory-Datenbank.
+    /// Dadurch beeinflussen sich die Tests nicht gegenseitig.
+    /// </summary>
+    /// <param name="dbName">Optionaler Name der Datenbank.</param>
+    /// <returns>Eine neue Instanz von PraxisDbContext.</returns>
     private static PraxisDbContext CreateInMemoryContext(string? dbName = null)
     {
         var options = new DbContextOptionsBuilder<PraxisDbContext>()
@@ -24,7 +41,14 @@ public class UserManagementServiceTests
         return new PraxisDbContext(options);
     }
 
-    // Hilfsmethode: Beispiel-Benutzer
+    /// <summary>
+    /// Hilfsmethode zum schnellen Erzeugen eines Test-Benutzers.
+    /// Standardwerte werden gesetzt, können aber überschrieben werden.
+    /// </summary>
+    /// <param name="username">Benutzername des Test-Benutzers.</param>
+    /// <param name="passwordHash">Passwort-Hash des Test-Benutzers.</param>
+    /// <param name="role">Rolle des Test-Benutzers.</param>
+    /// <returns>Ein neues User-Objekt.</returns>
     private static User CreateUser(
         string username = "max",
         string passwordHash = "HASHED",
@@ -38,6 +62,10 @@ public class UserManagementServiceTests
         };
     }
 
+    /// <summary>
+    /// Testet, ob alle Benutzer korrekt aus der Datenbank geladen
+    /// und alphabetisch nach Username sortiert zurückgegeben werden.
+    /// </summary>
     [Fact]
     public async Task GetAllUsersAsync_ShouldReturnUsersOrderedByUsername()
     {
@@ -55,7 +83,7 @@ public class UserManagementServiceTests
         var service = new UserManagementService(context, passwordMock.Object);
 
         // Act:
-        // Alle Benutzer laden
+        // Alle Benutzer vom Service abrufen
         var result = await service.GetAllUsersAsync();
 
         // Assert:
@@ -66,6 +94,10 @@ public class UserManagementServiceTests
         Assert.Equal("zara", result[2].Username);
     }
 
+    /// <summary>
+    /// Testet, ob ein neuer Benutzer korrekt erstellt wird
+    /// und das Passwort vorher gehasht gespeichert wird.
+    /// </summary>
     [Fact]
     public async Task CreateUserAsync_ShouldCreateUser_WithHashedPassword()
     {
@@ -82,19 +114,23 @@ public class UserManagementServiceTests
         var user = await service.CreateUserAsync("max", "1234", Roles.Mitarbeiter);
 
         // Assert:
-        // Prüfen, ob die Daten korrekt übernommen wurden
+        // Prüfen, ob die Rückgabe korrekt ist
         Assert.NotNull(user);
         Assert.Equal("max", user.Username);
         Assert.Equal("HASH_1234", user.PasswordHash);
         Assert.Equal(Roles.Mitarbeiter, user.Role);
 
-        // Prüfen, ob er wirklich in der Datenbank gespeichert wurde
+        // Prüfen, ob der Benutzer wirklich in der Datenbank gespeichert wurde
         var savedUser = await context.Users.FirstAsync();
         Assert.Equal("max", savedUser.Username);
         Assert.Equal("HASH_1234", savedUser.PasswordHash);
         Assert.Equal(Roles.Mitarbeiter, savedUser.Role);
     }
 
+    /// <summary>
+    /// Testet, ob Leerzeichen bei Benutzername, Passwort und Rolle
+    /// vor der Verarbeitung entfernt werden.
+    /// </summary>
     [Fact]
     public async Task CreateUserAsync_ShouldTrimUsernamePasswordAndRole()
     {
@@ -107,17 +143,22 @@ public class UserManagementServiceTests
         var service = new UserManagementService(context, passwordMock.Object);
 
         // Act:
-        // Eingaben mit Leerzeichen übergeben
+        // Eingaben mit zusätzlichen Leerzeichen übergeben
         var user = await service.CreateUserAsync("  max  ", " 1234 ", $"  {Roles.Arzt}  ");
 
         // Assert:
-        // Username und Rolle werden im Service getrimmt,
-        // Passwort wird getrimmt bevor es gehasht wird
+        // Username und Rolle werden getrimmt,
+        // Passwort wird vor dem Hashen ebenfalls getrimmt
         Assert.Equal("max", user.Username);
         Assert.Equal("HASH_1234", user.PasswordHash);
         Assert.Equal(Roles.Arzt, user.Role);
     }
 
+    /// <summary>
+    /// Testet, ob das Erstellen eines Benutzers fehlschlägt,
+    /// wenn der Benutzername bereits existiert.
+    /// Dabei wird Groß-/Kleinschreibung ignoriert.
+    /// </summary>
     [Fact]
     public async Task CreateUserAsync_ShouldThrow_WhenUsernameAlreadyExists_CaseInsensitive()
     {
@@ -139,6 +180,10 @@ public class UserManagementServiceTests
         Assert.Equal("Benutzername existiert bereits.", ex.Message);
     }
 
+    /// <summary>
+    /// Testet, ob beim Erstellen eines Benutzers
+    /// eine ungültige Rolle korrekt abgefangen wird.
+    /// </summary>
     [Fact]
     public async Task CreateUserAsync_ShouldThrow_WhenRoleIsInvalid()
     {
@@ -155,6 +200,10 @@ public class UserManagementServiceTests
         Assert.Equal("Ungültige Rolle.", ex.Message);
     }
 
+    /// <summary>
+    /// Testet, ob die Rolle eines vorhandenen Benutzers
+    /// erfolgreich geändert wird.
+    /// </summary>
     [Fact]
     public async Task UpdateUserRoleAsync_ShouldChangeRole()
     {
@@ -169,14 +218,19 @@ public class UserManagementServiceTests
         var service = new UserManagementService(context, passwordMock.Object);
 
         // Act:
-        // Rolle ändern
+        // Rolle des Benutzers ändern
         await service.UpdateUserRoleAsync(user.Id, Roles.Arzt);
 
         // Assert:
+        // Prüfen, ob die Rolle in der Datenbank geändert wurde
         var updatedUser = await context.Users.FirstAsync();
         Assert.Equal(Roles.Arzt, updatedUser.Role);
     }
 
+    /// <summary>
+    /// Testet, ob beim Ändern der Rolle ein Fehler geworfen wird,
+    /// wenn der Benutzer nicht existiert.
+    /// </summary>
     [Fact]
     public async Task UpdateUserRoleAsync_ShouldThrow_WhenUserDoesNotExist()
     {
@@ -193,6 +247,10 @@ public class UserManagementServiceTests
         Assert.Equal("Benutzer wurde nicht gefunden.", ex.Message);
     }
 
+    /// <summary>
+    /// Testet, ob beim Ändern der Rolle eine Exception ausgelöst wird,
+    /// wenn die neue Rolle ungültig ist.
+    /// </summary>
     [Fact]
     public async Task UpdateUserRoleAsync_ShouldThrow_WhenRoleIsInvalid()
     {
@@ -213,6 +271,10 @@ public class UserManagementServiceTests
         Assert.Equal("Ungültige Rolle.", ex.Message);
     }
 
+    /// <summary>
+    /// Testet, ob das Passwort eines Benutzers korrekt
+    /// durch einen neuen Passwort-Hash ersetzt wird.
+    /// </summary>
     [Fact]
     public async Task ResetPasswordAsync_ShouldUpdatePasswordHash()
     {
@@ -233,10 +295,15 @@ public class UserManagementServiceTests
         await service.ResetPasswordAsync(user.Id, "neu123");
 
         // Assert:
+        // Prüfen, ob der neue Hash gespeichert wurde
         var updatedUser = await context.Users.FirstAsync();
         Assert.Equal("NEW_HASH", updatedUser.PasswordHash);
     }
 
+    /// <summary>
+    /// Testet, ob Leerzeichen im neuen Passwort entfernt werden,
+    /// bevor es gehasht und gespeichert wird.
+    /// </summary>
     [Fact]
     public async Task ResetPasswordAsync_ShouldTrimNewPassword()
     {
@@ -253,13 +320,19 @@ public class UserManagementServiceTests
         var service = new UserManagementService(context, passwordMock.Object);
 
         // Act:
+        // Passwort mit Leerzeichen übergeben
         await service.ResetPasswordAsync(user.Id, "  neu123  ");
 
         // Assert:
+        // Prüfen, ob das getrimmte Passwort gehasht wurde
         var updatedUser = await context.Users.FirstAsync();
         Assert.Equal("NEW_HASH", updatedUser.PasswordHash);
     }
 
+    /// <summary>
+    /// Testet, ob beim Zurücksetzen des Passworts
+    /// ein leerer oder nur aus Leerzeichen bestehender Wert abgelehnt wird.
+    /// </summary>
     [Fact]
     public async Task ResetPasswordAsync_ShouldThrow_WhenPasswordIsEmpty()
     {
@@ -280,6 +353,10 @@ public class UserManagementServiceTests
         Assert.Equal("Neues Passwort darf nicht leer sein.", ex.Message);
     }
 
+    /// <summary>
+    /// Testet, ob beim Zurücksetzen des Passworts
+    /// ein Fehler ausgelöst wird, wenn der Benutzer nicht existiert.
+    /// </summary>
     [Fact]
     public async Task ResetPasswordAsync_ShouldThrow_WhenUserDoesNotExist()
     {
@@ -296,6 +373,10 @@ public class UserManagementServiceTests
         Assert.Equal("Benutzer wurde nicht gefunden.", ex.Message);
     }
 
+    /// <summary>
+    /// Testet, ob ein vorhandener Benutzer erfolgreich
+    /// aus der Datenbank gelöscht wird.
+    /// </summary>
     [Fact]
     public async Task DeleteUserAsync_ShouldRemoveUser_WhenUserExists()
     {
@@ -310,12 +391,18 @@ public class UserManagementServiceTests
         var service = new UserManagementService(context, passwordMock.Object);
 
         // Act:
+        // Benutzer löschen
         await service.DeleteUserAsync(user.Id);
 
         // Assert:
+        // Die Benutzertabelle soll leer sein
         Assert.Empty(context.Users);
     }
 
+    /// <summary>
+    /// Testet, ob das Löschen eines nicht vorhandenen Benutzers
+    /// keinen Fehler auslöst und die Datenbank unverändert bleibt.
+    /// </summary>
     [Fact]
     public async Task DeleteUserAsync_ShouldDoNothing_WhenUserDoesNotExist()
     {

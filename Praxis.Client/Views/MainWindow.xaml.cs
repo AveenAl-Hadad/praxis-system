@@ -18,23 +18,86 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Praxis.Client.Views;
 
+/// <summary>
+/// Das Hauptfenster der Anwendung.
+/// 
+/// In diesem Fenster werden die wichtigsten Funktionen der Praxissoftware gesteuert:
+/// - Patienten anzeigen, suchen, filtern und bearbeiten
+/// - Dashboard-Daten laden
+/// - Termine, Rechnungen, Rezepte und Dokumente öffnen
+/// - Benutzerverwaltung, Audit-Log, Backup und Theme wechseln
+/// - Abmelden und Passwort ändern
+/// 
+/// Die MainWindow-Klasse ist damit die zentrale Benutzeroberfläche der Anwendung.
+/// </summary>
 public partial class MainWindow : Window
 {
+    /// <summary>
+    /// Service für Patientenverwaltung.
+    /// </summary>
     private readonly IPatientService _patientService;
+
+    /// <summary>
+    /// Service für Terminverwaltung.
+    /// </summary>
     private readonly IAppointmentService _appointmentService;
+
+    /// <summary>
+    /// Service für Authentifizierung und Passwortänderung.
+    /// </summary>
     private readonly IAuthService _authService;
+
+    /// <summary>
+    /// Allgemeiner ServiceProvider, um Fenster und Services dynamisch zu laden.
+    /// </summary>
     private readonly IServiceProvider _serviceProvider;
+
+    /// <summary>
+    /// Service für Dashboard-Daten.
+    /// </summary>
     private readonly IDashboardService _dashboardService;
+
+    /// <summary>
+    /// Service zum Erstellen und Wiederherstellen von Backups.
+    /// </summary>
     private readonly IBackupService _backupService;
+
+    /// <summary>
+    /// Service für Audit-Logs.
+    /// </summary>
     private readonly IAuditService _auditService;
+
+    /// <summary>
+    /// Service zum Umschalten zwischen Hell- und Dunkelmodus.
+    /// </summary>
     private readonly IThemeService _themeService;
 
+    /// <summary>
+    /// Enthält alle geladenen Patienten.
+    /// </summary>
     private List<Patient> _allPatients = new();
+
+    /// <summary>
+    /// Enthält nur die Patienten, die nach Suche und Filter übrig bleiben.
+    /// </summary>
     private List<Patient> _filteredPatients = new();
 
+    /// <summary>
+    /// Speichert die aktuell angezeigte Seite bei der Seitennavigation.
+    /// </summary>
     private int _currentPage = 1;
+
+    /// <summary>
+    /// Anzahl der Patienten pro Seite.
+    /// </summary>
     private const int PageSize = 10;
 
+    /// <summary>
+    /// Konstruktor des Hauptfensters.
+    /// 
+    /// Übergibt alle benötigten Services und speichert sie in Feldern,
+    /// damit sie in den Methoden des Fensters verwendet werden können.
+    /// </summary>
     public MainWindow(
         IPatientService patientService,
         IAppointmentService appointmentService,
@@ -56,6 +119,16 @@ public partial class MainWindow : Window
         _themeService = themeService;
     }
 
+    /// <summary>
+    /// Wird beim Laden des Fensters ausgeführt.
+    /// 
+    /// Es wird geprüft, ob ein Benutzer angemeldet ist.
+    /// Danach werden:
+    /// - der angemeldete Benutzer angezeigt
+    /// - Rollenrechte gesetzt
+    /// - Patienten geladen
+    /// - Dashboard-Daten geladen
+    /// </summary>
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         if (!UserSession.IsLoggedIn)
@@ -72,6 +145,14 @@ public partial class MainWindow : Window
         await LoadDashboardAsync();
     }
 
+    /// <summary>
+    /// Lädt die Kennzahlen für das Dashboard neu.
+    /// 
+    /// Angezeigt werden:
+    /// - Gesamtzahl aller Patienten
+    /// - Anzahl aktiver Patienten
+    /// - Anzahl der heutigen Termine
+    /// </summary>
     public async Task LoadDashboardAsync()
     {
         var patients = await _patientService.GetAllPatientsAsync();
@@ -83,6 +164,12 @@ public partial class MainWindow : Window
         TodayAppointmentsText.Text = appointments.Count(a => a.StartTime.Date == today).ToString();
     }
 
+    /// <summary>
+    /// Lädt alle Patienten aus der Datenbank.
+    /// 
+    /// Danach wird die erste Seite angezeigt
+    /// und Suche, Filter sowie Paging werden angewendet.
+    /// </summary>
     private async Task LoadPatientsAsync()
     {
         try
@@ -104,6 +191,13 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Aktiviert oder deaktiviert Buttons abhängig von der Rolle
+    /// des aktuell angemeldeten Benutzers.
+    /// 
+    /// So wird sichergestellt, dass nur berechtigte Benutzer
+    /// bestimmte Bereiche der Anwendung verwenden können.
+    /// </summary>
     private void ApplyRolePermissions()
     {
         bool canManagePatients = UserSession.HasAnyRole(
@@ -152,31 +246,16 @@ public partial class MainWindow : Window
         UserManagementButton.IsEnabled = canManageUsers;
     }
 
-    //private void UpdateChart(DashboardStats stats)
-    //{
-    //    var maxValue = new[]
-    //    {
-    //        stats.CurrentMonthAppointments,
-    //        stats.CurrentMonthInvoices,
-    //        (int)Math.Ceiling(stats.CurrentMonthRevenue)
-    //    }.Max();
-
-    //    if (maxValue <= 0)
-    //        maxValue = 1;
-
-    //    AppointmentsChartBar.Maximum = maxValue;
-    //    InvoicesChartBar.Maximum = maxValue;
-    //    RevenueChartBar.Maximum = maxValue;
-
-    //    AppointmentsChartBar.Value = stats.CurrentMonthAppointments;
-    //    InvoicesChartBar.Value = stats.CurrentMonthInvoices;
-    //    RevenueChartBar.Value = (double)stats.CurrentMonthRevenue;
-
-    //    AppointmentsChartLabel.Text = $"{stats.CurrentMonthAppointments} Termine";
-    //    InvoicesChartLabel.Text = $"{stats.CurrentMonthInvoices} Rechnungen";
-    //    RevenueChartLabel.Text = $"{stats.CurrentMonthRevenue:N2} € Umsatz";
-    //}
-
+    /// <summary>
+    /// Führt Suche, Aktiv-Filter und Seitennavigation auf der Patientenliste aus.
+    /// 
+    /// Ablauf:
+    /// - Alle Patienten werden als Ausgangsbasis verwendet
+    /// - Suchtext wird angewendet
+    /// - optional nur aktive Patienten anzeigen
+    /// - Daten werden in Seiten aufgeteilt
+    /// - aktuelle Seite wird im DataGrid angezeigt
+    /// </summary>
     private void ApplyFilterAndPaging()
     {
         if (PatientsGrid == null || PageInfoText == null || SearchBox == null || OnlyActiveCheck == null)
@@ -187,6 +266,7 @@ public partial class MainWindow : Window
         var searchText = SearchBox.Text?.Trim().ToLower() ?? string.Empty;
         var onlyActive = OnlyActiveCheck.IsChecked == true;
 
+        // Suche nach Vorname, Nachname, E-Mail oder Telefonnummer
         if (!string.IsNullOrWhiteSpace(searchText))
         {
             query = query.Where(p =>
@@ -196,6 +276,7 @@ public partial class MainWindow : Window
                 (!string.IsNullOrWhiteSpace(p.Telefonnummer) && p.Telefonnummer.ToLower().Contains(searchText)));
         }
 
+        // Optional nur aktive Patienten anzeigen
         if (onlyActive)
         {
             query = query.Where(p => p.IsActive);
@@ -211,6 +292,7 @@ public partial class MainWindow : Window
         if (_currentPage < 1)
             _currentPage = 1;
 
+        // Nur die Datensätze der aktuellen Seite anzeigen
         var pageItems = _filteredPatients
             .Skip((_currentPage - 1) * PageSize)
             .Take(PageSize)
@@ -223,24 +305,38 @@ public partial class MainWindow : Window
         PageInfoText.Text = $"Seite {_currentPage} / {totalPages}";
     }
 
+    /// <summary>
+    /// Wird ausgeführt, wenn sich der Suchtext ändert.
+    /// Setzt die Seite auf 1 zurück und filtert die Patienten neu.
+    /// </summary>
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         _currentPage = 1;
         ApplyFilterAndPaging();
     }
 
+    /// <summary>
+    /// Wird ausgeführt, wenn die Checkbox "Nur aktive Patienten"
+    /// geändert wird.
+    /// </summary>
     private void OnlyActiveCheck_Changed(object sender, RoutedEventArgs e)
     {
         _currentPage = 1;
         ApplyFilterAndPaging();
     }
 
+    /// <summary>
+    /// Lädt Patientenliste und Dashboard neu.
+    /// </summary>
     private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
         await LoadPatientsAsync();
         await LoadDashboardAsync();
     }
 
+    /// <summary>
+    /// Blättert eine Seite zurück.
+    /// </summary>
     private void PrevPage_Click(object sender, RoutedEventArgs e)
     {
         if (_currentPage > 1)
@@ -250,6 +346,9 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Blättert eine Seite weiter.
+    /// </summary>
     private void NextPage_Click(object sender, RoutedEventArgs e)
     {
         var totalPages = Math.Max(1, (int)Math.Ceiling((double)_filteredPatients.Count / PageSize));
@@ -261,11 +360,20 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Gibt den aktuell im DataGrid ausgewählten Patienten zurück.
+    /// </summary>
     private Patient? GetSelectedPatient()
     {
         return PatientsGrid.SelectedItem as Patient;
     }
 
+    /// <summary>
+    /// Öffnet das Fenster zum Erstellen eines neuen Patienten.
+    /// 
+    /// Wenn der Benutzer speichert, wird der Patient in die Datenbank übernommen
+    /// und danach Liste und Dashboard aktualisiert.
+    /// </summary>
     private async void AddPatient_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -292,6 +400,12 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Öffnet das Bearbeitungsfenster für den ausgewählten Patienten.
+    /// 
+    /// Vor dem Bearbeiten wird eine Kopie des Patienten erstellt,
+    /// damit Änderungen nicht sofort das Originalobjekt beeinflussen.
+    /// </summary>
     private async void EditPatient_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -337,6 +451,9 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Löscht den ausgewählten Patienten nach Rückfrage.
+    /// </summary>
     private async void DeletePatient_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -372,6 +489,11 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Aktiviert oder deaktiviert den ausgewählten Patienten.
+    /// 
+    /// Dabei wird der Wert von IsActive umgeschaltet.
+    /// </summary>
     private async void ToggleActive_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -399,6 +521,11 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Exportiert die aktuell gefilterte Patientenliste als CSV-Datei.
+    /// 
+    /// Wenn kein Filter aktiv ist, werden alle Patienten exportiert.
+    /// </summary>
     private void ExportCsv_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -421,6 +548,7 @@ public partial class MainWindow : Window
             if (saveFileDialog.ShowDialog() != true)
                 return;
 
+            // Hilfsmethode zum Absichern von Textwerten in CSV-Dateien
             static string Escape(string? value)
             {
                 if (string.IsNullOrWhiteSpace(value))
@@ -459,17 +587,27 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Öffnet bei Doppelklick auf einen Patienten direkt das Bearbeitungsfenster.
+    /// </summary>
     private void PatientsGrid_DoubleClick(object sender, MouseButtonEventArgs e)
     {
         EditPatient_Click(sender, e);
     }
 
+    /// <summary>
+    /// Löscht bei Drücken der Entf-Taste den ausgewählten Patienten.
+    /// </summary>
     private void PatientsGrid_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Delete)
             DeletePatient_Click(sender, e);
     }
 
+    /// <summary>
+    /// Führt eine benutzerdefinierte Sortierung der Patientenliste aus,
+    /// abhängig von der angeklickten Spalte im DataGrid.
+    /// </summary>
     private void PatientsGrid_Sorting(object sender, DataGridSortingEventArgs e)
     {
         e.Handled = true;
@@ -500,6 +638,12 @@ public partial class MainWindow : Window
         ApplyFilterAndPaging();
     }
 
+    /// <summary>
+    /// Unterstützt Tastenkürzel im Hauptfenster:
+    /// - F5 = Aktualisieren
+    /// - Strg + N = Neuer Patient
+    /// - Strg + E = CSV-Export
+    /// </summary>
     private void Window_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.F5)
@@ -512,6 +656,9 @@ public partial class MainWindow : Window
             ExportCsv_Click(sender, e);
     }
 
+    /// <summary>
+    /// Öffnet das Fenster zum Erstellen eines neuen Termins.
+    /// </summary>
     private void OpenAddAppointmentWindow_Click(object sender, RoutedEventArgs e)
     {
         var window = App.ServiceProvider.GetRequiredService<AddAppointmentWindow>();
@@ -519,6 +666,9 @@ public partial class MainWindow : Window
         window.ShowDialog();
     }
 
+    /// <summary>
+    /// Öffnet die Terminübersicht.
+    /// </summary>
     private void OpenAppointments_Click(object sender, RoutedEventArgs e)
     {
         var window = App.ServiceProvider.GetRequiredService<AppointmentWindow>();
@@ -526,6 +676,9 @@ public partial class MainWindow : Window
         window.ShowDialog();
     }
 
+    /// <summary>
+    /// Öffnet die Kalenderansicht der Termine.
+    /// </summary>
     private void OpenCalendar_Click(object sender, RoutedEventArgs e)
     {
         var window = App.ServiceProvider.GetRequiredService<AppointmentCalendarWindow>();
@@ -533,6 +686,9 @@ public partial class MainWindow : Window
         window.ShowDialog();
     }
 
+    /// <summary>
+    /// Öffnet das Wartezimmer-Fenster.
+    /// </summary>
     private void OpenWaitingRoom_Click(object sender, RoutedEventArgs e)
     {
         var window = App.ServiceProvider.GetRequiredService<WaitingRoomWindow>();
@@ -540,6 +696,11 @@ public partial class MainWindow : Window
         window.ShowDialog();
     }
 
+    /// <summary>
+    /// Öffnet die Benutzerverwaltung.
+    /// 
+    /// Nur Administratoren dürfen diesen Bereich aufrufen.
+    /// </summary>
     private void UserManagementButton_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -564,6 +725,12 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Meldet den aktuellen Benutzer ab.
+    /// 
+    /// Danach wird erneut das Login-Fenster geöffnet.
+    /// Bei erfolgreichem Login wird ein neues Hauptfenster gestartet.
+    /// </summary>
     private void Logout_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(
@@ -598,6 +765,10 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Öffnet das Fenster zum Ändern des Passworts
+    /// und speichert das neue Passwort über den AuthService.
+    /// </summary>
     private async void ChangePassword_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -637,6 +808,9 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Öffnet das Rechnungsfenster.
+    /// </summary>
     private void OpenInvoices_Click(object sender, RoutedEventArgs e)
     {
         var window = (InvoiceWindow)_serviceProvider.GetRequiredService(typeof(InvoiceWindow));
@@ -644,6 +818,9 @@ public partial class MainWindow : Window
         window.ShowDialog();
     }
 
+    /// <summary>
+    /// Öffnet das Rezeptfenster.
+    /// </summary>
     private void OpenPrescriptions_Click(object sender, RoutedEventArgs e)
     {
         var window = _serviceProvider.GetRequiredService<PrescriptionWindow>();
@@ -651,6 +828,9 @@ public partial class MainWindow : Window
         window.ShowDialog();
     }
 
+    /// <summary>
+    /// Öffnet das Dokumentenfenster für den aktuell ausgewählten Patienten.
+    /// </summary>
     private void OpenDocuments_Click(object sender, RoutedEventArgs e)
     {
         if (PatientsGrid.SelectedItem is not Patient patient)
@@ -664,15 +844,25 @@ public partial class MainWindow : Window
         window.ShowDialog();
     }
 
+    /// <summary>
+    /// Aktualisiert nur das Dashboard.
+    /// </summary>
     public async void RefreshDashboard_Click(object sender, RoutedEventArgs e)
     {
         await LoadDashboardAsync();
     }
 
+    /// <summary>
+    /// Event für Auswahländerung im Patienten-Grid.
+    /// Aktuell ohne Logik.
+    /// </summary>
     private void PatientsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
     }
 
+    /// <summary>
+    /// Öffnet das Audit-Log-Fenster.
+    /// </summary>
     private void OpenAuditLog_Click(object sender, RoutedEventArgs e)
     {
         var window = _serviceProvider.GetRequiredService<AuditLogWindow>();
@@ -680,6 +870,12 @@ public partial class MainWindow : Window
         window.ShowDialog();
     }
 
+    /// <summary>
+    /// Erstellt ein Datenbank-Backup im Dokumente-Ordner des Benutzers.
+    /// 
+    /// Nur Administratoren dürfen ein Backup erstellen.
+    /// Nach erfolgreichem Backup wird zusätzlich ein Audit-Log-Eintrag geschrieben.
+    /// </summary>
     private async void CreateBackup_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -715,6 +911,13 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Stellt ein vorhandenes Backup wieder her.
+    /// 
+    /// Achtung:
+    /// Dabei werden aktuelle Daten überschrieben.
+    /// Nur Administratoren dürfen diese Funktion ausführen.
+    /// </summary>
     private async void RestoreBackup_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -753,6 +956,13 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Wechselt zwischen Hell- und Dunkelmodus.
+    /// 
+    /// Zusätzlich wird das Symbol des Buttons angepasst:
+    /// - 🌙 für Dunkelmodus aktivierbar
+    /// - ☀ für Hellmodus aktivierbar
+    /// </summary>
     private void ThemeToggle_Click(object sender, RoutedEventArgs e)
     {
         if (_themeService.IsDarkMode)
@@ -778,6 +988,13 @@ public partial class MainWindow : Window
             };
         }
     }
+
+    /// <summary>
+    /// Öffnet das Fenster für Online-Terminbuchungen.
+    /// 
+    /// Wenn dort ein Termin erfolgreich erstellt wurde,
+    /// wird das Dashboard neu geladen.
+    /// </summary>
     private async void OnlineBookingButton_Click(object sender, RoutedEventArgs e)
     {
         var bookingWindow = App.ServiceProvider.GetRequiredService<OnlineBookingWindow>();
@@ -787,9 +1004,7 @@ public partial class MainWindow : Window
 
         if (result == true)
         {
-           await LoadDashboardAsync();
+            await LoadDashboardAsync();
         }
-      
-
     }
 }

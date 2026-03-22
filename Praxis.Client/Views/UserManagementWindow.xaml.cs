@@ -6,30 +6,64 @@ using Praxis.Infrastructure.Services;
 
 namespace Praxis.Client.Views;
 
+/// <summary>
+/// Dieses Fenster dient zur Verwaltung von Benutzern.
+/// 
+/// Funktionen:
+/// - Benutzer anzeigen
+/// - neue Benutzer erstellen
+/// - Rollen ändern
+/// - Passwörter zurücksetzen
+/// - Benutzer löschen
+/// 
+/// Zugriff ist nur für Administratoren erlaubt.
+/// </summary>
 public partial class UserManagementWindow : Window
 {
+    /// <summary>
+    /// Service für alle Benutzerverwaltungsfunktionen.
+    /// </summary>
     private readonly IUserManagementService _userManagementService;
 
+    /// <summary>
+    /// Konstruktor des Fensters.
+    /// 
+    /// Initialisiert die Rollen-Auswahl und lädt beim Öffnen
+    /// automatisch alle Benutzer.
+    /// </summary>
     public UserManagementWindow(IUserManagementService userManagementService)
     {
         InitializeComponent();
         _userManagementService = userManagementService;
 
-        RoleComboBox.ItemsSource = new[] { Roles.Administrator, Roles.Mitarbeiter,Roles.Arzt };
-        EditRoleComboBox.ItemsSource = new[] { Roles.Administrator, Roles.Mitarbeiter,Roles.Arzt };
+        // Rollen für Auswahlboxen festlegen
+        RoleComboBox.ItemsSource = new[] { Roles.Administrator, Roles.Mitarbeiter, Roles.Arzt };
+        EditRoleComboBox.ItemsSource = new[] { Roles.Administrator, Roles.Mitarbeiter, Roles.Arzt };
 
+        // Standardauswahl setzen
         RoleComboBox.SelectedIndex = 1;
         EditRoleComboBox.SelectedIndex = 1;
 
         Loaded += UserManagementWindow_Loaded;
     }
 
+    /// <summary>
+    /// Wird beim Laden des Fensters ausgeführt.
+    /// 
+    /// - prüft die Benutzerberechtigung
+    /// - lädt alle Benutzer
+    /// </summary>
     private async void UserManagementWindow_Loaded(object sender, RoutedEventArgs e)
     {
         CheckAccess();
-
         await LoadUsersAsync();
     }
+
+    /// <summary>
+    /// Prüft, ob der aktuelle Benutzer Administrator ist.
+    /// 
+    /// Nur Administratoren dürfen Benutzer verwalten.
+    /// </summary>
     private void CheckAccess()
     {
         if (!UserSession.HasRole(Roles.Administrator))
@@ -38,6 +72,11 @@ public partial class UserManagementWindow : Window
             Close();
         }
     }
+
+    /// <summary>
+    /// Lädt alle Benutzer aus der Datenbank
+    /// und zeigt sie im DataGrid an.
+    /// </summary>
     private async Task LoadUsersAsync()
     {
         try
@@ -55,11 +94,20 @@ public partial class UserManagementWindow : Window
         }
     }
 
+    /// <summary>
+    /// Gibt den aktuell ausgewählten Benutzer zurück.
+    /// </summary>
     private User? GetSelectedUser()
     {
         return UsersGrid.SelectedItem as User;
     }
 
+    /// <summary>
+    /// Erstellt einen neuen Benutzer.
+    /// 
+    /// Die eingegebenen Daten werden an den Service übergeben
+    /// und anschließend die Liste aktualisiert.
+    /// </summary>
     private async void CreateUser_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -70,6 +118,7 @@ public partial class UserManagementWindow : Window
 
             await _userManagementService.CreateUserAsync(username, password, role);
 
+            // Eingabefelder zurücksetzen
             UsernameTextBox.Clear();
             PasswordBox.Clear();
             RoleComboBox.SelectedItem = Roles.Mitarbeiter;
@@ -88,6 +137,9 @@ public partial class UserManagementWindow : Window
         }
     }
 
+    /// <summary>
+    /// Ändert die Rolle des ausgewählten Benutzers.
+    /// </summary>
     private async void ChangeRole_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -116,6 +168,11 @@ public partial class UserManagementWindow : Window
         }
     }
 
+    /// <summary>
+    /// Setzt das Passwort eines Benutzers zurück.
+    /// 
+    /// Ein neues Passwort wird über ein Eingabefeld abgefragt.
+    /// </summary>
     private async void ResetPassword_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -149,6 +206,11 @@ public partial class UserManagementWindow : Window
         }
     }
 
+    /// <summary>
+    /// Löscht den ausgewählten Benutzer.
+    /// 
+    /// Der aktuell angemeldete Benutzer kann nicht gelöscht werden.
+    /// </summary>
     private async void DeleteUser_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -160,6 +222,7 @@ public partial class UserManagementWindow : Window
                 return;
             }
 
+            // Selbstlöschung verhindern
             if (UserSession.CurrentUser != null && user.Id == UserSession.CurrentUser.Id)
             {
                 MessageBox.Show("Der aktuell angemeldete Benutzer kann nicht gelöscht werden.");
@@ -190,6 +253,9 @@ public partial class UserManagementWindow : Window
         }
     }
 
+    /// <summary>
+    /// Schließt das Fenster.
+    /// </summary>
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         Close();
