@@ -40,7 +40,7 @@ public partial class LoginWindow : Window
     /// - bei Erfolg Benutzer in die Session speichern
     /// - Fenster schließen
     /// </summary>
-    private async void LoginButton_Click(object sender, RoutedEventArgs e)
+    private async void Login_Click(object sender, RoutedEventArgs e)
     {
         try
         {

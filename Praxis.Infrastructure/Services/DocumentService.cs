@@ -53,4 +53,22 @@ public class DocumentService : IDocumentService
             await _db.SaveChangesAsync();
         }
     }
+
+    /// <summary>
+    /// Aktualisiert ein vorhandenes Dokument.
+    /// </summary>
+    public async Task UpdateDocumentAsync(PatientDocument document)
+    {
+        var existingDoc = await _db.PatientDocuments.FindAsync(document.Id);
+
+        if (existingDoc != null)
+        {
+            existingDoc.FileName = document.FileName;
+            existingDoc.FilePath = document.FilePath;
+            existingDoc.PatientId = document.PatientId;
+
+            await _db.SaveChangesAsync();
+        }
+    }
+
 }

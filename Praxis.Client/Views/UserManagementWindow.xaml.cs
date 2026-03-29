@@ -112,13 +112,26 @@ public partial class UserManagementWindow : Window
     {
         try
         {
-            var username = UsernameTextBox.Text;
-            var password = PasswordBox.Password;
+            var username = UsernameTextBox.Text?.Trim() ?? "";
+            var password = PasswordBox.Password?.Trim() ?? "";
             var role = RoleComboBox.SelectedItem?.ToString() ?? Roles.Mitarbeiter;
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                MessageBox.Show("Bitte einen Benutzernamen eingeben.");
+                UsernameTextBox.Focus();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                MessageBox.Show("Bitte ein Passwort eingeben.");
+                PasswordBox.Focus();
+                return;
+            }
 
             await _userManagementService.CreateUserAsync(username, password, role);
 
-            // Eingabefelder zurücksetzen
             UsernameTextBox.Clear();
             PasswordBox.Clear();
             RoleComboBox.SelectedItem = Roles.Mitarbeiter;
@@ -259,5 +272,45 @@ public partial class UserManagementWindow : Window
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+    /// <summary>
+    /// Alias für "Benutzer neu".
+    /// </summary>
+    private void AddUser_Click(object sender, RoutedEventArgs e)
+    {
+        CreateUser_Click(sender, e);
+    }
+
+    /// <summary>
+    /// Alias für "Bearbeiten".
+    /// Ändert in diesem Fenster die Rolle des ausgewählten Benutzers.
+    /// </summary>
+    private void EditUser_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeRole_Click(sender, e);
+    }
+
+    /// <summary>
+    /// Alias für "Aktualisieren".
+    /// </summary>
+    private async void Refresh_Click(object sender, RoutedEventArgs e)
+    {
+        await LoadUsersAsync();
+    }
+
+    private void UsersGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (UsersGrid.SelectedItem is User user)
+        {
+            SelectedUsernameText.Text = user.Username;
+            SelectedUserRoleText.Text = user.Role;
+            SelectedUserStatusText.Text = user.IsActive ? "Aktiv" : "Inaktiv";
+        }
+        else
+        {
+            SelectedUsernameText.Text = "-";
+            SelectedUserRoleText.Text = "-";
+            SelectedUserStatusText.Text = "-";
+        }
     }
 }

@@ -119,7 +119,7 @@ public partial class WaitingRoomWindow : Window
     /// <summary>
     /// Setzt den Status des Termins auf "Erledigt".
     /// </summary>
-    private async void CompleteButton_Click(object sender, RoutedEventArgs e)
+    private async void Complete_Click(object sender, RoutedEventArgs e)
     {
         await UpdateSelectedStatusAsync("Erledigt");
     }
@@ -130,5 +130,46 @@ public partial class WaitingRoomWindow : Window
     private async void NoShowButton_Click(object sender, RoutedEventArgs e)
     {
         await UpdateSelectedStatusAsync("Nicht erschienen");
+    }
+    /// <summary>
+    /// Alias für den Button "Hinzufügen".
+    /// Setzt den ausgewählten Termin auf "Im Wartezimmer".
+    /// </summary>
+    private async void AddToWaitingRoom_Click(object sender, RoutedEventArgs e)
+    {
+        await UpdateSelectedStatusAsync("Im Wartezimmer");
+    }
+
+    /// <summary>
+    /// Alias für "Angekommen".
+    /// </summary>
+    private async void MarkArrived_Click(object sender, RoutedEventArgs e)
+    {
+        await UpdateSelectedStatusAsync("Im Wartezimmer");
+    }
+
+    /// <summary>
+    /// Alias für "Nächster".
+    /// Setzt den ausgewählten Termin auf "In Behandlung".
+    /// </summary>
+    private async void CallNext_Click(object sender, RoutedEventArgs e)
+    {
+        await UpdateSelectedStatusAsync("In Behandlung");
+    }
+
+    /// <summary>
+    /// Alias für "Abschließen".
+    /// </summary>
+    private async void CompleteVisit_Click(object sender, RoutedEventArgs e)
+    {
+        await UpdateSelectedStatusAsync("Erledigt");
+    }
+
+    /// <summary>
+    /// Alias für "Aktualisieren".
+    /// </summary>
+    private async void Refresh_Click(object sender, RoutedEventArgs e)
+    {
+        await LoadWaitingRoomAsync();
     }
 }

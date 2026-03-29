@@ -113,4 +113,124 @@ public partial class DocumentWindow : Window
             UseShellExecute = true
         });
     }
+
+    /// <summary>
+    /// Alias für "Dokument neu".
+    /// Verwendet die bestehende Upload-Logik.
+    /// </summary>
+    private void AddDocument_Click(object sender, RoutedEventArgs e)
+    {
+        Upload_Click(sender, e);
+    }
+
+    /// <summary>
+    /// Alias für "Öffnen".
+    /// Verwendet die bestehende Open-Logik.
+    /// </summary>
+    private void OpenDocument_Click(object sender, RoutedEventArgs e)
+    {
+        Open_Click(sender, e);
+    }
+
+    /// <summary>
+    /// Dokumentliste neu laden.
+    /// </summary>
+    private async void Refresh_Click(object sender, RoutedEventArgs e)
+    {
+        DocumentsGrid.ItemsSource =
+            await _documentService.GetDocumentsByPatientAsync(_patient.Id);
+    }
+
+    /// <summary>
+    /// Bearbeitet das ausgewählte Dokument.
+    /// Hier wird zunächst nur der Dateiname ersetzt.
+    /// Optional kann später auch Kategorie/Titel ergänzt werden.
+    /// </summary>
+    private async void EditDocument_Click(object sender, RoutedEventArgs e)
+    {
+        if (DocumentsGrid.SelectedItem is not PatientDocument doc)
+        {
+            MessageBox.Show("Bitte zuerst ein Dokument auswählen.",
+                "Hinweis",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var dialog = new OpenFileDialog();
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        try
+        {
+            var folder = Path.Combine("documents", _patient.Id.ToString());
+            Directory.CreateDirectory(folder);
+
+            var fileName = Path.GetFileName(dialog.FileName);
+            var newPath = Path.Combine(folder, fileName);
+
+            File.Copy(dialog.FileName, newPath, true);
+
+            doc.FileName = fileName;
+            doc.FilePath = newPath;
+
+            await _documentService.UpdateDocumentAsync(doc);
+
+            DocumentsGrid.ItemsSource =
+                await _documentService.GetDocumentsByPatientAsync(_patient.Id);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message,
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Löscht das ausgewählte Dokument.
+    /// Optional wird auch die Datei auf dem Datenträger entfernt.
+    /// </summary>
+    private async void DeleteDocument_Click(object sender, RoutedEventArgs e)
+    {
+        if (DocumentsGrid.SelectedItem is not PatientDocument doc)
+        {
+            MessageBox.Show("Bitte zuerst ein Dokument auswählen.",
+                "Hinweis",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"Dokument '{doc.FileName}' wirklich löschen?",
+            "Bestätigung",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            await _documentService.DeleteDocumentAsync(doc.Id);
+
+            if (!string.IsNullOrWhiteSpace(doc.FilePath) && File.Exists(doc.FilePath))
+            {
+                File.Delete(doc.FilePath);
+            }
+
+            DocumentsGrid.ItemsSource =
+                await _documentService.GetDocumentsByPatientAsync(_patient.Id);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message,
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
 }

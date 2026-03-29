@@ -9,4 +9,6 @@ public interface IDocumentService
     Task AddDocumentAsync(PatientDocument document);
 
     Task DeleteDocumentAsync(int documentId);
+    Task UpdateDocumentAsync(PatientDocument document);
+
 }
