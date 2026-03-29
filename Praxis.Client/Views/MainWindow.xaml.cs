@@ -241,7 +241,7 @@ public partial class MainWindow : Window
 
         InvoiceButton.IsEnabled = canManageInvoices;
         PrescriptionButton.IsEnabled = canManagePrescriptions;
-        DocumentsButton.IsEnabled = canManageDocuments;
+        DocumentButton.IsEnabled = canManageDocuments;
 
         UserManagementButton.IsEnabled = canManageUsers;
     }
@@ -858,6 +858,22 @@ public partial class MainWindow : Window
     /// </summary>
     private void PatientsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (PatientsGrid.SelectedItem is Praxis.Domain.Entities.Patient patient)
+        {
+            SelectedPatientNameText.Text = $"{patient.Vorname} {patient.Nachname}";
+            SelectedPatientBirthDateText.Text = patient.Geburtsdatum.ToString("dd.MM.yyyy");
+            SelectedPatientPhoneText.Text = string.IsNullOrWhiteSpace(patient.Telefonnummer) ? "-" : patient.Telefonnummer;
+            SelectedPatientEmailText.Text = string.IsNullOrWhiteSpace(patient.Email) ? "-" : patient.Email;
+            SelectedPatientStatusText.Text = patient.IsActive ? "Aktiv" : "Inaktiv";
+        }
+        else
+        {
+            SelectedPatientNameText.Text = "Kein Patient gewählt";
+            SelectedPatientBirthDateText.Text = "-";
+            SelectedPatientPhoneText.Text = "-";
+            SelectedPatientEmailText.Text = "-";
+            SelectedPatientStatusText.Text = "-";
+        }
     }
 
     /// <summary>

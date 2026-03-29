@@ -2,72 +2,220 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Terminübersicht"
-        Height="500"
-        Width="950"
+        Height="620"
+        Width="1180"
+        MinHeight="560"
+        MinWidth="1050"
+        Background="{StaticResource BackgroundBrush}"
         WindowStartupLocation="CenterOwner">
 
-    <DockPanel Margin="12">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal"
-            DockPanel.Dock="Top"
-            Margin="0,0,0,10">
+        <!-- Kopf -->
+        <Border Grid.Row="0"
+                Style="{StaticResource CardBorderStyle}"
+                Margin="0,0,0,12"
+                Background="{StaticResource HeaderPanelBrush}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="260"/>
+                </Grid.ColumnDefinitions>
 
-            <Button Content="Aktualisieren"
-            Width="110"
-            Height="30"
-            Margin="0,0,10,0"
-            Click="RefreshButton_Click"/>
+                <StackPanel>
+                    <TextBlock Text="Terminübersicht"
+                               Style="{StaticResource SectionTitleStyle}"/>
+                    <TextBlock Text="Übersicht, Bearbeitung und Verwaltung geplanter Termine"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
 
-            <Button Content="Neuer Termin"
-            Width="110"
-            Height="30"
-            Margin="0,0,10,0"
-            Click="NewAppointmentButton_Click"/>
+                <Border Grid.Column="1"
+                        Background="#EAF6F8"
+                        BorderBrush="{StaticResource PrimaryBrush}"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Padding="10"
+                        HorizontalAlignment="Right">
+                    <StackPanel>
+                        <TextBlock Text="Praxisbereich"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="Terminmanagement"
+                                   Margin="0,4,0,0"
+                                   Foreground="{StaticResource MutedTextBrush}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
 
-            <Button Content="Bearbeiten"
-            Width="110"
-            Height="30"
-            Margin="0,0,10,0"
-            Click="EditAppointmentButton_Click"/>
+        <!-- Aktionen -->
+        <Border Grid.Row="1"
+                Style="{StaticResource CardBorderStyle}"
+                Margin="0,0,0,12">
+            <WrapPanel>
+                <Button Content="Aktualisieren"
+                        Width="120"
+                        Height="34"
+                        Margin="0,0,8,8"
+                        Click="RefreshButton_Click"/>
 
-            <Button Content="Löschen"
-            Width="110"
-            Height="30"
-            Click="DeleteAppointmentButton_Click"/>
-            <Button Content="Erinnerung senden"
-                    Width="160"
-                    Click="SendReminder_Click"/>
-        </StackPanel>
+                <Button Content="Neuer Termin"
+                        Width="130"
+                        Height="34"
+                        Margin="0,0,8,8"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Click="NewAppointmentButton_Click"/>
 
-        <DataGrid x:Name="AppointmentsDataGrid"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Patient"
-                                    Binding="{Binding Patient.FullName}"
-                                    Width="180"/>
+                <Button Content="Bearbeiten"
+                        Width="120"
+                        Height="34"
+                        Margin="0,0,8,8"
+                        Click="EditAppointmentButton_Click"/>
 
-                <DataGridTextColumn Header="Datum"
-                                    Binding="{Binding StartTime, StringFormat=dd.MM.yyyy}"
-                                    Width="120"/>
+                <Button Content="Löschen"
+                        Width="120"
+                        Height="34"
+                        Margin="0,0,8,8"
+                        Style="{StaticResource DangerButtonStyle}"
+                        Click="DeleteAppointmentButton_Click"/>
 
-                <DataGridTextColumn Header="Uhrzeit"
-                                    Binding="{Binding StartTime, StringFormat=HH:mm}"
-                                    Width="90"/>
+                <Button Content="Erinnerung senden"
+                        Width="160"
+                        Height="34"
+                        Style="{StaticResource SuccessButtonStyle}"
+                        Click="SendReminder_Click"/>
+            </WrapPanel>
+        </Border>
 
-                <DataGridTextColumn Header="Dauer (Min.)"
-                                    Binding="{Binding DurationMinutes}"
-                                    Width="100"/>
+        <!-- Inhalt -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
 
-                <DataGridTextColumn Header="Grund"
-                                    Binding="{Binding Reason}"
-                                    Width="*"/>
+            <!-- Terminliste -->
+            <Border Grid.Column="0"
+                    Style="{StaticResource CardBorderStyle}"
+                    Margin="0,0,12,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <DataGridTextColumn Header="Status"
-                                    Binding="{Binding Status}"
-                                    Width="120"/>
-            </DataGrid.Columns>
-        </DataGrid>
-    </DockPanel>
+                    <StackPanel Margin="0,0,0,10">
+                        <TextBlock Text="Geplante Termine"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="Doppelklick oder Auswahl für weitere Aktionen"
+                                   FontSize="12"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <Border Grid.Row="1"
+                            BorderBrush="{StaticResource BorderBrushCustom}"
+                            BorderThickness="1"
+                            Background="White">
+                        <DataGrid x:Name="AppointmentsDataGrid"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserAddRows="False"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow"
+                                  RowHeaderWidth="0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Patient"
+                                                    Binding="{Binding Patient.FullName}"
+                                                    Width="190"/>
+
+                                <DataGridTextColumn Header="Datum"
+                                                    Binding="{Binding StartTime, StringFormat=dd.MM.yyyy}"
+                                                    Width="120"/>
+
+                                <DataGridTextColumn Header="Uhrzeit"
+                                                    Binding="{Binding StartTime, StringFormat=HH:mm}"
+                                                    Width="90"/>
+
+                                <DataGridTextColumn Header="Dauer"
+                                                    Binding="{Binding DurationMinutes}"
+                                                    Width="80"/>
+
+                                <DataGridTextColumn Header="Grund"
+                                                    Binding="{Binding Reason}"
+                                                    Width="*"/>
+
+                                <DataGridTextColumn Header="Status"
+                                                    Binding="{Binding Status}"
+                                                    Width="120"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Rechte Infospalte -->
+            <StackPanel Grid.Column="1">
+                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Schnellaktionen"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,10"/>
+
+                        <Button Content="Neuen Termin anlegen"
+                                Height="34"
+                                Margin="0,0,0,8"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Click="NewAppointmentButton_Click"/>
+
+                        <Button Content="Termin bearbeiten"
+                                Height="34"
+                                Margin="0,0,0,8"
+                                Click="EditAppointmentButton_Click"/>
+
+                        <Button Content="Termin löschen"
+                                Height="34"
+                                Margin="0,0,0,8"
+                                Style="{StaticResource DangerButtonStyle}"
+                                Click="DeleteAppointmentButton_Click"/>
+
+                        <Button Content="Erinnerung senden"
+                                Height="34"
+                                Style="{StaticResource SuccessButtonStyle}"
+                                Click="SendReminder_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardBorderStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Hinweise"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,10"/>
+
+                        <TextBlock Text="• Termine können über die Aktionsleiste direkt verwaltet werden."
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8"
+                                   Foreground="{StaticResource MutedTextBrush}"/>
+
+                        <TextBlock Text="• Vor dem Bearbeiten oder Löschen sollte ein Termin ausgewählt sein."
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8"
+                                   Foreground="{StaticResource MutedTextBrush}"/>
+
+                        <TextBlock Text="• Erinnerungen helfen bei einer besseren Terminbindung."
+                                   TextWrapping="Wrap"
+                                   Foreground="{StaticResource MutedTextBrush}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Grid>
 </Window>

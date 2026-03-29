@@ -143,12 +143,12 @@ public partial class AddPatientWindow : Window
         var dob = DobPicker.SelectedDate;
 
         // Vorname prüfen
-        if (string.IsNullOrWhiteSpace(firstName))
-        {
-            error = "Vorname ist ein Pflichtfeld.";
-            FirstNameBox.Focus();
-            return false;
-        }
+        //if (string.IsNullOrWhiteSpace(firstName))
+        //{
+        //    error = "Vorname ist ein Pflichtfeld.";
+        //    FirstNameBox.Focus();
+        //    return false;
+        //}
 
         // Nachname prüfen
         if (string.IsNullOrWhiteSpace(lastName))
