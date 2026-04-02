@@ -75,6 +75,20 @@ public partial class MainWindow : Window
     private readonly IDocumentService _documentService;
     private readonly IUserManagementService _userManagementService;
 
+    private enum BottomModule
+    {
+        Patienten,
+        Labor,
+        Abrechnung,
+        Auswertungen,
+        Nachrichten,
+        Kataloge,
+        Einrichtung,
+        Einstellungen
+    }
+
+    private BottomModule _currentModule = BottomModule.Patienten;
+
     /// <summary>
     /// Enthält alle geladenen Patienten.
     /// </summary>
@@ -152,7 +166,7 @@ public partial class MainWindow : Window
         IDashboardService dashboardService,
         IBackupService backupService,
         IAuditService auditService,
-        IThemeService themeService, 
+        IThemeService themeService,
         IUserManagementService userManagementService,
         IDocumentService documentService)
     {
@@ -197,6 +211,8 @@ public partial class MainWindow : Window
         await LoadWaitingRoomTabAsync();
         await LoadUsersTabAsync();
         await LoadDocumentsTabAsync();
+
+        SwitchModule(BottomModule.Patienten);
     }
 
     /// <summary>
@@ -1089,6 +1105,135 @@ public partial class MainWindow : Window
     /// Nur Administratoren dürfen ein Backup erstellen.
     /// Nach erfolgreichem Backup wird zusätzlich ein Audit-Log-Eintrag geschrieben.
     /// </summary>
+    private void BuildSidebar(BottomModule module)
+    {
+        if (DynamicSidebarPanel == null)
+            return;
+
+        DynamicSidebarPanel.Children.Clear();
+        if (SidebarTitleText != null)
+            SidebarTitleText.Text = module.ToString();
+
+        switch (module)
+        {
+            case BottomModule.Patienten:
+                AddSidebarButton("Patientensuche", ShowPatientsTab_Click);
+                AddSidebarButton("Neuer Patient", AddPatient_Click);
+                AddSidebarButton("Patient bearbeiten", EditPatient_Click);
+                AddSidebarButton("Patient löschen", DeletePatient_Click);
+                AddSidebarButton("Termine", OpenAppointments_Click);
+                AddSidebarButton("Dokumente", OpenDocuments_Click);
+                AddSidebarButton("Wartezimmer", OpenWaitingRoom_Click);
+                break;
+
+            case BottomModule.Labor:
+                AddSidebarButton("Labordaten importieren", DummySidebarClick);
+                AddSidebarButton("Laborberichte", DummySidebarClick);
+                AddSidebarButton("Labortagesliste", DummySidebarClick);
+                AddSidebarButton("Labore", DummySidebarClick);
+                break;
+
+            case BottomModule.Abrechnung:
+                AddSidebarButton("Rechnungen öffnen", OpenInvoices_Click);
+                AddSidebarButton("Neue Rechnung", OpenInvoices_Click);
+                AddSidebarButton("Rezepte", OpenPrescriptions_Click);
+                AddSidebarButton("Audit Log", OpenAuditLog_Click);
+                break;
+
+            case BottomModule.Auswertungen:
+                AddSidebarButton("Dashboard", ShowPatientsTab_Click);
+                AddSidebarButton("Terminkalender", OpenCalendar_Click);
+                AddSidebarButton("Wartezimmerübersicht", OpenWaitingRoom_Click);
+                AddSidebarButton("Patienten-Statistik", DummySidebarClick);
+                break;
+
+            case BottomModule.Nachrichten:
+                AddSidebarButton("Online Buchung", OnlineBookingButton_Click);
+                AddSidebarButton("Dokumente", OpenDocuments_Click);
+                AddSidebarButton("Audit Log", OpenAuditLog_Click);
+                break;
+
+            case BottomModule.Kataloge:
+                AddSidebarButton("Dokumente", OpenDocuments_Click);
+                AddSidebarButton("Rezepte", OpenPrescriptions_Click);
+                AddSidebarButton("Rechnungen", OpenInvoices_Click);
+                break;
+
+            case BottomModule.Einrichtung:
+                AddSidebarButton("Benutzerverwaltung", UserManagementButton_Click);
+                AddSidebarButton("Kalender", OpenCalendar_Click);
+                AddSidebarButton("Online Buchung", OnlineBookingButton_Click);
+                AddSidebarButton("Wartezimmer", OpenWaitingRoom_Click);
+                break;
+
+            case BottomModule.Einstellungen:
+                AddSidebarButton("Design wechseln", ThemeToggle_Click);
+                AddSidebarButton("Backup erstellen", CreateBackup_Click);
+                AddSidebarButton("Backup wiederherstellen", RestoreBackup_Click);
+                AddSidebarButton("Passwort ändern", ChangePassword_Click);
+                AddSidebarButton("Logout", Logout_Click);
+                break;
+        }
+    }
+
+    private void AddSidebarButton(string text, RoutedEventHandler clickHandler)
+    {
+        var button = new Button
+        {
+            Content = text,
+            Height = 40,
+            Margin = new Thickness(0, 0, 0, 8),
+            HorizontalContentAlignment = HorizontalAlignment.Left,
+            Padding = new Thickness(14, 0, 14, 0)
+        };
+
+        button.Click += clickHandler;
+        DynamicSidebarPanel.Children.Add(button);
+    }
+
+    private void DummySidebarClick(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Diesen Bereich kannst du als Nächstes mit einem eigenen Tab oder UserControl ausbauen.", "Hinweis", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void SwitchModule(BottomModule module)
+    {
+        _currentModule = module;
+
+        BuildSidebar(module);
+
+        switch (module)
+        {
+            case BottomModule.Patienten:
+                SelectTab(0);
+                break;
+
+            case BottomModule.Labor:
+                SelectTab(5);
+                break;
+
+            case BottomModule.Abrechnung:
+                SelectTab(6);
+                break;
+
+            case BottomModule.Auswertungen:
+                SelectTab(7);
+                break;
+
+            case BottomModule.Nachrichten:
+                SelectTab(8);
+                break;
+        }
+    }
+    private void BottomPatients_Click(object sender, RoutedEventArgs e) => SwitchModule(BottomModule.Patienten);
+    private void BottomLabor_Click(object sender, RoutedEventArgs e) => SwitchModule(BottomModule.Labor);
+    private void BottomBilling_Click(object sender, RoutedEventArgs e) => SwitchModule(BottomModule.Abrechnung);
+    private void BottomReports_Click(object sender, RoutedEventArgs e) => SwitchModule(BottomModule.Auswertungen);
+    private void BottomMessages_Click(object sender, RoutedEventArgs e) => SwitchModule(BottomModule.Nachrichten);
+    private void BottomCatalogs_Click(object sender, RoutedEventArgs e) => SwitchModule(BottomModule.Kataloge);
+    private void BottomSetup_Click(object sender, RoutedEventArgs e) => SwitchModule(BottomModule.Einrichtung);
+    private void BottomSettings_Click(object sender, RoutedEventArgs e) => SwitchModule(BottomModule.Einstellungen);
+
     private async void CreateBackup_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -1220,7 +1365,7 @@ public partial class MainWindow : Window
             await LoadDashboardAsync();
         }
     }
-  
+
     private async void SelectTab(int index)
     {
         UpdateBottomNavigationState();

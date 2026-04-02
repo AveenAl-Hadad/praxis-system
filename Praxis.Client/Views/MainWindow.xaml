@@ -13,7 +13,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="74"/>
+            <ColumnDefinition Width="240"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -23,14 +23,14 @@
             <RowDefinition Height="78"/>
         </Grid.RowDefinitions>
 
-        <!-- MINI SIDEBAR LINKS -->
+        <!-- DYNAMISCHE SIDEBAR -->
         <Border Grid.Row="0"
-        Grid.RowSpan="3"
-        Grid.Column="0"
-        Background="#3A4046"
-        BorderBrush="#25292D"
-        BorderThickness="0,0,1,0">
-            <Grid Margin="8">
+                Grid.RowSpan="3"
+                Grid.Column="0"
+                Background="#3A4046"
+                BorderBrush="#25292D"
+                BorderThickness="0,0,1,0">
+            <Grid Margin="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="12"/>
@@ -38,98 +38,48 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Logo -->
                 <Border Grid.Row="0"
-                Background="#2F3439"
-                CornerRadius="6"
-                Padding="8"
-                Margin="0,0,0,8">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="P"
-                           FontSize="22"
-                           FontWeight="Bold"
-                           Foreground="White"
-                           HorizontalAlignment="Center"/>
-                        <TextBlock Text="SYS"
-                           FontSize="10"
-                           Foreground="#D6DCE1"
-                           HorizontalAlignment="Center"/>
+                        Background="#2F3439"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock Text="PRAXIS"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                        <TextBlock Text="Navigation"
+                                   FontSize="11"
+                                   Foreground="#D6DCE1"
+                                   Margin="0,2,0,0"/>
+                        <TextBlock x:Name="SidebarTitleText"
+                                   Text="Patienten"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="#FFFFFF"
+                                   Margin="0,10,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Navigation Icons -->
-                <StackPanel Grid.Row="2">
+                <ScrollViewer Grid.Row="2"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <!-- LINKE SIDEBAR -->
+                    <StackPanel x:Name="DynamicSidebarPanel"/>
+                </ScrollViewer>
 
-                    <Button Style="{StaticResource MiniNavButtonStyle}"
-                    Click="ShowPatientsTab_Click"
-                    ToolTip="Patienten"
-                    Margin="0,0,0,8">
-                        <TextBlock Text="&#xE77B;"
-                           FontFamily="Segoe MDL2 Assets"
-                           FontSize="18"
-                           HorizontalAlignment="Center"/>
-                    </Button>
-
-                    <Button Style="{StaticResource MiniNavButtonStyle}"
-                    Click="OpenAppointments_Click"
-                    ToolTip="Termine"
-                    Margin="0,0,0,8">
-                        <TextBlock Text="&#xE787;"
-                           FontFamily="Segoe MDL2 Assets"
-                           FontSize="18"
-                           HorizontalAlignment="Center"/>
-                    </Button>
-
-                    <Button Style="{StaticResource MiniNavButtonStyle}"
-                    Click="OpenDocuments_Click"
-                    ToolTip="Dokumente"
-                    Margin="0,0,0,8">
-                        <TextBlock Text="&#xE8A5;"
-                           FontFamily="Segoe MDL2 Assets"
-                           FontSize="18"
-                           HorizontalAlignment="Center"/>
-                    </Button>
-
-                    <Button Style="{StaticResource MiniNavButtonStyle}"
-                    Click="OpenWaitingRoom_Click"
-                    ToolTip="Wartezimmer"
-                    Margin="0,0,0,8">
-                        <TextBlock Text="&#xE8BD;"
-                           FontFamily="Segoe MDL2 Assets"
-                           FontSize="18"
-                           HorizontalAlignment="Center"/>
-                    </Button>
-
-                    <Button Style="{StaticResource MiniNavButtonStyle}"
-                    Click="UserManagementButton_Click"
-                    ToolTip="Benutzer"
-                    Margin="0,0,0,8">
-                        <TextBlock Text="&#xE716;"
-                           FontFamily="Segoe MDL2 Assets"
-                           FontSize="18"
-                           HorizontalAlignment="Center"/>
-                    </Button>
-                </StackPanel>
-
-                <!-- Unten -->
                 <StackPanel Grid.Row="3">
                     <Button x:Name="ThemeToggleButton"
-                    Style="{StaticResource MiniNavButtonStyle}"
-                    Click="ThemeToggle_Click"
-                    ToolTip="Design wechseln"
-                    Margin="0,0,0,8">
-                        <TextBlock Text="🌙"
-                           FontSize="16"
-                           HorizontalAlignment="Center"/>
+                            Height="38"
+                            Margin="0,0,0,8"
+                            Click="ThemeToggle_Click">
+                        Design wechseln
                     </Button>
 
-                    <Button Style="{StaticResource MiniNavButtonStyle}"
-                    Click="Logout_Click"
-                    ToolTip="Logout">
-                        <TextBlock Text="&#xE8AC;"
-                           FontFamily="Segoe MDL2 Assets"
-                           FontSize="18"
-                           HorizontalAlignment="Center"/>
+                    <Button Height="38"
+                            Click="Logout_Click"
+                            Style="{StaticResource DangerButtonStyle}">
+                        Logout
                     </Button>
                 </StackPanel>
             </Grid>
@@ -314,6 +264,7 @@
 
         <!-- CONTENT -->
         <Grid Grid.Row="1" Grid.Column="1" x:Name="ContentArea" Margin="14">
+            <!-- RECHTER CONTENT -->
             <TabControl x:Name="MainTabControl"
                         SelectedIndex="0">
 
@@ -1797,40 +1748,30 @@
                 BorderBrush="#1F2326"
                 BorderThickness="1,1,0,0"
                 Padding="8">
-            <UniformGrid Columns="5">
-                <Button  Click="ShowPatientsTab_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <StackPanel>
-                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Patienten" FontSize="11" HorizontalAlignment="Center"/>
-                    </StackPanel>
+            <UniformGrid Columns="8">
+                <Button Click="BottomPatients_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <TextBlock Text="Patienten" HorizontalAlignment="Center"/>
                 </Button>
-
-                <Button Click="OpenAppointments_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <StackPanel>
-                        <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Termine" FontSize="11" HorizontalAlignment="Center"/>
-                    </StackPanel>
+                <Button Click="BottomLabor_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <TextBlock Text="Labor" HorizontalAlignment="Center"/>
                 </Button>
-
-                <Button Click="OpenDocuments_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <StackPanel>
-                        <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Dokumente" FontSize="11" HorizontalAlignment="Center"/>
-                    </StackPanel>
+                <Button Click="BottomBilling_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <TextBlock Text="Abrechnung" HorizontalAlignment="Center"/>
                 </Button>
-
-                <Button Click="OpenWaitingRoom_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <StackPanel>
-                        <TextBlock Text="&#xE8BD;" FontFamily="Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Wartezimmer" FontSize="11" HorizontalAlignment="Center"/>
-                    </StackPanel>
+                <Button Click="BottomReports_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <TextBlock Text="Auswertungen" HorizontalAlignment="Center"/>
                 </Button>
-
-                <Button Click="UserManagementButton_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <StackPanel>
-                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Benutzer" FontSize="11" HorizontalAlignment="Center"/>
-                    </StackPanel>
+                <Button Click="BottomMessages_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <TextBlock Text="Nachrichten" HorizontalAlignment="Center"/>
+                </Button>
+                <Button Click="BottomCatalogs_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <TextBlock Text="Kataloge" HorizontalAlignment="Center"/>
+                </Button>
+                <Button Click="BottomSetup_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <TextBlock Text="Einrichtung" HorizontalAlignment="Center"/>
+                </Button>
+                <Button Click="BottomSettings_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <TextBlock Text="Einstellungen" HorizontalAlignment="Center"/>
                 </Button>
             </UniformGrid>
         </Border>
