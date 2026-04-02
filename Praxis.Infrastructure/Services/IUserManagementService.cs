@@ -9,4 +9,5 @@ public interface IUserManagementService
     Task UpdateUserRoleAsync(int userId, string role);
     Task ResetPasswordAsync(int userId, string newPassword);
     Task DeleteUserAsync(int userId);
+    Task ToggleUserActiveAsync(int userId);
 }

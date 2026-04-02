@@ -14,6 +14,7 @@ using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 using Praxis.Infrastructure.Services.Interface;
+using Microsoft.VisualBasic;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Praxis.Client.Views;
@@ -71,6 +72,8 @@ public partial class MainWindow : Window
     /// Service zum Umschalten zwischen Hell- und Dunkelmodus.
     /// </summary>
     private readonly IThemeService _themeService;
+    private readonly IDocumentService _documentService;
+    private readonly IUserManagementService _userManagementService;
 
     /// <summary>
     /// Enthält alle geladenen Patienten.
@@ -91,6 +94,49 @@ public partial class MainWindow : Window
     /// Anzahl der Patienten pro Seite.
     /// </summary>
     private const int PageSize = 10;
+    private sealed class AppointmentTabRow
+    {
+        public int Id { get; set; }
+        public string PatientName { get; set; } = "";
+        public string DateText { get; set; } = "";
+        public string TimeText { get; set; } = "";
+        public string DurationText { get; set; } = "";
+        public string Reason { get; set; } = "";
+        public string Status { get; set; } = "";
+        public Appointment Source { get; set; } = null!;
+    }
+
+    private sealed class WaitingRoomTabRow
+    {
+        public int Id { get; set; }
+        public string PatientName { get; set; } = "";
+        public string ArrivalTimeText { get; set; } = "";
+        public string WaitingDurationText { get; set; } = "";
+        public string Status { get; set; } = "";
+        public string Room { get; set; } = "-";
+        public Appointment Source { get; set; } = null!;
+    }
+
+    private sealed class DocumentTabRow
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string PatientName { get; set; } = "";
+        public string Category { get; set; } = "";
+        public string DateText { get; set; } = "";
+        public string FileName { get; set; } = "";
+        public PatientDocument Source { get; set; } = null!;
+    }
+
+    private sealed class UserTabRow
+    {
+        public int Id { get; set; }
+        public string Username { get; set; } = "";
+        public string Role { get; set; } = "";
+        public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public User Source { get; set; } = null!;
+    }
 
     /// <summary>
     /// Konstruktor des Hauptfensters.
@@ -106,7 +152,9 @@ public partial class MainWindow : Window
         IDashboardService dashboardService,
         IBackupService backupService,
         IAuditService auditService,
-        IThemeService themeService)
+        IThemeService themeService, 
+        IUserManagementService userManagementService,
+        IDocumentService documentService)
     {
         InitializeComponent();
         _patientService = patientService;
@@ -117,6 +165,8 @@ public partial class MainWindow : Window
         _backupService = backupService;
         _auditService = auditService;
         _themeService = themeService;
+        _documentService = documentService;
+        _userManagementService = userManagementService;
     }
 
     /// <summary>
@@ -143,6 +193,10 @@ public partial class MainWindow : Window
         ApplyRolePermissions();
         await LoadPatientsAsync();
         await LoadDashboardAsync();
+        await LoadAppointmentsTabAsync();
+        await LoadWaitingRoomTabAsync();
+        await LoadUsersTabAsync();
+        await LoadDocumentsTabAsync();
     }
 
     /// <summary>
@@ -189,6 +243,134 @@ public partial class MainWindow : Window
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
+    }
+
+    private async Task LoadAppointmentsTabAsync()
+    {
+        var appointments = await _appointmentService.GetAllAppointmentsAsync();
+
+        var rows = appointments
+            .OrderBy(a => a.StartTime)
+            .Select(a => new AppointmentTabRow
+            {
+                Id = a.Id,
+                PatientName = a.Patient == null
+                    ? $"Patient #{a.PatientId}"
+                    : $"{a.Patient.Vorname} {a.Patient.Nachname}".Trim(),
+                DateText = a.StartTime.ToString("dd.MM.yyyy"),
+                TimeText = a.StartTime.ToString("HH:mm"),
+                DurationText = $"{a.DurationMinutes} Min.",
+                Reason = a.Reason,
+                Status = a.Status,
+                Source = a
+            })
+            .ToList();
+
+        AppointmentsTabGrid.ItemsSource = rows;
+
+        TodayAppointmentsTabText.Text = rows.Count(r => r.Source.StartTime.Date == DateTime.Today).ToString();
+        OpenAppointmentsTabText.Text = rows.Count(r => r.Status != "Erledigt" && r.Status != "Abgesagt").ToString();
+        CompletedAppointmentsTabText.Text = rows.Count(r => r.Status == "Erledigt").ToString();
+
+        AppointmentsTabStatusText.Text = $"Termine geladen: {rows.Count}";
+    }
+
+    private async Task LoadWaitingRoomTabAsync()
+    {
+        var appointments = await _appointmentService.GetWaitingRoomAppointmentsAsync(DateTime.Today);
+
+        var now = DateTime.Now;
+
+        var rows = appointments
+            .OrderBy(a => a.StartTime)
+            .Select(a => new WaitingRoomTabRow
+            {
+                Id = a.Id,
+                PatientName = a.Patient == null
+                    ? $"Patient #{a.PatientId}"
+                    : $"{a.Patient.Vorname} {a.Patient.Nachname}".Trim(),
+                ArrivalTimeText = a.StartTime.ToString("HH:mm"),
+                WaitingDurationText = now > a.StartTime
+                    ? $"{(int)(now - a.StartTime).TotalMinutes} Min."
+                    : "0 Min.",
+                Status = a.Status,
+                Room = "-",
+                Source = a
+            })
+            .ToList();
+
+        WaitingRoomTabGrid.ItemsSource = rows;
+
+        WaitingCountTabText.Text = rows.Count(r => r.Status == "Im Wartezimmer").ToString();
+        CalledCountTabText.Text = rows.Count(r => r.Status == "In Behandlung").ToString();
+        CompletedCountTabText.Text = rows.Count(r => r.Status == "Erledigt").ToString();
+
+        WaitingRoomTabStatusText.Text = $"Wartezimmer geladen: {rows.Count}";
+    }
+
+    private async Task LoadUsersTabAsync()
+    {
+        var users = await _userManagementService.GetAllUsersAsync();
+
+        var rows = users
+            .OrderBy(u => u.Username)
+            .Select(u => new UserTabRow
+            {
+                Id = u.Id,
+                Username = u.Username,
+                Role = u.Role,
+                IsActive = u.IsActive,
+                CreatedAt = u.CreatedAt,
+                Source = u
+            })
+            .ToList();
+
+        UsersTabGrid.ItemsSource = rows;
+
+        TotalUsersTabText.Text = rows.Count.ToString();
+        AdminUsersTabText.Text = rows.Count(r => r.Role == Roles.Administrator).ToString();
+        ActiveUsersTabText.Text = rows.Count(r => r.IsActive).ToString();
+
+        UsersTabStatusText.Text = $"Benutzer geladen: {rows.Count}";
+    }
+
+    private async Task LoadDocumentsTabAsync()
+    {
+        var selectedPatient = GetSelectedPatient();
+
+        if (selectedPatient == null)
+        {
+            DocumentsTabGrid.ItemsSource = null;
+            TotalDocumentsTabText.Text = "0";
+            PdfDocumentsTabText.Text = "0";
+            ChangedDocumentsTabText.Text = "0";
+            DocumentsTabStatusText.Text = "Bitte links im Patienten-Tab einen Patienten auswählen.";
+            return;
+        }
+
+        var documents = await _documentService.GetDocumentsByPatientAsync(selectedPatient.Id);
+
+        var rows = documents
+            .OrderByDescending(d => d.UploadDate)
+            .Select(d => new DocumentTabRow
+            {
+                Id = d.Id,
+                Title = Path.GetFileNameWithoutExtension(d.FileName),
+                PatientName = $"{selectedPatient.Vorname} {selectedPatient.Nachname}".Trim(),
+                Category = Path.GetExtension(d.FileName).Trim('.').ToUpper(),
+                DateText = d.UploadDate.ToString("dd.MM.yyyy"),
+                FileName = d.FileName,
+                Source = d
+            })
+            .ToList();
+
+        DocumentsTabGrid.ItemsSource = rows;
+
+        TotalDocumentsTabText.Text = rows.Count.ToString();
+        PdfDocumentsTabText.Text = rows.Count(r => r.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)).ToString();
+        ChangedDocumentsTabText.Text = rows.Count(r => r.Source.UploadDate.Date == DateTime.Today).ToString();
+
+        DocumentsTabStatusText.Text = $"Dokumente für {selectedPatient.Vorname} {selectedPatient.Nachname}: {rows.Count}";
     }
 
     /// <summary>
@@ -244,6 +426,15 @@ public partial class MainWindow : Window
         DocumentButton.IsEnabled = canManageDocuments;
 
         UserManagementButton.IsEnabled = canManageUsers;
+
+        if (ToggleUserActiveButton != null)
+            ToggleUserActiveButton.IsEnabled = canManageUsers;
+
+        if (CreateUserTabButton != null)
+            CreateUserTabButton.IsEnabled = canManageUsers;
+
+        if (ChangeUserRoleTabButton != null)
+            ChangeUserRoleTabButton.IsEnabled = canManageUsers;
     }
 
     /// <summary>
@@ -664,6 +855,7 @@ public partial class MainWindow : Window
         var window = App.ServiceProvider.GetRequiredService<AddAppointmentWindow>();
         window.Owner = this;
         window.ShowDialog();
+
     }
 
     /// <summary>
@@ -671,9 +863,10 @@ public partial class MainWindow : Window
     /// </summary>
     private void OpenAppointments_Click(object sender, RoutedEventArgs e)
     {
-        var window = App.ServiceProvider.GetRequiredService<AppointmentWindow>();
-        window.Owner = this;
-        window.ShowDialog();
+        //var window = App.ServiceProvider.GetRequiredService<AppointmentWindow>();
+        //window.Owner = this;
+        //window.ShowDialog();
+        SelectTab(1);
     }
 
     /// <summary>
@@ -691,9 +884,10 @@ public partial class MainWindow : Window
     /// </summary>
     private void OpenWaitingRoom_Click(object sender, RoutedEventArgs e)
     {
-        var window = App.ServiceProvider.GetRequiredService<WaitingRoomWindow>();
-        window.Owner = this;
-        window.ShowDialog();
+        //var window = App.ServiceProvider.GetRequiredService<WaitingRoomWindow>();
+        //window.Owner = this;
+        //window.ShowDialog();
+        SelectTab(3);
     }
 
     /// <summary>
@@ -703,26 +897,27 @@ public partial class MainWindow : Window
     /// </summary>
     private void UserManagementButton_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            if (!UserSession.HasRole(Roles.Administrator))
-            {
-                MessageBox.Show("Nur Administratoren dürfen die Benutzerverwaltung öffnen.");
-                return;
-            }
+        //try
+        //{
+        //    if (!UserSession.HasRole(Roles.Administrator))
+        //    {
+        //        MessageBox.Show("Nur Administratoren dürfen die Benutzerverwaltung öffnen.");
+        //        return;
+        //    }
 
-            var window = App.ServiceProvider.GetRequiredService<UserManagementWindow>();
-            window.Owner = this;
-            window.ShowDialog();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(
-                $"Fehler beim Öffnen der Benutzerverwaltung:\n{ex.Message}",
-                "Fehler",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
+        //    var window = App.ServiceProvider.GetRequiredService<UserManagementWindow>();
+        //    window.Owner = this;
+        //    window.ShowDialog();
+        //}
+        //catch (Exception ex)
+        //{
+        //    MessageBox.Show(
+        //        $"Fehler beim Öffnen der Benutzerverwaltung:\n{ex.Message}",
+        //        "Fehler",
+        //        MessageBoxButton.OK,
+        //        MessageBoxImage.Error);
+        //}
+        SelectTab(4);
     }
 
     /// <summary>
@@ -833,15 +1028,16 @@ public partial class MainWindow : Window
     /// </summary>
     private void OpenDocuments_Click(object sender, RoutedEventArgs e)
     {
-        if (PatientsGrid.SelectedItem is not Patient patient)
-        {
-            MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
-            return;
-        }
+        //if (PatientsGrid.SelectedItem is not Patient patient)
+        //{
+        //    MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+        //    return;
+        //}
 
-        var window = ActivatorUtilities.CreateInstance<DocumentWindow>(_serviceProvider, patient);
-        window.Owner = this;
-        window.ShowDialog();
+        //var window = ActivatorUtilities.CreateInstance<DocumentWindow>(_serviceProvider, patient);
+        //window.Owner = this;
+        //window.ShowDialog();
+        SelectTab(2);
     }
 
     /// <summary>
@@ -874,6 +1070,7 @@ public partial class MainWindow : Window
             SelectedPatientEmailText.Text = "-";
             SelectedPatientStatusText.Text = "-";
         }
+        _ = LoadDocumentsTabAsync();
     }
 
     /// <summary>
@@ -1022,5 +1219,200 @@ public partial class MainWindow : Window
         {
             await LoadDashboardAsync();
         }
+    }
+  
+    private async void SelectTab(int index)
+    {
+        UpdateBottomNavigationState();
+
+        if (MainTabControl != null)
+            MainTabControl.SelectedIndex = index;
+
+        switch (index)
+        {
+            case 1:
+                await LoadAppointmentsTabAsync();
+                break;
+            case 2:
+                await LoadDocumentsTabAsync();
+                break;
+            case 3:
+                await LoadWaitingRoomTabAsync();
+                break;
+            case 4:
+                await LoadUsersTabAsync();
+                break;
+        }
+    }
+
+    private void ShowPatientsTab_Click(object sender, RoutedEventArgs e)
+    {
+        SelectTab(0);
+    }
+
+    private void AppointmentsTabGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (AppointmentsTabGrid.SelectedItem is AppointmentTabRow row)
+        {
+            SelectedAppointmentPatientText.Text = row.PatientName;
+            SelectedAppointmentDateText.Text = row.DateText;
+            SelectedAppointmentTimeText.Text = row.TimeText;
+            SelectedAppointmentReasonText.Text = string.IsNullOrWhiteSpace(row.Reason) ? "-" : row.Reason;
+            SelectedAppointmentStatusText.Text = row.Status;
+        }
+        else
+        {
+            SelectedAppointmentPatientText.Text = "-";
+            SelectedAppointmentDateText.Text = "-";
+            SelectedAppointmentTimeText.Text = "-";
+            SelectedAppointmentReasonText.Text = "-";
+            SelectedAppointmentStatusText.Text = "-";
+        }
+    }
+
+    private void DocumentsTabGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (DocumentsTabGrid.SelectedItem is DocumentTabRow row)
+        {
+            SelectedDocumentTitleText.Text = row.Title;
+            SelectedDocumentPatientText.Text = row.PatientName;
+            SelectedDocumentCategoryText.Text = row.Category;
+            SelectedDocumentFileText.Text = row.FileName;
+        }
+        else
+        {
+            SelectedDocumentTitleText.Text = "-";
+            SelectedDocumentPatientText.Text = "-";
+            SelectedDocumentCategoryText.Text = "-";
+            SelectedDocumentFileText.Text = "-";
+        }
+    }
+
+    private void WaitingRoomTabGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (WaitingRoomTabGrid.SelectedItem is WaitingRoomTabRow row)
+        {
+            SelectedWaitingPatientText.Text = row.PatientName;
+            SelectedWaitingArrivalText.Text = row.ArrivalTimeText;
+            SelectedWaitingDurationText.Text = row.WaitingDurationText;
+            SelectedWaitingStatusText.Text = row.Status;
+            SelectedWaitingRoomText.Text = row.Room;
+        }
+        else
+        {
+            SelectedWaitingPatientText.Text = "-";
+            SelectedWaitingArrivalText.Text = "-";
+            SelectedWaitingDurationText.Text = "-";
+            SelectedWaitingStatusText.Text = "-";
+            SelectedWaitingRoomText.Text = "-";
+        }
+    }
+
+    private void UsersTabGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (UsersTabGrid.SelectedItem is UserTabRow row)
+        {
+            SelectedUserNameText.Text = row.Username;
+            SelectedUserRoleText.Text = row.Role;
+            SelectedUserStatusText.Text = row.IsActive ? "Aktiv" : "Inaktiv";
+            SelectedUserCreatedText.Text = row.CreatedAt.ToString("dd.MM.yyyy");
+        }
+        else
+        {
+            SelectedUserNameText.Text = "-";
+            SelectedUserRoleText.Text = "-";
+            SelectedUserStatusText.Text = "-";
+            SelectedUserCreatedText.Text = "-";
+        }
+    }
+    private async void ToggleUserActive_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (UsersTabGrid.SelectedItem is not UserTabRow row)
+            {
+                MessageBox.Show("Bitte zuerst einen Benutzer auswählen.");
+                return;
+            }
+
+            if (row.Role == Roles.Administrator &&
+                UserSession.CurrentUser?.Id == row.Id)
+            {
+                MessageBox.Show("Der aktuell angemeldete Administrator kann sich nicht selbst deaktivieren.");
+                return;
+            }
+
+            await _userManagementService.ToggleUserActiveAsync(row.Id);
+            await LoadUsersTabAsync();
+
+            MessageBox.Show("Benutzerstatus wurde erfolgreich geändert.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Fehler beim Ändern des Benutzerstatus:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+    private async void CreateUserTab_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!UserSession.HasRole(Roles.Administrator))
+            {
+                MessageBox.Show("Nur Administratoren dürfen Benutzer anlegen.");
+                return;
+            }
+
+            var window = App.ServiceProvider.GetRequiredService<UserManagementWindow>();
+            window.Owner = this;
+
+            if (window.ShowDialog() == true)
+            {
+                await LoadUsersTabAsync();
+                MessageBox.Show("Benutzer wurde erfolgreich angelegt.");
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Fehler beim Anlegen des Benutzers:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    private async void ChangeUserRoleTab_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!UserSession.HasRole(Roles.Administrator))
+            {
+                MessageBox.Show("Nur Administratoren dürfen Rollen ändern.");
+                return;
+            }
+
+            var window = App.ServiceProvider.GetRequiredService<UserManagementWindow>();
+            window.Owner = this;
+
+            window.ShowDialog();
+
+            await LoadUsersTabAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Fehler beim Öffnen der Benutzerverwaltung:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+    private void UpdateBottomNavigationState()
+    {
+
     }
 }

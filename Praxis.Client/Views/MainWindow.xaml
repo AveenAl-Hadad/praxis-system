@@ -13,737 +13,1826 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="230"/>
+            <ColumnDefinition Width="74"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- LINKE SIDEBAR -->
-        <Border Grid.Column="0"
-                Background="#5D646B"
-                BorderBrush="#4F565C"
-                BorderThickness="0,0,1,0">
-            <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="78"/>
+        </Grid.RowDefinitions>
+
+        <!-- MINI SIDEBAR LINKS -->
+        <Border Grid.Row="0"
+        Grid.RowSpan="3"
+        Grid.Column="0"
+        Background="#3A4046"
+        BorderBrush="#25292D"
+        BorderThickness="0,0,1,0">
+            <Grid Margin="8">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="12"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- LOGO / TITEL -->
+                <!-- Logo -->
                 <Border Grid.Row="0"
-                        Background="#4E555B"
-                        CornerRadius="6"
-                        Padding="12"
-                        Margin="0,0,0,12">
-                    <StackPanel>
-                        <TextBlock Text="PRAXIS"
-                                   Foreground="White"
-                                   FontSize="22"
-                                   FontWeight="Bold"/>
-                        <TextBlock Text="Verwaltungssystem"
-                                   Foreground="#D7DCE0"
-                                   FontSize="12"
-                                   Margin="0,2,0,0"/>
+                Background="#2F3439"
+                CornerRadius="6"
+                Padding="8"
+                Margin="0,0,0,8">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="P"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"/>
+                        <TextBlock Text="SYS"
+                           FontSize="10"
+                           Foreground="#D6DCE1"
+                           HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
-                <!-- BENUTZER -->
-                <Border Grid.Row="1"
-                        Background="#6A7279"
-                        CornerRadius="6"
-                        Padding="10"
-                        Margin="0,0,0,10">
-                    <StackPanel>
-                        <TextBlock Text="Angemeldet"
-                                   Foreground="#DCE3E8"
-                                   FontSize="11"/>
-                        <TextBlock x:Name="LoggedInUserText"
-                                   Foreground="White"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   Margin="0,2,0,0"/>
-                    </StackPanel>
-                </Border>
+                <!-- Navigation Icons -->
+                <StackPanel Grid.Row="2">
 
-                <!-- NAVIGATION -->
-                <ScrollViewer Grid.Row="3"
-                              VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel>
+                    <Button Style="{StaticResource MiniNavButtonStyle}"
+                    Click="ShowPatientsTab_Click"
+                    ToolTip="Patienten"
+                    Margin="0,0,0,8">
+                        <TextBlock Text="&#xE77B;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="18"
+                           HorizontalAlignment="Center"/>
+                    </Button>
 
-                        <TextBlock Text="Navigation"
-                                   Foreground="#D7DCE0"
-                                   FontSize="11"
-                                   Margin="4,0,0,8"/>
+                    <Button Style="{StaticResource MiniNavButtonStyle}"
+                    Click="OpenAppointments_Click"
+                    ToolTip="Termine"
+                    Margin="0,0,0,8">
+                        <TextBlock Text="&#xE787;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="18"
+                           HorizontalAlignment="Center"/>
+                    </Button>
 
-                        <Button x:Name="AddPatientButton"
-                                Height="42"
-                                Margin="0,0,0,8"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Click="AddPatient_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE77B;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="15"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Neuer Patient"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
+                    <Button Style="{StaticResource MiniNavButtonStyle}"
+                    Click="OpenDocuments_Click"
+                    ToolTip="Dokumente"
+                    Margin="0,0,0,8">
+                        <TextBlock Text="&#xE8A5;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="18"
+                           HorizontalAlignment="Center"/>
+                    </Button>
 
-                        <Button x:Name="EditPatientButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Style="{StaticResource SidebarButtonStyle}"
-                                Click="EditPatient_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE70F;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Patient bearbeiten"/>
-                            </StackPanel>
-                        </Button>
+                    <Button Style="{StaticResource MiniNavButtonStyle}"
+                    Click="OpenWaitingRoom_Click"
+                    ToolTip="Wartezimmer"
+                    Margin="0,0,0,8">
+                        <TextBlock Text="&#xE8BD;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="18"
+                           HorizontalAlignment="Center"/>
+                    </Button>
 
-                        <Button x:Name="DeletePatientButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Style="{StaticResource DangerButtonStyle}"
-                                Click="DeletePatient_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE74D;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Patient löschen"/>
-                            </StackPanel>
-                        </Button>
+                    <Button Style="{StaticResource MiniNavButtonStyle}"
+                    Click="UserManagementButton_Click"
+                    ToolTip="Benutzer"
+                    Margin="0,0,0,8">
+                        <TextBlock Text="&#xE716;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="18"
+                           HorizontalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
 
-                        <Button x:Name="ToggleActiveButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Click="ToggleActive_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE73E;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Aktiv / Inaktiv"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Separator Margin="0,10,0,10"/>
-
-                        <Button x:Name="AddAppointmentButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Style="{StaticResource SuccessButtonStyle}"
-                                Click="OpenAddAppointmentWindow_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE8B5;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Termin erstellen"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="AppointmentsNavigationButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Click="OpenAppointments_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE787;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Termine"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="CalendarButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Click="OpenCalendar_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE787;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Kalender"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="WaitingRoomButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Click="OpenWaitingRoom_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE8BD;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Wartezimmer"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="InvoiceButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Style="{StaticResource WarningButtonStyle}"
-                                Click="OpenInvoices_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE8C7;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Rechnungen"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="PrescriptionButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Click="OpenPrescriptions_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE8C8;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Rezepte"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="DocumentButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Click="OpenDocuments_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE8A5;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Dokumente"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="OnlineBookingButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Click="OnlineBookingButton_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE8A7;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Online Buchung"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Separator Margin="0,10,0,10"/>
-
-                        <Button x:Name="UserManagementButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Click="UserManagementButton_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE716;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Benutzer"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="BackupButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Click="CreateBackup_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE74E;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Backup"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="RestoreButton"
-                                Height="38"
-                                Margin="0,0,0,8"
-                                Click="RestoreBackup_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE72D;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Restore"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button Height="38"
-                                Margin="0,0,0,8"
-                                Click="OpenAuditLog_Click">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Text="&#xE9D9;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           FontSize="14"
-                                           Margin="0,0,10,0"/>
-                                <TextBlock Text="Audit Log"/>
-                            </StackPanel>
-                        </Button>
-
-                    </StackPanel>
-                </ScrollViewer>
-
-                <!-- UNTERE AKTIONEN -->
-                <StackPanel Grid.Row="4" Margin="0,12,0,0">
+                <!-- Unten -->
+                <StackPanel Grid.Row="3">
                     <Button x:Name="ThemeToggleButton"
-                            Height="36"
-                            Margin="0,0,0,8"
-                            Click="ThemeToggle_Click">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="🌙" FontSize="14" Margin="0,0,8,0"/>
-                            <TextBlock Text="Design wechseln"/>
-                        </StackPanel>
+                    Style="{StaticResource MiniNavButtonStyle}"
+                    Click="ThemeToggle_Click"
+                    ToolTip="Design wechseln"
+                    Margin="0,0,0,8">
+                        <TextBlock Text="🌙"
+                           FontSize="16"
+                           HorizontalAlignment="Center"/>
                     </Button>
 
-                    <Button Height="36"
-                            Margin="0,0,0,8"
-                            Click="ChangePassword_Click">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="&#xE72E;"
-                                       FontFamily="Segoe MDL2 Assets"
-                                       FontSize="14"
-                                       Margin="0,0,8,0"/>
-                            <TextBlock Text="Passwort ändern"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Height="36"
-                            Style="{StaticResource DangerButtonStyle}"
-                            Click="Logout_Click">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="&#xE8AC;"
-                                       FontFamily="Segoe MDL2 Assets"
-                                       FontSize="14"
-                                       Margin="0,0,8,0"/>
-                            <TextBlock Text="Logout"/>
-                        </StackPanel>
+                    <Button Style="{StaticResource MiniNavButtonStyle}"
+                    Click="Logout_Click"
+                    ToolTip="Logout">
+                        <TextBlock Text="&#xE8AC;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="18"
+                           HorizontalAlignment="Center"/>
                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
+        <!-- HEADER -->
+        <Border Grid.Row="0" Grid.Column="1"
+                Background="#F5F6F7"
+                BorderBrush="#C9CDD2"
+                BorderThickness="0,0,0,1"
+                Padding="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-        <!-- RECHTE HAUPTFLÄCHE -->
-        <Grid Grid.Column="1" Margin="14">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <!-- OBERER KONTEXTBEREICH -->
-            <Border Grid.Row="0"
-                    Background="#F5F6F7"
-                    BorderBrush="#C9CDD2"
-                    BorderThickness="1"
-                    CornerRadius="6"
-                    Padding="14"
-                    Margin="0,0,0,12">
-                <Grid>
+                <!-- obere Kopfzeile -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="340"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel>
-                        <TextBlock Text="Patientenverwaltung"
+                        <TextBlock Text="PRAXIS"
                                    FontSize="24"
                                    FontWeight="Bold"
                                    Foreground="{StaticResource TitleTextBrush}"/>
-                        <TextBlock Text="Zentrale Übersicht für Patienten, Termine und Praxisaktionen"
-                                   FontSize="13"
+                        <TextBlock Text="Verwaltungssystem"
+                                   FontSize="12"
                                    Foreground="{StaticResource MutedTextBrush}"
-                                   Margin="0,4,0,0"/>
+                                   Margin="0,2,0,0"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1"
-                                HorizontalAlignment="Right">
-                        <TextBox x:Name="SearchBox"
-                                 Width="320"
-                                 Height="34"
-                                 Style="{StaticResource SearchTextBoxStyle}"
-                                 TextChanged="SearchBox_TextChanged"
-                                 Tag="Patient suchen..." />
-                        <CheckBox x:Name="OnlyActiveCheck"
-                                  Content="Nur aktive Patienten"
-                                  Margin="2,10,0,0"
-                                  Checked="OnlyActiveCheck_Changed"
-                                  Unchecked="OnlyActiveCheck_Changed"/>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                        <TextBlock Text="Angemeldet"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   FontSize="11"
+                                   HorizontalAlignment="Right"/>
+                        <TextBlock x:Name="LoggedInUserText"
+                                   Foreground="{StaticResource TitleTextBrush}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Right"/>
                     </StackPanel>
                 </Grid>
-            </Border>
 
-            <!-- DASHBOARD-KACHELN -->
-            <UniformGrid Grid.Row="1"
-             Columns="4"
-             Margin="0,0,0,12">
-                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
-                    <StackPanel>
-                        <TextBlock Text="Patienten gesamt"
-                       FontSize="12"
-                       Foreground="{StaticResource MutedTextBrush}"/>
-                        <TextBlock x:Name="TotalPatientsText"
-                       Text="0"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       Margin="0,4,0,0"/>
-                    </StackPanel>
-                </Border>
+                <!-- kompakte Aktionsleiste -->
+                <WrapPanel Grid.Row="1" ItemHeight="34" ItemWidth="120">
 
-                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
-                    <StackPanel>
-                        <TextBlock Text="Aktive Patienten"
-                       FontSize="12"
-                       Foreground="{StaticResource MutedTextBrush}"/>
-                        <TextBlock x:Name="ActivePatientsText"
-                       Text="0"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       Margin="0,4,0,0"/>
-                    </StackPanel>
-                </Border>
+                    <Button x:Name="AddPatientButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Style="{StaticResource TopActionButtonStyle}"
+                            Click="AddPatient_Click">
+                        Neuer Patient
+                    </Button>
 
-                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
-                    <StackPanel>
-                        <TextBlock Text="Termine heute"
-                       FontSize="12"
-                       Foreground="{StaticResource MutedTextBrush}"/>
-                        <TextBlock x:Name="TodayAppointmentsText"
-                       Text="0"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       Margin="0,4,0,0"/>
-                    </StackPanel>
-                </Border>
+                    <Button x:Name="EditPatientButton"
+                            Height="34"
+                            Margin="0,0,8,8"  
+                            Style="{StaticResource TopActionButtonStyle}"
+                            Click="EditPatient_Click">
+                        Bearbeiten
+                    </Button>
 
-                <Border Style="{StaticResource CardBorderStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Aktion"
-                       FontSize="12"
-                       Foreground="{StaticResource MutedTextBrush}"/>
-                        <Button Width="150"
-                    Height="32"
-                    Margin="0,8,0,0"
-                    Click="RefreshDashboard_Click">
-                            Dashboard laden
-                        </Button>
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
+                    <Button x:Name="DeletePatientButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Style="{StaticResource TopActionButtonStyle}"
+                            Click="DeletePatient_Click">
+                        Löschen
+                    </Button>
 
-            <!-- MITTLERER ARBEITSBEREICH -->
-            <Grid Grid.Row="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="285"/>
-                </Grid.ColumnDefinitions>
+                    <Button x:Name="ToggleActiveButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Click="ToggleActive_Click">
+                        Aktiv/Inaktiv
+                    </Button>
 
-                <!-- PATIENTENLISTE -->
-                <Border Grid.Column="0"
-            Style="{StaticResource CardBorderStyle}"
-            Margin="0,0,12,0">
-                    <Grid>
+                    <Button x:Name="AddAppointmentButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Style="{StaticResource TopActionButtonStyle}"
+                            Click="OpenAddAppointmentWindow_Click">
+                        Termin neu
+                    </Button>
+
+                    <Button x:Name="AppointmentsNavigationButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Click="OpenAppointments_Click">
+                        Termine
+                    </Button>
+
+                    <Button x:Name="CalendarButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Click="OpenCalendar_Click">
+                        Kalender
+                    </Button>
+
+                    <Button x:Name="WaitingRoomButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Click="OpenWaitingRoom_Click">
+                        Wartezimmer
+                    </Button>
+
+                    <Button x:Name="InvoiceButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Style="{StaticResource TopActionButtonStyle}"
+                            Click="OpenInvoices_Click">
+                        Rechnungen
+                    </Button>
+
+                    <Button x:Name="PrescriptionButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Click="OpenPrescriptions_Click">
+                        Rezepte
+                    </Button>
+
+                    <Button x:Name="DocumentButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Click="OpenDocuments_Click">
+                        Dokumente
+                    </Button>
+
+                    <Button x:Name="UserManagementButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Click="UserManagementButton_Click">
+                        Benutzer
+                    </Button>
+
+                    <Button x:Name="BackupButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Click="CreateBackup_Click">
+                        Backup
+                    </Button>
+
+                    <Button x:Name="RestoreButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Click="RestoreBackup_Click">
+                        Restore
+                    </Button>
+
+                    <Button x:Name="OnlineBookingButton"
+                            Height="34"
+                            Margin="0,0,8,8"
+                            Click="OnlineBookingButton_Click">
+                        Online Buchung
+                    </Button>
+
+                    <Button Height="34"
+                            Margin="0,0,8,8"
+                            Click="OpenAuditLog_Click">
+                        Audit Log
+                    </Button>
+
+                    <Button Height="34"
+                            Margin="0,0,8,8"
+                            Click="ChangePassword_Click">
+                        Passwort
+                    </Button>
+
+                    <Button Height="34"
+                            Margin="0,0,8,8"
+                            Style="{StaticResource DangerButtonStyle}"
+                            Click="Logout_Click">
+                        Logout
+                    </Button>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <!-- CONTENT -->
+        <Grid Grid.Row="1" Grid.Column="1" x:Name="ContentArea" Margin="14">
+            <TabControl x:Name="MainTabControl"
+                        SelectedIndex="0">
+
+                <!-- TAB 0: PATIENTEN -->
+                <TabItem Header="Patienten">
+                    <Grid Margin="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- LISTENKOPF -->
-                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <!-- OBERER KONTEXTBEREICH -->
+                        <Border Grid.Row="0"
+                                Background="#F5F6F7"
+                                BorderBrush="#C9CDD2"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="14"
+                                Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="340"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel>
+                                    <TextBlock Text="Patientenverwaltung"
+                                               FontSize="24"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource TitleTextBrush}"/>
+                                    <TextBlock Text="Zentrale Übersicht für Patienten, Termine und Praxisaktionen"
+                                               FontSize="13"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                    <TextBox x:Name="SearchBox"
+                                             Width="320"
+                                             Height="34"
+                                             Style="{StaticResource SearchTextBoxStyle}"
+                                             TextChanged="SearchBox_TextChanged"
+                                             Tag="Patient suchen..." />
+                                    <CheckBox x:Name="OnlyActiveCheck"
+                                              Content="Nur aktive Patienten"
+                                              Margin="2,10,0,0"
+                                              Checked="OnlyActiveCheck_Changed"
+                                              Unchecked="OnlyActiveCheck_Changed"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- DASHBOARD-KACHELN -->
+                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,12">
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Patienten gesamt"
+                                               FontSize="12"
+                                               Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="TotalPatientsText"
+                                               Text="0"
+                                               FontSize="28"
+                                               FontWeight="Bold"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Aktive Patienten"
+                                               FontSize="12"
+                                               Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="ActivePatientsText"
+                                               Text="0"
+                                               FontSize="28"
+                                               FontWeight="Bold"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Termine heute"
+                                               FontSize="12"
+                                               Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="TodayAppointmentsText"
+                                               Text="0"
+                                               FontSize="28"
+                                               FontWeight="Bold"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Aktion"
+                                               FontSize="12"
+                                               Foreground="{StaticResource MutedTextBrush}"/>
+                                    <Button Width="150"
+                                            Height="32"
+                                            Margin="0,8,0,0"
+                                            Click="RefreshDashboard_Click">
+                                        Dashboard laden
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <!-- MITTLERER ARBEITSBEREICH -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="285"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- PATIENTENLISTE -->
+                            <Border Grid.Column="0"
+                                    Style="{StaticResource CardBorderStyle}"
+                                    Margin="0,0,12,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel>
+                                            <TextBlock Text="Patientenliste"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"/>
+                                            <TextBlock Text="Übersicht, Auswahl und Schnellzugriff auf Patientendaten"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource MutedTextBrush}"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1"
+                                                Width="120"
+                                                Height="32"
+                                                Margin="0,0,8,0"
+                                                Click="Refresh_Click">
+                                            Aktualisieren
+                                        </Button>
+
+                                        <Button x:Name="ExportCsvButton"
+                                                Grid.Column="2"
+                                                Width="110"
+                                                Height="32"
+                                                Click="ExportCsv_Click">
+                                            CSV Export
+                                        </Button>
+                                    </Grid>
+
+                                    <Border Grid.Row="1"
+                                            BorderBrush="{StaticResource BorderBrushCustom}"
+                                            BorderThickness="1"
+                                            Background="White">
+                                        <DataGrid x:Name="PatientsGrid"
+                                                  AutoGenerateColumns="False"
+                                                  CanUserAddRows="False"
+                                                  IsReadOnly="True"
+                                                  SelectionChanged="PatientsGrid_SelectionChanged"
+                                                  MouseDoubleClick="PatientsGrid_DoubleClick"
+                                                  KeyDown="PatientsGrid_KeyDown"
+                                                  Sorting="PatientsGrid_Sorting"
+                                                  HeadersVisibility="Column"
+                                                  GridLinesVisibility="Horizontal"
+                                                  RowHeaderWidth="0"
+                                                  SelectionMode="Single"
+                                                  SelectionUnit="FullRow">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" SortMemberPath="Id" Width="60"/>
+                                                <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" SortMemberPath="Vorname" Width="*"/>
+                                                <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" SortMemberPath="Nachname" Width="*"/>
+                                                <DataGridTextColumn Header="Geburtsdatum" Binding="{Binding Geburtsdatum, StringFormat=dd.MM.yyyy}" SortMemberPath="Geburtsdatum" Width="120"/>
+                                                <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" SortMemberPath="Alter" Width="60"/>
+                                                <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" SortMemberPath="Telefonnummer" Width="135"/>
+                                                <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" SortMemberPath="Email" Width="190"/>
+                                                <DataGridCheckBoxColumn Header="Aktiv" Binding="{Binding IsActive}" SortMemberPath="IsActive" Width="70"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- RECHTE INFO-/AKTIONSSPALTE -->
+                            <StackPanel Grid.Column="1">
+
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Schnellaktionen"
+                                                   FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,10"/>
+
+                                        <Button Height="34"
+                                                Margin="0,0,0,8"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Click="AddPatient_Click">
+                                            Patient anlegen
+                                        </Button>
+
+                                        <Button Height="34"
+                                                Margin="0,0,0,8"
+                                                Style="{StaticResource SuccessButtonStyle}"
+                                                Click="OpenAddAppointmentWindow_Click">
+                                            Termin anlegen
+                                        </Button>
+
+                                        <Button Height="34"
+                                                Margin="0,0,0,8"
+                                                Click="EditPatient_Click">
+                                            Patient bearbeiten
+                                        </Button>
+
+                                        <Button Height="34"
+                                                Margin="0,0,0,8"
+                                                Click="OpenDocuments_Click">
+                                            Dokumente öffnen
+                                        </Button>
+
+                                        <Button Height="34"
+                                                Margin="0,0,0,8"
+                                                Style="{StaticResource WarningButtonStyle}"
+                                                Click="OpenInvoices_Click">
+                                            Rechnungen öffnen
+                                        </Button>
+
+                                        <Button Height="34"
+                                                Click="OpenWaitingRoom_Click">
+                                            Wartezimmer öffnen
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Patienten-Kurzinfo"
+                                                   FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,10"/>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="95"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Name:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedPatientNameText" Text="Kein Patient gewählt" FontWeight="SemiBold"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="95"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Geboren:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedPatientBirthDateText" Text="-" />
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="95"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Telefon:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedPatientPhoneText" Text="-" />
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="95"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="E-Mail:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedPatientEmailText" Text="-" TextWrapping="Wrap"/>
+                                        </Grid>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="95"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Status:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedPatientStatusText" Text="-" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Hinweise"
+                                                   FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,10"/>
+                                        <TextBlock Text="• Doppelklick auf einen Patienten öffnet die Details."
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="• Mit Ctrl+N kann schnell ein neuer Patient angelegt werden."
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="• Mit F5 wird die Übersicht aktualisiert."
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- PAGING -->
+                        <Grid Grid.Row="3" Margin="0,12,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel>
-                                <TextBlock Text="Patientenliste"
-                               FontSize="16"
-                               FontWeight="SemiBold"/>
-                                <TextBlock Text="Übersicht, Auswahl und Schnellzugriff auf Patientendaten"
-                               FontSize="12"
-                               Foreground="{StaticResource MutedTextBrush}"
-                               Margin="0,2,0,0"/>
+                            <TextBlock x:Name="StatusText"
+                                       Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource MutedTextBrush}"/>
+
+                            <Button Grid.Column="1"
+                                    Content="Zurück"
+                                    Width="90"
+                                    Margin="0,0,10,0"
+                                    Click="PrevPage_Click"/>
+
+                            <TextBlock x:Name="PageInfoText"
+                                       Grid.Column="2"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,10,0"
+                                       FontWeight="SemiBold"
+                                       Text="Seite 1 / 1"/>
+
+                            <Button Grid.Column="3"
+                                    Content="Weiter"
+                                    Width="90"
+                                    Click="NextPage_Click"/>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- TAB 1: TERMINE -->
+                <TabItem Header="Termine">
+                    <Grid Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0"
+                                Background="#F5F6F7"
+                                BorderBrush="#C9CDD2"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="14"
+                                Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="280"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel>
+                                    <TextBlock Text="Terminverwaltung"
+                                               FontSize="24"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource TitleTextBrush}"/>
+                                    <TextBlock Text="Übersicht, Planung und Verwaltung aller Termine"
+                                               FontSize="13"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1"
+                                            HorizontalAlignment="Right">
+                                    <TextBox x:Name="AppointmentSearchBox"
+                                             Width="250"
+                                             Height="34"
+                                             Style="{StaticResource SearchTextBoxStyle}"
+                                             Tag="Termin suchen..." />
+                                    <CheckBox x:Name="OnlyTodayAppointmentsCheck"
+                                              Content="Nur heutige Termine"
+                                              Margin="2,10,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,12">
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Termine heute" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="TodayAppointmentsTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Offene Termine" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="OpenAppointmentsTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Erledigt heute" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="CompletedAppointmentsTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Aktion" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <Button Width="150"
+                                            Height="32"
+                                            Margin="0,8,0,0"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Click="OpenAddAppointmentWindow_Click">
+                                        Termin anlegen
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="285"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Style="{StaticResource CardBorderStyle}"
+                                    Margin="0,0,12,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel>
+                                            <TextBlock Text="Terminliste" FontSize="16" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Geplante Termine mit Status und Zeitangaben"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource MutedTextBrush}"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1"
+                                                Width="120"
+                                                Height="32"
+                                                Margin="0,0,8,0"
+                                                Click="OpenAddAppointmentWindow_Click">
+                                            Neuer Termin
+                                        </Button>
+
+                                        <Button Grid.Column="2"
+                                                Width="120"
+                                                Height="32"
+                                                Margin="0,0,8,0"
+                                                Click="OpenAppointments_Click">
+                                            Übersicht
+                                        </Button>
+
+                                        <Button Grid.Column="3"
+                                                Width="120"
+                                                Height="32"
+                                                Click="OpenCalendar_Click">
+                                            Kalender
+                                        </Button>
+                                    </Grid>
+
+                                    <Border Grid.Row="1"
+                                            BorderBrush="{StaticResource BorderBrushCustom}"
+                                            BorderThickness="1"
+                                            Background="White">
+                                        <DataGrid x:Name="AppointmentsTabGrid"
+                                                  SelectionChanged="AppointmentsTabGrid_SelectionChanged"
+                                                  AutoGenerateColumns="False"
+                                                  CanUserAddRows="False"
+                                                  IsReadOnly="True"
+                                                  HeadersVisibility="Column"
+                                                  GridLinesVisibility="Horizontal"
+                                                  RowHeaderWidth="0"
+                                                  SelectionMode="Single"
+                                                  SelectionUnit="FullRow">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="*"/>
+                                                <DataGridTextColumn Header="Datum" Binding="{Binding DateText}" Width="120"/>
+                                                <DataGridTextColumn Header="Uhrzeit" Binding="{Binding TimeText}" Width="90"/>
+                                                <DataGridTextColumn Header="Dauer" Binding="{Binding DurationText}" Width="90"/>
+                                                <DataGridTextColumn Header="Grund" Binding="{Binding Reason}" Width="220"/>
+                                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <StackPanel Grid.Column="1">
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Schnellaktionen" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                        <Button Height="34"
+                                                Margin="0,0,0,8"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Click="OpenAddAppointmentWindow_Click">
+                                            Termin anlegen
+                                        </Button>
+
+                                        <Button Height="34" Margin="0,0,0,8" Click="OpenCalendar_Click">
+                                            Kalender öffnen
+                                        </Button>
+
+                                        <Button Height="34" Margin="0,0,0,8" Click="OpenWaitingRoom_Click">
+                                            Wartezimmer öffnen
+                                        </Button>
+
+                                        <Button Height="34" Click="RefreshDashboard_Click">
+                                            Kennzahlen laden
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Termin-Kurzinfo" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Patient:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedAppointmentPatientText" Text="-" FontWeight="SemiBold"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Datum:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedAppointmentDateText" Text="-" />
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Uhrzeit:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedAppointmentTimeText" Text="-" />
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Grund:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedAppointmentReasonText" Text="-" TextWrapping="Wrap"/>
+                                        </Grid>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Status:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedAppointmentStatusText" Text="-" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Hinweise" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                        <TextBlock Text="• Neue Termine können direkt über die Schnellaktion angelegt werden."
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="• Die Kalenderansicht bleibt für die Tagesplanung hilfreich."
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="• Später können hier Terminstatus, Raum und Arzt direkt bearbeitet werden."
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="3" Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock x:Name="AppointmentsTabStatusText"
+                                       Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       Text="Terminmodul bereit."/>
 
                             <Button Grid.Column="1"
                                     Width="120"
                                     Height="32"
-                                    Margin="0,0,8,0"
-                                    Click="Refresh_Click">
-                                Aktualisieren
-                            </Button>
-
-                            <Button x:Name="ExportCsvButton"
-                                    Grid.Column="2"
-                                    Width="110"
-                                    Height="32"
-                                    Click="ExportCsv_Click">
-                                CSV Export
+                                    Click="OpenAppointments_Click">
+                                Zum Tab
                             </Button>
                         </Grid>
-
-                        <!-- TABELLE -->
-                        <Border Grid.Row="1"
-                    BorderBrush="{StaticResource BorderBrushCustom}"
-                    BorderThickness="1"
-                    Background="White">
-                            <DataGrid Grid.Row="1"
-                          x:Name="PatientsGrid"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          IsReadOnly="True"
-                          SelectionChanged="PatientsGrid_SelectionChanged"
-                          MouseDoubleClick="PatientsGrid_DoubleClick"
-                          KeyDown="PatientsGrid_KeyDown"
-                          Sorting="PatientsGrid_Sorting"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="Horizontal"
-                          RowHeaderWidth="0"
-                          SelectionMode="Single"
-                          SelectionUnit="FullRow">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="ID"
-                                            Binding="{Binding Id}"
-                                            SortMemberPath="Id"
-                                            Width="60"/>
-
-                                    <DataGridTextColumn Header="Vorname"
-                                            Binding="{Binding Vorname}"
-                                            SortMemberPath="Vorname"
-                                            Width="*"/>
-
-                                    <DataGridTextColumn Header="Nachname"
-                                            Binding="{Binding Nachname}"
-                                            SortMemberPath="Nachname"
-                                            Width="*"/>
-
-                                    <DataGridTextColumn Header="Geburtsdatum"
-                                            Binding="{Binding Geburtsdatum, StringFormat=dd.MM.yyyy}"
-                                            SortMemberPath="Geburtsdatum"
-                                            Width="120"/>
-
-                                    <DataGridTextColumn Header="Alter"
-                                            Binding="{Binding Alter}"
-                                            SortMemberPath="Alter"
-                                            Width="60"/>
-
-                                    <DataGridTextColumn Header="Telefon"
-                                            Binding="{Binding Telefonnummer}"
-                                            SortMemberPath="Telefonnummer"
-                                            Width="135"/>
-
-                                    <DataGridTextColumn Header="E-Mail"
-                                            Binding="{Binding Email}"
-                                            SortMemberPath="Email"
-                                            Width="190"/>
-
-                                    <DataGridCheckBoxColumn Header="Aktiv"
-                                                Binding="{Binding IsActive}"
-                                                SortMemberPath="IsActive"
-                                                Width="70"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Border>
                     </Grid>
-                </Border>
+                </TabItem>
 
-                <!-- RECHTE INFO-/AKTIONSSPALTE -->
-                <StackPanel Grid.Column="1">
+                <!-- TAB 2: DOKUMENTE -->
+                <TabItem Header="Dokumente">
+                    <Grid Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                    <!-- SCHNELLAKTIONEN -->
-                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
-                        <StackPanel>
-                            <TextBlock Text="Schnellaktionen"
-                           FontSize="15"
-                           FontWeight="SemiBold"
-                           Margin="0,0,0,10"/>
-
-                            <Button Height="34"
-                        Margin="0,0,0,8"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        Click="AddPatient_Click">
-                                Patient anlegen
-                            </Button>
-
-                            <Button Height="34"
-                        Margin="0,0,0,8"
-                        Style="{StaticResource SuccessButtonStyle}"
-                        Click="OpenAddAppointmentWindow_Click">
-                                Termin anlegen
-                            </Button>
-
-                            <Button Height="34"
-                        Margin="0,0,0,8"
-                        Click="EditPatient_Click">
-                                Patient bearbeiten
-                            </Button>
-
-                            <Button Height="34"
-                        Margin="0,0,0,8"
-                        Click="OpenDocuments_Click">
-                                Dokumente öffnen
-                            </Button>
-
-                            <Button Height="34"
-                        Margin="0,0,0,8"
-                        Style="{StaticResource WarningButtonStyle}"
-                        Click="OpenInvoices_Click">
-                                Rechnungen öffnen
-                            </Button>
-
-                            <Button Height="34"
-                        Click="OpenWaitingRoom_Click">
-                                Wartezimmer öffnen
-                            </Button>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- PATIENTENINFO -->
-                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
-                        <StackPanel>
-                            <TextBlock Text="Patienten-Kurzinfo"
-                           FontSize="15"
-                           FontWeight="SemiBold"
-                           Margin="0,0,0,10"/>
-
-                            <Grid Margin="0,0,0,6">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="95"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Name:"
-                               Foreground="{StaticResource MutedTextBrush}"/>
-                                <TextBlock Grid.Column="1"
-                               x:Name="SelectedPatientNameText"
-                               Text="Kein Patient gewählt"
-                               FontWeight="SemiBold"/>
-                            </Grid>
-
-                            <Grid Margin="0,0,0,6">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="95"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Geboren:"
-                               Foreground="{StaticResource MutedTextBrush}"/>
-                                <TextBlock Grid.Column="1"
-                               x:Name="SelectedPatientBirthDateText"
-                               Text="-" />
-                            </Grid>
-
-                            <Grid Margin="0,0,0,6">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="95"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Telefon:"
-                               Foreground="{StaticResource MutedTextBrush}"/>
-                                <TextBlock Grid.Column="1"
-                               x:Name="SelectedPatientPhoneText"
-                               Text="-" />
-                            </Grid>
-
-                            <Grid Margin="0,0,0,6">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="95"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="E-Mail:"
-                               Foreground="{StaticResource MutedTextBrush}"/>
-                                <TextBlock Grid.Column="1"
-                               x:Name="SelectedPatientEmailText"
-                               Text="-"
-                               TextWrapping="Wrap"/>
-                            </Grid>
-
+                        <Border Grid.Row="0"
+                                Background="#F5F6F7"
+                                BorderBrush="#C9CDD2"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="14"
+                                Margin="0,0,0,12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="95"/>
                                     <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="280"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Status:"
-                               Foreground="{StaticResource MutedTextBrush}"/>
-                                <TextBlock Grid.Column="1"
-                               x:Name="SelectedPatientStatusText"
-                               Text="-" />
+
+                                <StackPanel>
+                                    <TextBlock Text="Dokumentenverwaltung"
+                                               FontSize="24"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource TitleTextBrush}"/>
+                                    <TextBlock Text="Patientendokumente suchen, öffnen und verwalten"
+                                               FontSize="13"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                    <TextBox x:Name="DocumentSearchBox"
+                                             Width="250"
+                                             Height="34"
+                                             Style="{StaticResource SearchTextBoxStyle}"
+                                             Tag="Dokument suchen..." />
+                                    <CheckBox x:Name="OnlySelectedPatientDocumentsCheck"
+                                              Content="Nur ausgewählten Patienten"
+                                              Margin="2,10,0,0"/>
+                                </StackPanel>
                             </Grid>
-                        </StackPanel>
-                    </Border>
+                        </Border>
 
-                    <!-- HINWEISE -->
-                    <Border Style="{StaticResource CardBorderStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Hinweise"
-                           FontSize="15"
-                           FontWeight="SemiBold"
-                           Margin="0,0,0,10"/>
+                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,12">
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Dokumente gesamt" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="TotalDocumentsTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
 
-                            <TextBlock Text="• Doppelklick auf einen Patienten öffnet die Details."
-                           TextWrapping="Wrap"
-                           Margin="0,0,0,8"
-                           Foreground="{StaticResource MutedTextBrush}"/>
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="PDF / Scan" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="PdfDocumentsTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
 
-                            <TextBlock Text="• Mit Ctrl+N kann schnell ein neuer Patient angelegt werden."
-                           TextWrapping="Wrap"
-                           Margin="0,0,0,8"
-                           Foreground="{StaticResource MutedTextBrush}"/>
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Heute geändert" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="ChangedDocumentsTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
 
-                            <TextBlock Text="• Mit F5 wird die Übersicht aktualisiert."
-                           TextWrapping="Wrap"
-                           Foreground="{StaticResource MutedTextBrush}"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
+                            <Border Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Aktion" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <Button Width="150"
+                                            Height="32"
+                                            Margin="0,8,0,0"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Click="OpenDocuments_Click">
+                                        Dokumente öffnen
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
 
-            <!-- PAGING -->
-            <Grid Grid.Row="3" Margin="0,12,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="285"/>
+                            </Grid.ColumnDefinitions>
 
-                <TextBlock x:Name="StatusText"
-                           Grid.Column="0"
-                           VerticalAlignment="Center"
-                           Foreground="{StaticResource MutedTextBrush}"/>
+                            <Border Grid.Column="0"
+                                    Style="{StaticResource CardBorderStyle}"
+                                    Margin="0,0,12,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
 
-                <Button Grid.Column="1"
-                        Content="Zurück"
-                        Width="90"
-                        Margin="0,0,10,0"
-                        Click="PrevPage_Click"/>
+                                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                <TextBlock x:Name="PageInfoText"
-                           Grid.Column="2"
-                           VerticalAlignment="Center"
-                           Margin="0,0,10,0"
-                           FontWeight="SemiBold"
-                           Text="Seite 1 / 1"/>
+                                        <StackPanel>
+                                            <TextBlock Text="Dokumentenliste" FontSize="16" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Dokumente, Befunde, Scans und weitere Dateien"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource MutedTextBrush}"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
 
-                <Button Grid.Column="3"
-                        Content="Weiter"
-                        Width="90"
-                        Click="NextPage_Click"/>
-            </Grid>
+                                        <Button Grid.Column="1"
+                                                Width="120"
+                                                Height="32"
+                                                Margin="0,0,8,0"
+                                                Click="OpenDocuments_Click">
+                                            Öffnen
+                                        </Button>
+
+                                        <Button Grid.Column="2"
+                                                Width="120"
+                                                Height="32"
+                                                Margin="0,0,8,0">
+                                            Neu
+                                        </Button>
+
+                                        <Button Grid.Column="3"
+                                                Width="120"
+                                                Height="32">
+                                            Aktualisieren
+                                        </Button>
+                                    </Grid>
+
+                                    <Border Grid.Row="1"
+                                            BorderBrush="{StaticResource BorderBrushCustom}"
+                                            BorderThickness="1"
+                                            Background="White">
+                                        <DataGrid x:Name="DocumentsTabGrid"
+                                                  SelectionChanged="DocumentsTabGrid_SelectionChanged"
+                                                  AutoGenerateColumns="False"
+                                                  CanUserAddRows="False"
+                                                  IsReadOnly="True"
+                                                  HeadersVisibility="Column"
+                                                  GridLinesVisibility="Horizontal"
+                                                  RowHeaderWidth="0"
+                                                  SelectionMode="Single"
+                                                  SelectionUnit="FullRow">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="*"/>
+                                                <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="180"/>
+                                                <DataGridTextColumn Header="Kategorie" Binding="{Binding Category}" Width="130"/>
+                                                <DataGridTextColumn Header="Datum" Binding="{Binding DateText}" Width="120"/>
+                                                <DataGridTextColumn Header="Datei" Binding="{Binding FileName}" Width="220"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <StackPanel Grid.Column="1">
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Schnellaktionen" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                        <Button Height="34"
+                                                Margin="0,0,0,8"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Click="OpenDocuments_Click">
+                                            Dokumente öffnen
+                                        </Button>
+
+                                        <Button Height="34" Margin="0,0,0,8">
+                                            Neues Dokument
+                                        </Button>
+
+                                        <Button Height="34" Margin="0,0,0,8">
+                                            Export
+                                        </Button>
+
+                                        <Button Height="34" Click="ShowPatientsTab_Click">
+                                            Zum Patienten
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Dokument-Kurzinfo" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Titel:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedDocumentTitleText" Text="-" FontWeight="SemiBold"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Patient:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedDocumentPatientText" Text="-" />
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Kategorie:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedDocumentCategoryText" Text="-" />
+                                        </Grid>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Datei:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedDocumentFileText" Text="-" TextWrapping="Wrap"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Hinweise" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                        <TextBlock Text="• Dokumente können später direkt einem Patienten zugeordnet werden."
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="• PDF, Scan, Befund und Formular können als Kategorien genutzt werden."
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="• Später kann hier auch Vorschau und Download ergänzt werden."
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="3" Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock x:Name="DocumentsTabStatusText"
+                                       Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       Text="Dokumentenmodul bereit."/>
+
+                            <Button Grid.Column="1"
+                                    Width="120"
+                                    Height="32"
+                                    Click="ShowPatientsTab_Click">
+                                Patienten
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- TAB 3: WARTEZIMMER -->
+                <TabItem Header="Wartezimmer">
+                    <Grid Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0"
+                                Background="#F5F6F7"
+                                BorderBrush="#C9CDD2"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="14"
+                                Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="280"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel>
+                                    <TextBlock Text="Wartezimmer"
+                                               FontSize="24"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource TitleTextBrush}"/>
+                                    <TextBlock Text="Anwesende Patienten, Status und Ablauf im Überblick"
+                                               FontSize="13"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1"
+                                            HorizontalAlignment="Right">
+                                    <TextBox x:Name="WaitingRoomSearchBox"
+                                             Width="250"
+                                             Height="34"
+                                             Style="{StaticResource SearchTextBoxStyle}"
+                                             Tag="Patient im Wartezimmer suchen..." />
+                                    <CheckBox x:Name="OnlyActiveWaitingCheck"
+                                              Content="Nur wartende Patienten"
+                                              Margin="2,10,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,12">
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Im Wartezimmer" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="WaitingCountTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Aufgerufen" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="CalledCountTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Abgeschlossen" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="CompletedCountTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Aktion" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <Button Width="150"
+                                            Height="32"
+                                            Margin="0,8,0,0"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Click="OpenWaitingRoom_Click">
+                                        Wartezimmer öffnen
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="285"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Style="{StaticResource CardBorderStyle}"
+                                    Margin="0,0,12,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel>
+                                            <TextBlock Text="Wartezimmerliste" FontSize="16" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Patienten mit Status, Ankunft und Wartezeit"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource MutedTextBrush}"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1"
+                                                Width="120"
+                                                Height="32"
+                                                Margin="0,0,8,0"
+                                                Click="OpenWaitingRoom_Click">
+                                            Übersicht
+                                        </Button>
+
+                                        <Button Grid.Column="2"
+                                                Width="120"
+                                                Height="32"
+                                                Margin="0,0,8,0">
+                                            Aufrufen
+                                        </Button>
+
+                                        <Button Grid.Column="3"
+                                                Width="120"
+                                                Height="32">
+                                            Abschließen
+                                        </Button>
+                                    </Grid>
+
+                                    <Border Grid.Row="1"
+                                            BorderBrush="{StaticResource BorderBrushCustom}"
+                                            BorderThickness="1"
+                                            Background="White">
+                                        <DataGrid x:Name="WaitingRoomTabGrid"
+                                                  SelectionChanged="WaitingRoomTabGrid_SelectionChanged"
+                                                  AutoGenerateColumns="False"
+                                                  CanUserAddRows="False"
+                                                  IsReadOnly="True"
+                                                  HeadersVisibility="Column"
+                                                  GridLinesVisibility="Horizontal"
+                                                  RowHeaderWidth="0"
+                                                  SelectionMode="Single"
+                                                  SelectionUnit="FullRow">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="*"/>
+                                                <DataGridTextColumn Header="Ankunft" Binding="{Binding ArrivalTimeText}" Width="110"/>
+                                                <DataGridTextColumn Header="Wartezeit" Binding="{Binding WaitingDurationText}" Width="120"/>
+                                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="130"/>
+                                                <DataGridTextColumn Header="Raum" Binding="{Binding Room}" Width="100"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <StackPanel Grid.Column="1">
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Schnellaktionen" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                        <Button Height="34"
+                                                Margin="0,0,0,8"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Click="OpenWaitingRoom_Click">
+                                            Wartezimmer öffnen
+                                        </Button>
+
+                                        <Button Height="34" Margin="0,0,0,8">
+                                            Patient aufrufen
+                                        </Button>
+
+                                        <Button Height="34" Margin="0,0,0,8">
+                                            Als abgeschlossen markieren
+                                        </Button>
+
+                                        <Button Height="34" Click="ShowPatientsTab_Click">
+                                            Zum Patienten
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Wartezimmer-Kurzinfo" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Patient:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedWaitingPatientText" Text="-" FontWeight="SemiBold"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Ankunft:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedWaitingArrivalText" Text="-" />
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Wartezeit:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedWaitingDurationText" Text="-" />
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Status:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedWaitingStatusText" Text="-" />
+                                        </Grid>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Raum:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedWaitingRoomText" Text="-" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Hinweise" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                        <TextBlock Text="• Im Wartezimmer können später Status wie wartet, aufgerufen und abgeschlossen genutzt werden."
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="• Raumzuweisung und Reihenfolge können als nächster Ausbauschritt ergänzt werden."
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="• Die Übersicht hilft bei Praxisfluss und Wartezeitkontrolle."
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="3" Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock x:Name="WaitingRoomTabStatusText"
+                                       Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       Text="Wartezimmermodul bereit."/>
+
+                            <Button Grid.Column="1"
+                                    Width="120"
+                                    Height="32"
+                                    Click="ShowPatientsTab_Click">
+                                Patienten
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- TAB 4: BENUTZER -->
+                <TabItem Header="Benutzer">
+                    <Grid Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0"
+                                Background="#F5F6F7"
+                                BorderBrush="#C9CDD2"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="14"
+                                Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="280"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel>
+                                    <TextBlock Text="Benutzerverwaltung"
+                                               FontSize="24"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource TitleTextBrush}"/>
+                                    <TextBlock Text="Benutzer, Rollen und Zugriffsrechte verwalten"
+                                               FontSize="13"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                    <TextBox x:Name="UserSearchBox"
+                                             Width="250"
+                                             Height="34"
+                                             Style="{StaticResource SearchTextBoxStyle}"
+                                             Tag="Benutzer suchen..." />
+                                    <CheckBox x:Name="OnlyActiveUsersCheck"
+                                              Content="Nur aktive Benutzer"
+                                              Margin="2,10,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,12">
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Benutzer gesamt" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="TotalUsersTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Administratoren" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="AdminUsersTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Aktive Benutzer" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="ActiveUsersTabText" Text="0" FontSize="28" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Aktion" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <Button Width="150"
+                                            Height="32"
+                                            Margin="0,8,0,0"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Click="UserManagementButton_Click">
+                                        Benutzer öffnen
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="300"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Style="{StaticResource CardBorderStyle}"
+                                    Margin="0,0,12,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel>
+                                            <TextBlock Text="Benutzerliste" FontSize="16" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Alle Konten mit Rolle und Aktivstatus"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource MutedTextBrush}"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1"
+                                                Width="120"
+                                                Height="32"
+                                                Margin="0,0,8,0"
+                                                Click="UserManagementButton_Click">
+                                            Öffnen
+                                        </Button>
+
+                                        <Button Grid.Column="2"
+                                                Width="120"
+                                                Height="32"
+                                                Margin="0,0,8,0"
+                                                Click="CreateUserTab_Click">
+                                            Neu
+                                        </Button>
+
+                                        <Button Grid.Column="3"
+                                                Width="120"
+                                                Height="32">
+                                            Aktualisieren
+                                        </Button>
+                                    </Grid>
+
+                                    <Border Grid.Row="1"
+                                            BorderBrush="{StaticResource BorderBrushCustom}"
+                                            BorderThickness="1"
+                                            Background="White">
+                                        <DataGrid x:Name="UsersTabGrid"
+                                                  SelectionChanged="UsersTabGrid_SelectionChanged"
+                                                  AutoGenerateColumns="False"
+                                                  CanUserAddRows="False"
+                                                  IsReadOnly="True"
+                                                  HeadersVisibility="Column"
+                                                  GridLinesVisibility="Horizontal"
+                                                  RowHeaderWidth="0"
+                                                  SelectionMode="Single"
+                                                  SelectionUnit="FullRow">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Benutzername" Binding="{Binding Username}" Width="*"/>
+                                                <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="160"/>
+                                                <DataGridCheckBoxColumn Header="Aktiv" Binding="{Binding IsActive}" Width="80"/>
+                                                <DataGridTextColumn Header="Erstellt am" Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy}" Width="130"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <StackPanel Grid.Column="1">
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Schnellaktionen" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                        <Button Height="34"
+                                                Margin="0,0,0,8"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Click="UserManagementButton_Click">
+                                            Benutzer öffnen
+                                        </Button>
+
+                                        <Button x:Name="CreateUserTabButton"
+                                                Height="34"
+                                                Margin="0,0,0,8"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Click="CreateUserTab_Click">
+                                            Neuer Benutzer
+                                        </Button>
+
+                                        <Button x:Name="ChangeUserRoleTabButton"
+                                                Height="34"
+                                                Margin="0,0,0,8"
+                                                Click="ChangeUserRoleTab_Click">
+                                            Rolle ändern
+                                        </Button>
+
+                                        <Button x:Name="ToggleUserActiveButton"
+                                                Height="34"
+                                                Margin="0,0,0,8"
+                                                Click="ToggleUserActive_Click">
+                                            Aktiv / Inaktiv
+                                        </Button>
+
+                                        <Button Height="34" Click="ShowPatientsTab_Click">
+                                            Patienten
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Benutzer-Kurzinfo" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="95"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Name:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedUserNameText" Text="-" FontWeight="SemiBold"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="95"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Rolle:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedUserRoleText" Text="-" />
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="95"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Status:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedUserStatusText" Text="-" />
+                                        </Grid>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="95"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Erstellt:" Foreground="{StaticResource MutedTextBrush}"/>
+                                            <TextBlock Grid.Column="1" x:Name="SelectedUserCreatedText" Text="-" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Hinweise" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                        <TextBlock Text="• Rollen sollten sauber getrennt bleiben, z. B. Administrator, Arzt und Mitarbeiter."
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="• Später können hier modulbezogene Einzelrechte ergänzt werden."
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="• Neue Benutzer und Rollenwechsel werden über die Benutzerverwaltung geöffnet."
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="3" Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock x:Name="UsersTabStatusText"
+                                       Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       Text="Benutzermodul bereit."/>
+
+                            <Button Grid.Column="1"
+                                    Width="120"
+                                    Height="32"
+                                    Click="ShowPatientsTab_Click">
+                                Patienten
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
         </Grid>
+
+        <!-- BOTTOM NAVIGATION -->
+        <Border Grid.Row="2" Grid.Column="1"
+                Background="#2F3439"
+                BorderBrush="#1F2326"
+                BorderThickness="1,1,0,0"
+                Padding="8">
+            <UniformGrid Columns="5">
+                <Button  Click="ShowPatientsTab_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <StackPanel>
+                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Patienten" FontSize="11" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Click="OpenAppointments_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <StackPanel>
+                        <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Termine" FontSize="11" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Click="OpenDocuments_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <StackPanel>
+                        <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Dokumente" FontSize="11" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Click="OpenWaitingRoom_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <StackPanel>
+                        <TextBlock Text="&#xE8BD;" FontFamily="Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Wartezimmer" FontSize="11" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Click="UserManagementButton_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
+                    <StackPanel>
+                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Benutzer" FontSize="11" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </UniformGrid>
+        </Border>
     </Grid>
 </Window>

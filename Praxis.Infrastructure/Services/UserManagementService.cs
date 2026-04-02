@@ -71,7 +71,9 @@ public class UserManagementService : IUserManagementService
         {
             Username = username,
             PasswordHash = _passwordService.HashPassword(password),
-            Role = role
+            Role = role,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
         };
 
         _context.Users.Add(user);
@@ -141,6 +143,16 @@ public class UserManagementService : IUserManagementService
             return;
 
         _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+    }
+    public async Task ToggleUserActiveAsync(int userId)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+            throw new InvalidOperationException("Benutzer wurde nicht gefunden.");
+
+        user.IsActive = !user.IsActive;
         await _context.SaveChangesAsync();
     }
 }
