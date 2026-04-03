@@ -24,6 +24,7 @@ public class PatientService : IPatientService
         _auditService = auditService;
     }
 
+
     /// <summary>
     /// Gibt alle Patienten ohne Tracking zurück (Performance-Optimierung).
     /// </summary>
@@ -116,6 +117,12 @@ public class PatientService : IPatientService
         existing.Email = patient.Email;
         existing.Telefonnummer = patient.Telefonnummer;
         existing.IsActive = patient.IsActive;
+        existing.Adresse = patient.Adresse;
+        existing.PLZ= patient.PLZ;
+        existing.Ort = patient.Ort;
+        existing.Versichertennummer = patient.Versichertennummer;
+        existing.Geschlecht = patient.Geschlecht;
+        existing.Versicherung = patient.Versicherung;
 
         try
         {

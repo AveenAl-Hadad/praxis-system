@@ -1,0 +1,119 @@
+﻿<UserControl x:Class="Praxis.Client.Views.Pages.UserManagement.AddUserPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+
+     <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid Margin="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Neuen Benutzer anlegen"
+                       Style="{StaticResource SectionTitleStyle}"/>
+
+                <Border Grid.Row="2"
+                    Style="{StaticResource CardBorderStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="320"/>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="320"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Benutzername:"
+                               VerticalAlignment="Center"/>
+                        <TextBox x:Name="UsernameTextBox"
+                             Grid.Column="1"
+                             Margin="0,4,0,4"/>
+
+                        <TextBlock Grid.Row="1"
+                               Text="Passwort:"
+                               VerticalAlignment="Center"/>
+                        <PasswordBox x:Name="PasswordBox"
+                                 Grid.Row="1"
+                                 Grid.Column="1"
+                                 Margin="0,4,0,4"/>
+
+                        <TextBlock Grid.Row="2"
+                               Text="Rolle:"
+                               VerticalAlignment="Center"/>
+                        <ComboBox x:Name="RoleComboBox"
+                              Grid.Row="2"
+                              Grid.Column="1"
+                              Margin="0,4,0,4"/>
+
+                        <TextBlock Grid.Row="3"
+                               Text="Aktiv:"
+                               VerticalAlignment="Center"/>
+                        <CheckBox x:Name="IsActiveCheckBox"
+                              Grid.Row="3"
+                              Grid.Column="1"
+                              IsChecked="True"
+                              VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Column="3"
+                               Text="Hinweis:"
+                               VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="4"
+                               Text="Nur Administratoren dürfen Benutzer anlegen."
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource MutedTextBrush}"/>
+
+                        <TextBlock Grid.Row="1"
+                               Grid.Column="3"
+                               Text="Sicherheit:"
+                               VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1"
+                               Grid.Column="4"
+                               Text="Verwende ein sicheres Passwort."
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource MutedTextBrush}"/>
+
+                        <TextBlock Grid.Row="2"
+                               Grid.Column="3"
+                               Text="Rollen:"
+                               VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="2"
+                               Grid.Column="4"
+                               Text="Administrator, Mitarbeiter oder Arzt"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource MutedTextBrush}"/>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Row="4"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Left">
+                    <Button Content="Speichern"
+                        Width="130"
+                        Style="{StaticResource SuccessButtonStyle}"
+                        Click="SaveButton_Click"/>
+
+                    <Button Content="Zurücksetzen"
+                        Width="130"
+                        Margin="10,0,0,0"
+                        Style="{StaticResource WarningButtonStyle}"
+                        Click="ResetButton_Click"/>
+
+                    <Button Content="Abbrechen"
+                        Width="130"
+                        Margin="10,0,0,0"
+                        Click="CancelButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </UserControl>

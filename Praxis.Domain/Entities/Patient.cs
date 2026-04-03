@@ -6,18 +6,20 @@ namespace Praxis.Domain.Entities;
 public class Patient
 {
     public int Id { get; set; }
-
     public string Vorname { get; set; } = string.Empty;
-
     public string Nachname { get; set; } = string.Empty;
-
     public string FullName => $"{Vorname} {Nachname}";
     public DateTime Geburtsdatum { get; set; }
-
     public string Telefonnummer { get; set; } = string.Empty;
-
     public string Email { get; set; } = string.Empty;
- 
+    // NEU
+    public string Adresse { get; set; } = string.Empty;
+    public string PLZ { get; set; } = string.Empty;
+    public string Ort { get; set; } = string.Empty;
+    public string Versicherung { get; set; } = string.Empty;
+    public string Geschlecht { get; set; } = string.Empty;
+    public string Versichertennummer { get; set; } = string.Empty;
+
     [NotMapped]
     public int Alter
     {

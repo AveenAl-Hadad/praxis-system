@@ -1,0 +1,107 @@
+﻿<UserControl x:Class="Praxis.Client.Views.Pages.Patienten.PatientCreatePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="16"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="16"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Neuen Patienten anlegen"
+                       Style="{StaticResource SectionTitleStyle}"/>
+
+            <Border Grid.Row="2"
+                    Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="320"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="320"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Vorname:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="VornameTextBox" Grid.Column="1" Margin="0,4,0,4"/>
+
+                    <TextBlock Grid.Row="1" Text="Nachname:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="NachnameTextBox" Grid.Row="1" Grid.Column="1" Margin="0,4,0,4"/>
+
+                    <TextBlock Grid.Row="2" Text="Geburtsdatum:" VerticalAlignment="Center"/>
+                    <DatePicker x:Name="GeburtsdatumPicker" Grid.Row="2" Grid.Column="1" Margin="0,4,0,4"/>
+
+                    <TextBlock Grid.Row="3" Text="Telefon:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="TelefonTextBox" Grid.Row="3" Grid.Column="1" Margin="0,4,0,4"/>
+
+                    <TextBlock Grid.Row="4" Text="E-Mail:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="EmailTextBox" Grid.Row="4" Grid.Column="1" Margin="0,4,0,4"/>
+
+                    <TextBlock Grid.Row="5" Text="Adresse:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="AdresseTextBox" Grid.Row="5" Grid.Column="1" Margin="0,4,0,4"/>
+
+                    <TextBlock Grid.Row="6" Text="PLZ:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="PLZTextBox" Grid.Row="6" Grid.Column="1" Margin="0,4,0,4"/>
+
+                    <TextBlock Grid.Row="7" Text="Ort:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="OrtTextBox" Grid.Row="7" Grid.Column="1" Margin="0,4,0,4"/>
+
+                    <TextBlock Grid.Column="3" Text="Versicherung:" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="VersicherungComboBox" Grid.Column="4" Margin="0,4,0,4">
+                        <ComboBoxItem Content="Gesetzlich"/>
+                        <ComboBoxItem Content="Privat"/>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="1" Grid.Column="3" Text="Geschlecht:" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="GeschlechtComboBox" Grid.Row="1" Grid.Column="4" Margin="0,4,0,4">
+                        <ComboBoxItem Content="Weiblich"/>
+                        <ComboBoxItem Content="Männlich"/>
+                        <ComboBoxItem Content="Divers"/>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="2" Grid.Column="3" Text="Versichertennr.:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="VersichertennummerTextBox" Grid.Row="2" Grid.Column="4" Margin="0,4,0,4"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="3" Text="Aktiv:" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="IsActiveCheckBox" Grid.Row="3" Grid.Column="4" VerticalAlignment="Center" IsChecked="True"/>
+                </Grid>
+            </Border>
+
+            <StackPanel Grid.Row="4"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Left">
+                <Button Content="Speichern"
+                        Width="130"
+                        Style="{StaticResource SuccessButtonStyle}"
+                        Click="SaveButton_Click"/>
+
+                <Button Content="Zurücksetzen"
+                        Width="130"
+                        Margin="10,0,0,0"
+                        Style="{StaticResource WarningButtonStyle}"
+                        Click="ResetButton_Click"/>
+
+                <Button Content="Abbrechen"
+                        Width="130"
+                        Margin="10,0,0,0"
+                        Click="CancelButton_Click"/>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

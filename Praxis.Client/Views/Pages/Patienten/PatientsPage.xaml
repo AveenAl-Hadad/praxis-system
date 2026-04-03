@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="Praxis.Client.Views.Pages.PatientsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="10">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Titel -->
+        <TextBlock Text="Patienten"
+                   Style="{StaticResource SectionTitleStyle}"
+                   Margin="0,0,0,10"/>
+
+        <!-- Liste -->
+        <DataGrid Grid.Row="1"
+                  x:Name="PatientsGrid"/>
+
+    </Grid>
+</UserControl>
