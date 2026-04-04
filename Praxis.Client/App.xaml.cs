@@ -98,7 +98,7 @@ public partial class App : System.Windows.Application
                     Nachname = "Mustermann",
                     Geburtsdatum = new DateTime(1980, 1, 1),
                     Email = "max@test.de",
-                    Telefonnummer = "0000000000",
+                    Telefonnummer = "12456987",
                     IsActive = true
                 });
 

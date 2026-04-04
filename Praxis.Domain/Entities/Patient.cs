@@ -12,7 +12,7 @@ public class Patient
     public DateTime Geburtsdatum { get; set; }
     public string Telefonnummer { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    // NEU
+    
     public string Adresse { get; set; } = string.Empty;
     public string PLZ { get; set; } = string.Empty;
     public string Ort { get; set; } = string.Empty;

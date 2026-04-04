@@ -9,6 +9,8 @@ using Praxis.Client.Logic.UI;
 using Praxis.Client.Session;
 using Praxis.Client.Views.Pages;
 using Praxis.Client.Views.Pages.Patienten;
+using Praxis.Client.Views.Pages.Labor;
+
 using Praxis.Client.Views.Pages.UserManagement;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
@@ -20,6 +22,7 @@ namespace Praxis.Client.Views
 {
     public partial class MainWindow : Window
     {
+        #region Variablen Defenation
         private enum BottomModule
         {
             Patienten,
@@ -67,6 +70,8 @@ namespace Praxis.Client.Views
         private readonly PatientDocumentsPage _patientDocumentsPage = new PatientDocumentsPage();
         private readonly PatientAppointmentsPage _patientAppointmentsPage = new PatientAppointmentsPage();
 
+        #endregion
+        #region Konstrakture
         public MainWindow(
                              IPatientService patientService,
                              IAppointmentService appointmentService,
@@ -93,7 +98,7 @@ namespace Praxis.Client.Views
             Loaded += Window_Loaded;
 
         }
-
+        #endregion
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             UpdateLoggedInUserDisplay();
@@ -138,7 +143,7 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Labor:
-                    LoadPage(_laborPage);
+                    MainContentControl.Content = _laborPage;
                     break;
 
                 case BottomModule.Abrechnung:
@@ -257,11 +262,11 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Labor:
-                    AddSidebarButton("Labordaten importieren", (s, e) => LoadPage(_laborPage), true);
-                    AddSidebarButton("Laborbücher zuordnen", DummySidebarClick);
-                    AddSidebarButton("Zugeordnete Laborberichte", DummySidebarClick);
-                    AddSidebarButton("Labortagesliste", DummySidebarClick);
-                    AddSidebarButton("Labore", DummySidebarClick);
+                    AddSidebarButton("Labordaten importieren", (s, e) => MainContentControl.Content = _laborPage, true);
+                    AddSidebarButton("Laborbücher zuordnen", (s, e) => MainContentControl.Content = _laborPage);
+                    AddSidebarButton("Zugeordnete Laborberichte", (s, e) => MainContentControl.Content = _laborPage);
+                    AddSidebarButton("Labortagesliste", (s, e) => MainContentControl.Content = _laborPage);
+                    AddSidebarButton("Labore", (s, e) => MainContentControl.Content = _laborPage);
                     break;
 
                 case BottomModule.Abrechnung:

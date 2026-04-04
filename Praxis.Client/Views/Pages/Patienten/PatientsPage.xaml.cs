@@ -13,16 +13,13 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Praxis.Client.Views.Pages
+namespace Praxis.Client.Views.Pages.Patienten
 {
     /// <summary>
     /// Interaction logic for PatientsPage.xaml
     /// </summary>
     public partial class PatientsPage : UserControl
     {
-        public PatientsPage()
-        {
-            InitializeComponent();
-        }
+       
     }
 }

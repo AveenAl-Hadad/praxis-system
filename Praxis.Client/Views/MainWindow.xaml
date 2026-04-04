@@ -41,9 +41,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Suche -->
-                <StackPanel Orientation="Vertical"
-                            VerticalAlignment="Center">
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
                     <TextBlock Text="Gehe zu..."
                                Margin="2,0,0,4"
                                Foreground="{DynamicResource MutedTextBrush}"/>
@@ -53,21 +51,14 @@
                              Tag="Gehe zu..." />
                 </StackPanel>
 
-                <!-- Titel -->
-                <StackPanel Grid.Column="1"
-                            VerticalAlignment="Center"
-                            Margin="12,0,0,0">
-                    <TextBlock Text="Praxissoftware"
-                               Style="{StaticResource SectionTitleStyle}"/>
-                    <TextBlock Text="Modernisierte Oberfläche mit echter Seiten-Navigation"
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <TextBlock Text="Praxissoftware" Style="{StaticResource SectionTitleStyle}"/>
+                    <TextBlock Text="Modulare Navigation wie in der Referenzansicht"
                                Foreground="{DynamicResource MutedTextBrush}"
                                Margin="0,2,0,0"/>
                 </StackPanel>
 
-                <!-- Benutzer rechts -->
-                <StackPanel Grid.Column="2"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="{DynamicResource PrimaryBrush}"
                             Width="34"
                             Height="34"
@@ -84,13 +75,8 @@
                     </Border>
 
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="LoggedInUserText"
-                                   Text="Benutzername"
-                                   FontWeight="SemiBold"/>
-                        <TextBlock x:Name="LoggedInStatusText"
-                                   Text="Angemeldet"
-                                   Foreground="{DynamicResource MutedTextBrush}"
-                                   FontSize="11"/>
+                        <TextBlock x:Name="LoggedInUserText" Text="Benutzername" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="LoggedInStatusText" Text="Angemeldet" Foreground="{DynamicResource MutedTextBrush}" FontSize="11"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -118,17 +104,13 @@
                 <ScrollViewer Grid.Row="1"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel x:Name="DynamicSidebarPanel"
-                                Margin="4"/>
+                    <StackPanel x:Name="DynamicSidebarPanel" Margin="4"/>
                 </ScrollViewer>
             </Grid>
         </Border>
 
-        <!-- RECHTE SEITE / CONTENT -->
-        <Grid Grid.Row="1"
-              Grid.Column="1"
-              x:Name="ContentArea"
-              Margin="14">
+        <!-- RECHTE SEITE -->
+        <Grid Grid.Row="1" Grid.Column="1" x:Name="ContentArea" Margin="14">
             <ContentControl x:Name="MainContentControl"/>
         </Grid>
 
@@ -146,399 +128,29 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <UniformGrid Columns="8"
-                             Rows="1"
-                             Margin="0,0,12,0">
-                    <Button x:Name="BottomPatientsButton"
-                            Content="Patienten"
-                            Style="{StaticResource BottomNavButtonStyle}"
-                            Margin="6,0"
-                            Click="BottomPatients_Click"/>
-
-                    <Button Content="Labor"
-                            Style="{StaticResource BottomNavButtonStyle}"
-                            Margin="6,0"
-                            Click="BottomLabor_Click"/>
-
-                    <Button Content="Abrechnung"
-                            Style="{StaticResource BottomNavButtonStyle}"
-                            Margin="6,0"
-                            Click="BottomBilling_Click"/>
-
-                    <Button Content="Auswertungen"
-                            Style="{StaticResource BottomNavButtonStyle}"
-                            Margin="6,0"
-                            Click="BottomReports_Click"/>
-
-                    <Button Content="Nachrichten"
-                            Style="{StaticResource BottomNavButtonStyle}"
-                            Margin="6,0"
-                            Click="BottomMessages_Click"/>
-
-                    <Button Content="Kataloge"
-                            Style="{StaticResource BottomNavButtonStyle}"
-                            Margin="6,0"
-                            Click="BottomCatalogs_Click"/>
-
-                    <Button Content="Einrichtung"
-                            Style="{StaticResource BottomNavButtonStyle}"
-                            Margin="6,0"
-                            Click="BottomSetup_Click"/>
-
-                    <Button Content="Einstellungen"
-                            Style="{StaticResource BottomNavButtonStyle}"
-                            Margin="6,0"
-                            Click="BottomSettings_Click"/>
+                <UniformGrid Columns="8" Rows="1" Margin="0,0,12,0">
+                    <Button x:Name="BottomPatientsButton" Content="Patienten" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0" Click="BottomPatients_Click"/>
+                    <Button Content="Labor" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0" Click="BottomLabor_Click"/>
+                    <Button Content="Abrechnung" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0" Click="BottomBilling_Click"/>
+                    <Button Content="Auswertungen" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0" Click="BottomReports_Click"/>
+                    <Button Content="Nachrichten" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0" Click="BottomMessages_Click"/>
+                    <Button Content="Kataloge" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0" Click="BottomCatalogs_Click"/>
+                    <Button Content="Einrichtung" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0" Click="BottomSetup_Click"/>
+                    <Button Content="Einstellungen" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0" Click="BottomSettings_Click"/>
                 </UniformGrid>
 
-                <!-- rechte Statusbuttons -->
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center">
-                    <Border Background="{DynamicResource CardBrush}"
-                            BorderBrush="{DynamicResource BorderBrushCustom}"
-                            BorderThickness="1"
-                            CornerRadius="6"
-                            Padding="10,6"
-                            Margin="0,0,8,0">
-                        <TextBlock Text="2"
-                                   FontWeight="Bold"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrushCustom}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,0">
+                        <TextBlock Text="2" FontWeight="Bold"/>
                     </Border>
-
-                    <Border Background="{DynamicResource CardBrush}"
-                            BorderBrush="{DynamicResource BorderBrushCustom}"
-                            BorderThickness="1"
-                            CornerRadius="6"
-                            Padding="10,6"
-                            Margin="0,0,8,0">
-                        <TextBlock Text="1"
-                                   FontWeight="Bold"/>
+                    <Border Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrushCustom}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,0">
+                        <TextBlock Text="1" FontWeight="Bold"/>
                     </Border>
-
-                    <Border Background="{DynamicResource SuccessBrush}"
-                            CornerRadius="16"
-                            Width="32"
-                            Height="32">
-                        <TextBlock Text="✓"
-                                   Foreground="White"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   TextAlignment="Center"
-                                   Margin="0,6,0,0"/>
+                    <Border Background="{DynamicResource SuccessBrush}" CornerRadius="16" Width="32" Height="32">
+                        <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Margin="0,6,0,0"/>
                     </Border>
                 </StackPanel>
             </Grid>
         </Border>
     </Grid>
 </Window>
-    
-    
-    
-    <!--<Window x:Class="Praxis.Client.Views.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Praxis System"
-        Height="820"
-        Width="1480"
-        MinHeight="760"
-        MinWidth="1280"
-        Background="{StaticResource BackgroundBrush}"
-        WindowStartupLocation="CenterScreen"
-        Loaded="Window_Loaded"
-        KeyDown="Window_KeyDown">
-
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="240"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="78"/>
-        </Grid.RowDefinitions>
-
-        --><!-- DYNAMISCHE SIDEBAR --><!--
-        <Border Grid.Row="0"
-                Grid.RowSpan="3"
-                Grid.Column="0"
-                Background="{DynamicResource SidebarDarkBrush}"
-                BorderBrush="#25292D"
-                BorderThickness="0,0,1,0">
-            <Grid Margin="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="12"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Border Grid.Row="0"
-                        Background="#2F3439"
-                        CornerRadius="8"
-                        Padding="12"
-                        Margin="0,0,0,8">
-                    <StackPanel>
-                        <TextBlock Text="PRAXIS"
-                                   FontSize="22"
-                                   FontWeight="Bold"
-                                   Foreground="White"/>
-                        <TextBlock Text="Navigation"
-                                   FontSize="11"
-                                   Foreground="#D6DCE1"
-                                   Margin="0,2,0,0"/>
-                        <TextBlock x:Name="SidebarTitleText"
-                                   Text="Patienten"
-                                   FontSize="16"
-                                   FontWeight="SemiBold"
-                                   Foreground="#FFFFFF"
-                                   Margin="0,10,0,0"/>
-                    </StackPanel>
-                </Border>
-
-                <ScrollViewer Grid.Row="2"
-                              VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    --><!-- LINKE SIDEBAR --><!--
-                    <StackPanel x:Name="DynamicSidebarPanel" Margin="4"/>
-                </ScrollViewer>
-
-                <StackPanel Grid.Row="3">
-                    <Button x:Name="ThemeToggleButton"
-                            Height="38"
-                            Margin="0,0,0,8"
-                            Click="ThemeToggle_Click">
-                        Design wechseln
-                    </Button>
-
-                    <Button Height="38"
-                            Click="Logout_Click"
-                            Style="{StaticResource DangerButtonStyle}">
-                        Logout
-                    </Button>
-                </StackPanel>
-            </Grid>
-        </Border>
-        --><!-- HEADER --><!--
-        <Border Grid.Row="0" Grid.Column="1"
-                Background="#F5F6F7"
-                BorderBrush="#C9CDD2"
-                BorderThickness="0,0,0,1"
-                Padding="12">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                --><!-- obere Kopfzeile --><!--
-                <Grid Grid.Row="0" Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel>
-                        <TextBlock Text="PRAXIS"
-                                   FontSize="24"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource TitleTextBrush}"/>
-                        <TextBlock Text="Verwaltungssystem"
-                                   FontSize="12"
-                                   Foreground="{StaticResource MutedTextBrush}"
-                                   Margin="0,2,0,0"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                        <TextBlock Text="Angemeldet"
-                                   Foreground="{StaticResource MutedTextBrush}"
-                                   FontSize="11"
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock x:Name="LoggedInUserText"
-                                   Foreground="{StaticResource TitleTextBrush}"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   HorizontalAlignment="Right"/>
-                    </StackPanel>
-                </Grid>
-
-                --><!-- kompakte Aktionsleiste --><!--
-                <WrapPanel Grid.Row="1" ItemHeight="34" ItemWidth="120">
-
-                    <Button x:Name="AddPatientButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Style="{StaticResource TopActionButtonStyle}"
-                            Click="AddPatient_Click">
-                        Neuer Patient
-                    </Button>
-
-                    <Button x:Name="EditPatientButton"
-                            Height="34"
-                            Margin="0,0,8,8"  
-                            Style="{StaticResource TopActionButtonStyle}"
-                            Click="EditPatient_Click">
-                        Bearbeiten
-                    </Button>
-
-                    <Button x:Name="DeletePatientButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Style="{StaticResource TopActionButtonStyle}"
-                            Click="DeletePatient_Click">
-                        Löschen
-                    </Button>
-
-                    <Button x:Name="ToggleActiveButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Click="ToggleActive_Click">
-                        Aktiv/Inaktiv
-                    </Button>
-
-                    <Button x:Name="AddAppointmentButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Style="{StaticResource TopActionButtonStyle}"
-                            Click="OpenAddAppointmentWindow_Click">
-                        Termin neu
-                    </Button>
-
-                    <Button x:Name="AppointmentsNavigationButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Click="OpenAppointments_Click">
-                        Termine
-                    </Button>
-
-                    <Button x:Name="CalendarButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Click="OpenCalendar_Click">
-                        Kalender
-                    </Button>
-
-                    <Button x:Name="WaitingRoomButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Click="OpenWaitingRoom_Click">
-                        Wartezimmer
-                    </Button>
-
-                    <Button x:Name="InvoiceButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Style="{StaticResource TopActionButtonStyle}"
-                            Click="OpenInvoices_Click">
-                        Rechnungen
-                    </Button>
-
-                    <Button x:Name="PrescriptionButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Click="OpenPrescriptions_Click">
-                        Rezepte
-                    </Button>
-
-                    <Button x:Name="DocumentButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Click="OpenDocuments_Click">
-                        Dokumente
-                    </Button>
-
-                    <Button x:Name="UserManagementButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Click="UserManagementButton_Click">
-                        Benutzer
-                    </Button>
-
-                    <Button x:Name="BackupButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Click="CreateBackup_Click">
-                        Backup
-                    </Button>
-
-                    <Button x:Name="RestoreButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Click="RestoreBackup_Click">
-                        Restore
-                    </Button>
-
-                    <Button x:Name="OnlineBookingButton"
-                            Height="34"
-                            Margin="0,0,8,8"
-                            Click="OnlineBookingButton_Click">
-                        Online Buchung
-                    </Button>
-
-                    <Button Height="34"
-                            Margin="0,0,8,8"
-                            Click="OpenAuditLog_Click">
-                        Audit Log
-                    </Button>
-
-                    <Button Height="34"
-                            Margin="0,0,8,8"
-                            Click="ChangePassword_Click">
-                        Passwort
-                    </Button>
-
-                    <Button Height="34"
-                            Margin="0,0,8,8"
-                            Style="{StaticResource DangerButtonStyle}"
-                            Click="Logout_Click">
-                        Logout
-                    </Button>
-                </WrapPanel>
-            </Grid>
-        </Border>
-
-        --><!-- CONTENT --><!--
-        <Grid Grid.Row="1" Grid.Column="1" x:Name="ContentArea" Margin="14">
-            
-            --><!-- RECHTER CONTENT --><!--
-            <ContentControl x:Name="MainContentControl"/>
-         
-        </Grid>
-
-        --><!-- BOTTOM NAVIGATION --><!--
-        <Border Grid.Row="2" Grid.Column="1"
-                Background="#2F3439"
-                BorderBrush="#1F2326"
-                BorderThickness="1,1,0,0"
-                Padding="8">
-            <UniformGrid Columns="8">
-                <Button Click="BottomPatients_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <TextBlock Text="Patienten" HorizontalAlignment="Center"/>
-                </Button>
-                <Button Click="BottomLabor_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <TextBlock Text="Labor" HorizontalAlignment="Center"/>
-                </Button>
-                <Button Click="BottomBilling_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <TextBlock Text="Abrechnung" HorizontalAlignment="Center"/>
-                </Button>
-                <Button Click="BottomReports_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <TextBlock Text="Auswertungen" HorizontalAlignment="Center"/>
-                </Button>
-                <Button Click="BottomMessages_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <TextBlock Text="Nachrichten" HorizontalAlignment="Center"/>
-                </Button>
-                <Button Click="BottomCatalogs_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <TextBlock Text="Kataloge" HorizontalAlignment="Center"/>
-                </Button>
-                <Button Click="BottomSetup_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <TextBlock Text="Einrichtung" HorizontalAlignment="Center"/>
-                </Button>
-                <Button Click="BottomSettings_Click" Style="{StaticResource BottomNavButtonStyle}" Margin="6,0">
-                    <TextBlock Text="Einstellungen" HorizontalAlignment="Center"/>
-                </Button>
-            </UniformGrid>
-        </Border>
-    </Grid>
-</Window>-->

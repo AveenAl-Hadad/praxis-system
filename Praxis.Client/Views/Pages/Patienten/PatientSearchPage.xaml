@@ -56,20 +56,18 @@
                       SelectionChanged="PatientsGrid_SelectionChanged"
                       MouseDoubleClick="PatientsGrid_MouseDoubleClick">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80"/>
-                    <DataGridTextColumn Header="Vorname" Binding="{Binding FirstName}" Width="*"/>
-                    <DataGridTextColumn Header="Nachname" Binding="{Binding LastName}" Width="*"/>
-                    <DataGridTextColumn Header="Geburtsdatum" Binding="{Binding DateOfBirth}" Width="160"/>
-                    <DataGridTextColumn Header="Telefon" Binding="{Binding Phone}" Width="160"/>
-                    <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" Width="220"/>
-                    <DataGridCheckBoxColumn Header="Aktiv" Binding="{Binding IsActive}" Width="80"/>
-                    <DataGridTextColumn Header="Adresse" Binding="{Binding Adresse}" Width="220"/>
-                    <DataGridTextColumn Header="PLZ" Binding="{Binding PLZ}" Width="90"/>
-                    <DataGridTextColumn Header="Ort" Binding="{Binding Ort}" Width="140"/>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
+                    <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" Width="140"/>
+                    <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" Width="140"/>
+                    <DataGridTextColumn Header="Geburtsdatum" Binding="{Binding Geburtsdatum, StringFormat=dd.MM.yyyy}" Width="120"/>
+                    <DataGridTextColumn Header="Telefon" Binding="{Binding Telefon}" Width="140"/>
+                    <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" Width="180"/>
+                    <DataGridTextColumn Header="Adresse" Binding="{Binding Adresse}" Width="180"/>
+                    <DataGridTextColumn Header="PLZ" Binding="{Binding PLZ}" Width="80"/>
+                    <DataGridTextColumn Header="Ort" Binding="{Binding Ort}" Width="120"/>
                     <DataGridTextColumn Header="Versicherung" Binding="{Binding Versicherung}" Width="130"/>
-                    <DataGridTextColumn Header="Geschlecht" Binding="{Binding Geschlecht}" Width="110"/>
-                    <DataGridTextColumn Header="Versichertennr." Binding="{Binding Versichertennummer}" Width="160"/>
-                    
+                    <DataGridTextColumn Header="Geschlecht" Binding="{Binding Geschlecht}" Width="100"/>
+                    <DataGridTextColumn Header="Versichertennr." Binding="{Binding Versichertennummer}" Width="140"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
