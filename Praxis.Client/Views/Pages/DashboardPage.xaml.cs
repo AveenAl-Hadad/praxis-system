@@ -256,6 +256,86 @@ namespace Praxis.Client.Views.Pages
             }
         }
 
+        private async void TasksGrid_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+                return;
+
+            if (TasksGrid.SelectedItem is not DashboardTaskRow selectedRow)
+                return;
+
+            try
+            {
+                var task = await mainWindow.GetDashboardTaskByIdAsync(selectedRow.Id);
+                if (task == null)
+                {
+                    MessageBox.Show("Die Aufgabe wurde nicht gefunden.");
+                    return;
+                }
+
+                var dialog = new TaskEditWindow(task)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                var result = dialog.ShowDialog();
+                if (result != true || dialog.ResultTask == null)
+                    return;
+
+                await mainWindow.UpdateDashboardTaskAsync(dialog.ResultTask);
+                await RefreshAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Fehler beim Bearbeiten der Aufgabe:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private async void NoticesGrid_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+                return;
+
+            if (NoticesGrid.SelectedItem is not DashboardNoticeRow selectedRow)
+                return;
+
+            try
+            {
+                var notices = await mainWindow.GetActivePracticeNoticesAsync();
+                var notice = notices.FirstOrDefault(n => n.Id == selectedRow.Id);
+
+                if (notice == null)
+                {
+                    MessageBox.Show("Der Hinweis wurde nicht gefunden.");
+                    return;
+                }
+
+                var dialog = new NoticeEditWindow(notice)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                var result = dialog.ShowDialog();
+                if (result != true || dialog.ResultNotice == null)
+                    return;
+
+                await mainWindow.UpdatePracticeNoticeAsync(dialog.ResultNotice);
+                await RefreshAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Fehler beim Bearbeiten des Hinweises:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         private sealed class DashboardAppointmentRow
         {
             public string Time { get; set; } = string.Empty;

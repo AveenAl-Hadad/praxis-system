@@ -264,7 +264,8 @@
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
                                   IsReadOnly="True"
-                                  SelectionMode="Single">
+                                  SelectionMode="Single"
+                                  MouseDoubleClick="TasksGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="180"/>
                                 <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="180"/>
@@ -338,7 +339,8 @@
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
                                   IsReadOnly="True"
-                                  SelectionMode="Single">
+                                  SelectionMode="Single"
+                                  MouseDoubleClick="NoticesGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="170"/>
                                 <DataGridTextColumn Header="Kategorie" Binding="{Binding Category}" Width="100"/>
