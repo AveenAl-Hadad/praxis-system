@@ -21,6 +21,8 @@ using MessageBox = System.Windows.MessageBox;
 using Button = System.Windows.Controls.Button;
 using System.Windows.Threading;
 using Praxis.Application.Interfaces;
+using MouseEventHandler = System.Windows.Input.MouseEventHandler;
+using KeyEventHandler = System.Windows.Input.KeyEventHandler;
 
 
 namespace Praxis.Client.Views
@@ -84,7 +86,7 @@ namespace Praxis.Client.Views
         private DispatcherTimer _warningTimer;
 
         private readonly TimeSpan _timeout = TimeSpan.FromMinutes(5);
-        private readonly TimeSpan _warningTime = TimeSpan.FromMinutes(1);
+        private readonly TimeSpan _warningTime = TimeSpan.FromMinutes(4);
         //private readonly TimeSpan _timeout = TimeSpan.FromSeconds(30);
         //private readonly TimeSpan _warningTime = TimeSpan.FromSeconds(20);
 
@@ -749,80 +751,71 @@ namespace Praxis.Client.Views
         #endregion
 
         #region Automatisch Abmeldung
+       
+        private DateTime _lastActivityTime;
+
         private void StartSessionTimer()
         {
-            // Haupttimer (Logout)
+            _lastActivityTime = DateTime.Now;
+
             _sessionTimer = new DispatcherTimer();
-            _sessionTimer.Interval = _timeout;
+            _sessionTimer.Interval = TimeSpan.FromSeconds(5);
             _sessionTimer.Tick += SessionTimer_Tick;
-
-            // Warn-Timer
-            _warningTimer = new DispatcherTimer();
-            _warningTimer.Interval = _warningTime;
-            _warningTimer.Tick += WarningTimer_Tick;
-
             _sessionTimer.Start();
-            _warningTimer.Start();
 
-            // Aktivität überwachen
-            this.MouseMove += ResetSessionTimer;
-            this.KeyDown += ResetSessionTimer;
+            // Aktivität zuverlässig überwachen, auch wenn Controls Events selbst behandeln
+            AddHandler(UIElement.PreviewMouseDownEvent, new MouseButtonEventHandler(ActivityDetected), true);
+            AddHandler(UIElement.PreviewMouseMoveEvent, new MouseEventHandler(ActivityDetected), true);
+            AddHandler(UIElement.PreviewKeyDownEvent, new KeyEventHandler(ActivityDetected), true);
+            AddHandler(UIElement.PreviewTextInputEvent, new TextCompositionEventHandler(ActivityDetected), true);
         }
-        //Timer reset bei Aktivität
-        private void ResetSessionTimer(object sender, EventArgs e)
+
+        private void ActivityDetected(object sender, EventArgs e)
         {
-            if (_sessionTimer == null || _warningTimer == null)
-                return;
-
-            _sessionTimer.Stop();
-            _warningTimer.Stop();
-
-            _sessionTimer.Start();
-            _warningTimer.Start();
+            _lastActivityTime = DateTime.Now;
         }
-        private void WarningTimer_Tick(object? sender, EventArgs e)
-        {
-            if (!UserSession.IsLoggedIn)
-                return;
 
-            _warningTimer.Stop();
-
-            var result = MessageBox.Show(
-                "Ihre Sitzung läuft in 1 Minute ab.\nMöchten Sie weiterarbeiten?",
-                "Session läuft ab",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                ResetSessionTimer(this, EventArgs.Empty);
-            }
-            else
-            {
-                LogoutAuto();
-            }
-        }
-        //Auto Logout
         private void SessionTimer_Tick(object? sender, EventArgs e)
         {
-            // WICHTIG: nur ausführen wenn eingeloggt
             if (!UserSession.IsLoggedIn)
                 return;
 
-            _sessionTimer.Stop();
-            _warningTimer?.Stop();
+            var inactiveTime = DateTime.Now - _lastActivityTime;
 
-            LogoutAuto(true);
+            // Warnung 1 Minute vor Logout
+            if (inactiveTime >= (_timeout - _warningTime) && inactiveTime < _timeout)
+            {
+                _sessionTimer.Stop();
+
+                var result = MessageBox.Show(
+                    $"Ihre Sitzung läuft in {_warningTime.Minutes} Minute(n) ab.\nMöchten Sie weiterarbeiten?",
+                    "Session läuft ab",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    _lastActivityTime = DateTime.Now;
+                    _sessionTimer.Start();
+                    return;
+                }
+
+                LogoutAuto();
+                return;
+            }
+
+            // Logout nach kompletter Inaktivität
+            if (inactiveTime >= _timeout)
+            {
+                _sessionTimer.Stop();
+                LogoutAuto(true);
+            }
         }
 
-        // Logout Mthode ohne Dialog
         private void LogoutAuto(bool showMessage = false)
         {
             _sessionTimer?.Stop();
             _warningTimer?.Stop();
-
-            this.MouseMove -= ResetSessionTimer;
-            this.KeyDown -= ResetSessionTimer;
 
             UserSession.Logout();
 
@@ -842,6 +835,7 @@ namespace Praxis.Client.Views
 
             this.Close();
         }
+
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
@@ -856,9 +850,6 @@ namespace Praxis.Client.Views
             _sessionTimer?.Stop();
             _warningTimer?.Stop();
 
-            this.MouseMove -= ResetSessionTimer;
-            this.KeyDown -= ResetSessionTimer;
-
             UserSession.Logout();
 
             var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
@@ -869,6 +860,8 @@ namespace Praxis.Client.Views
         }
 
         #endregion
+
+
 
 
     }
