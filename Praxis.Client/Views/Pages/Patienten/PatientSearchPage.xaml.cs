@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Praxis.Domain.Entities;
 
+
 namespace Praxis.Client.Views.Pages.Patienten
 {
     public partial class PatientSearchPage : System.Windows.Controls.UserControl

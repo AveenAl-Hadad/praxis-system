@@ -52,6 +52,7 @@ namespace Praxis.Client.Views
 
         private readonly ReportsPage _reportsPage = new ReportsPage();
         private readonly MessagesPage _messagesPage = new MessagesPage();
+        private readonly DashboardPage _dashboardPage = new DashboardPage();
         private readonly PatientSearchPage _patientSearchPage = new PatientSearchPage();
         private readonly PatientCreatePage _patientCreatePage = new PatientCreatePage();
         private readonly PatientEditPage _patientEditPage = new PatientEditPage();
@@ -61,6 +62,7 @@ namespace Praxis.Client.Views
         private readonly PatientDeletePage _patientDeletePage = new PatientDeletePage();
         private readonly PatientDocumentsPage _patientDocumentsPage = new PatientDocumentsPage();
         private readonly PatientAppointmentsPage _patientAppointmentsPage = new PatientAppointmentsPage();
+      
 
         private readonly IPatientService _patientService;
         private readonly IAppointmentService _appointmentService;
@@ -166,7 +168,8 @@ namespace Praxis.Client.Views
             switch (module)
             {
                 case BottomModule.Patienten:
-                    LoadPage(_patientSearchPage);
+                    LoadPage(_dashboardPage);
+                    _ = _dashboardPage.RefreshAsync();
                     break;
 
                 case BottomModule.Labor:
@@ -280,6 +283,7 @@ namespace Praxis.Client.Views
             switch (module)
             {
                 case BottomModule.Patienten:
+                    AddSidebarButton("Dashboard", async (s, e) => {LoadPage(_dashboardPage); await _dashboardPage.RefreshAsync();}, true);
                     AddSidebarButton("Suche", async(s, e) => await OpenPatientSearchPageAsync(), true);
                     AddSidebarButton("Neuer Patient", (s, e) => OpenPatientCreatePage());
                     AddSidebarButton("Bearbeiten", async (s, e) => await OpenPatientEditPageAsync());
@@ -481,8 +485,8 @@ namespace Praxis.Client.Views
             {
                 if (_currentModule == BottomModule.Patienten)
                 {
-                    LoadPage(_patientSearchPage);
-                    await _patientSearchPage.RefreshAsync();
+                    LoadPage(_dashboardPage);
+                    await _dashboardPage.RefreshAsync();
                     return;
                 }
 
@@ -517,8 +521,8 @@ namespace Praxis.Client.Views
                         break;
 
                     default:
-                        LoadPage(_patientSearchPage);
-                        await _patientSearchPage.RefreshAsync();
+                        LoadPage(_dashboardPage);
+                        await _dashboardPage.RefreshAsync();
                         break;
                 }
             }
@@ -617,10 +621,18 @@ namespace Praxis.Client.Views
         {
             _selectedPatient = patient;
         }
-
         public Patient? GetSelectedPatient()
         {
             return _selectedPatient;
+        }
+        public async Task<DashboardStats> GetDashboardStatsAsync()
+        {
+            return await _dashboardService.GetStatsAsync();
+        }
+
+        public async Task<IEnumerable<Appointment>> GetAppointmentsByDateAsync(DateTime date)
+        {
+            return await _appointmentService.GetAppointmentsByDateAsync(date);
         }
 
 
