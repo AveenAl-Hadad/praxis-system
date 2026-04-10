@@ -1,6 +1,7 @@
 ﻿using Praxis.Domain.Entities;
 
-namespace Praxis.Infrastructure.Services.Interface;
+namespace Praxis.Application.Interfaces
+{ 
 
 public interface IAppointmentService
 {
@@ -22,4 +23,5 @@ public interface IAppointmentService
     Task MoveToRoomAsync(int appointmentId, string roomName);
     Task CompleteAppointmentAsync(int appointmentId);
     Task CancelAppointmentAsync(int appointmentId, string? note = null);
+}
 }

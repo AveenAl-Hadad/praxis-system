@@ -1,5 +1,6 @@
 ﻿using System.Windows;
-using Praxis.Infrastructure.Services;
+using Praxis.Application.Interfaces;
+
 
 namespace Praxis.Client.Views;
 

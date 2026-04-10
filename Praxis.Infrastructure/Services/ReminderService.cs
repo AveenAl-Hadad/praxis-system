@@ -1,7 +1,7 @@
-﻿using Praxis.Domain.Entities;
+﻿using Praxis.Application.Interfaces;
+using Praxis.Domain.Entities;
 
 namespace Praxis.Infrastructure.Services;
-
 public class ReminderService : IReminderService
 {
     // Email-Service zum Versenden von E-Mails

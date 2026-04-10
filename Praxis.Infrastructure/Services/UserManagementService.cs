@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
+using Praxis.Application.Interfaces;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Persistence;

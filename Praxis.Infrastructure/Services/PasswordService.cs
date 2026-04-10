@@ -1,8 +1,8 @@
-﻿using System.Security.Cryptography;
+﻿using Praxis.Application.Interfaces;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Praxis.Infrastructure.Services;
-
 public class PasswordService : IPasswordService
 {
     // Methode zum Hashen eines Passworts

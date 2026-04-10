@@ -1,7 +1,7 @@
 ﻿using Praxis.Domain.Entities;
 
-namespace Praxis.Infrastructure.Services;
-
+namespace Praxis.Application.Interfaces
+{ 
 public interface IDashboardTaskService
 {
     Task<List<DashboardTask>> GetOpenTasksAsync();
@@ -10,4 +10,5 @@ public interface IDashboardTaskService
     Task AddTaskAsync(DashboardTask task);
     Task UpdateTaskAsync(DashboardTask task);
     Task MarkAsDoneAsync(int taskId);
+}
 }

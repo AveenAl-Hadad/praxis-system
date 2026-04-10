@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Praxis.Infrastructure.Services
+namespace Praxis.Application.Interfaces
 {
     public interface ILaborService
     {

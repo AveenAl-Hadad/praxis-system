@@ -99,6 +99,7 @@ namespace Praxis.Client.Views.Pages
 
                 NoticesGrid.ItemsSource = activeNotices.Select(n => new DashboardNoticeRow
                 {
+                    Id = n.Id,
                     Title = string.IsNullOrWhiteSpace(n.Title) ? "-" : n.Title,
                     Category = string.IsNullOrWhiteSpace(n.Category) ? "Info" : n.Category,
                     Content = string.IsNullOrWhiteSpace(n.Content) ? "-" : n.Content,
@@ -157,6 +158,69 @@ namespace Praxis.Client.Views.Pages
             }
         }
 
+        private async void AddNoticeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+                return;
+
+            var dialog = new NoticeEditWindow
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            var result = dialog.ShowDialog();
+            if (result != true || dialog.ResultNotice == null)
+                return;
+
+            try
+            {
+                await mainWindow.AddPracticeNoticeAsync(dialog.ResultNotice);
+                await RefreshAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Fehler beim Speichern des Hinweises:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private async void DeactivateNoticeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+                return;
+
+            if (NoticesGrid.SelectedItem is not DashboardNoticeRow selectedNotice)
+            {
+                MessageBox.Show("Bitte zuerst einen Hinweis auswählen.");
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"Hinweis '{selectedNotice.Title}' deaktivieren?",
+                "Hinweis deaktivieren",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                await mainWindow.DeactivatePracticeNoticeAsync(selectedNotice.Id);
+                await RefreshAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Fehler beim Deaktivieren des Hinweises:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
         private async void CompleteTaskButton_Click(object sender, RoutedEventArgs e)
         {
             if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
@@ -213,6 +277,7 @@ namespace Praxis.Client.Views.Pages
 
         private sealed class DashboardNoticeRow
         {
+            public int Id { get; set; }
             public string Title { get; set; } = string.Empty;
             public string Category { get; set; } = string.Empty;
             public string Content { get; set; } = string.Empty;

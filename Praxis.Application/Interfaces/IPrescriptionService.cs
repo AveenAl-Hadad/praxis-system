@@ -1,7 +1,7 @@
 ﻿using Praxis.Domain.Entities;
 
-namespace Praxis.Infrastructure.Services;
-
+namespace Praxis.Application.Interfaces
+{ 
 public interface IPrescriptionService
 {
     Task<List<Prescription>> GetAllPrescriptionsAsync();
@@ -9,4 +9,5 @@ public interface IPrescriptionService
     Task<Prescription?> GetPrescriptionByIdAsync(int id);
     Task AddPrescriptionAsync(Prescription prescription, string userName);
     Task DeletePrescriptionAsync(int id, string usreName);
+}
 }

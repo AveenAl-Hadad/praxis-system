@@ -1,7 +1,7 @@
 ﻿using Praxis.Domain.Entities;
 
-namespace Praxis.Infrastructure.Services;
-
+namespace Praxis.Application.Interfaces
+{ 
 public interface IUserManagementService
 {
     Task<List<User>> GetAllUsersAsync();
@@ -10,4 +10,5 @@ public interface IUserManagementService
     Task ResetPasswordAsync(int userId, string newPassword);
     Task DeleteUserAsync(int userId);
     Task ToggleUserActiveAsync(int userId);
+}
 }

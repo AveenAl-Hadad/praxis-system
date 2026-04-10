@@ -285,6 +285,8 @@
                             <RowDefinition Height="10"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="10"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
@@ -296,8 +298,19 @@
                                        Margin="0,2,0,0"
                                        Foreground="{DynamicResource MutedTextBrush}"/>
                         </StackPanel>
+                        <StackPanel Grid.Row="2"
+                                    Orientation="Horizontal">
+                            <Button Content="Neuer Hinweis"
+                                    Width="130"
+                                    Margin="0,0,10,0"
+                                    Click="AddNoticeButton_Click"/>
 
-                        <UniformGrid Grid.Row="2" Columns="2">
+                            <Button Content="Deaktivieren"
+                                    Width="120"
+                                    Click="DeactivateNoticeButton_Click"/>
+                        </StackPanel>
+
+                        <UniformGrid Grid.Row="4" Columns="2">
                             <StackPanel>
                                 <TextBlock Text="Aktive Hinweise"
                                            Foreground="{DynamicResource MutedTextBrush}"/>
@@ -319,7 +332,7 @@
                             </StackPanel>
                         </UniformGrid>
 
-                        <DataGrid Grid.Row="4"
+                        <DataGrid Grid.Row="6"
                                   x:Name="NoticesGrid"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"

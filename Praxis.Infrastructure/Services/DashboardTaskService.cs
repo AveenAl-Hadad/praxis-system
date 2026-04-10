@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Praxis.Domain.Entities;
+using Praxis.Application.Interfaces;
 using Praxis.Infrastructure.Persistence;
 
-namespace Praxis.Infrastructure.Services;
-
+namespace Praxis.Infrastructure.Services; 
 public class DashboardTaskService : IDashboardTaskService
 {
     private readonly PraxisDbContext _db;

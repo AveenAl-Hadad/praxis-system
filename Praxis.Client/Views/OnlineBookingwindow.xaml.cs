@@ -1,8 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
-using Praxis.Infrastructure.Services;
-using Praxis.Infrastructure.Services.Interface;
+
 using MessageBox = System.Windows.MessageBox;
 namespace Praxis.Client.Views;
 

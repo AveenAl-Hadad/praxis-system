@@ -1,4 +1,5 @@
-﻿using Praxis.Domain.Entities;
+﻿using Praxis.Application.Interfaces;
+using Praxis.Domain.Entities;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;

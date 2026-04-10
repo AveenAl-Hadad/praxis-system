@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Praxis.Domain.Entities;
+using Praxis.Application.Interfaces;
 using Praxis.Infrastructure.Persistence;
 
 namespace Praxis.Infrastructure.Services;
-
 /// <summary>
 /// Service zur Berechnung von Dashboard-Statistiken.
 /// Liefert aggregierte Daten wie Anzahl von Patienten, Umsatz usw.

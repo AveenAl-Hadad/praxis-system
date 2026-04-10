@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Persistence;
 using Praxis.Infrastructure.Services;
 
-namespace Praxis.Application.Services
-{
+namespace Praxis.Infrastructure.Services;
     public class LaborService : ILaborService
     {
         private readonly PraxisDbContext _context;
@@ -25,4 +25,3 @@ namespace Praxis.Application.Services
             await _context.SaveChangesAsync();
         }
     }
-}

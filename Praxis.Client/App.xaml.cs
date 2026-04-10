@@ -6,7 +6,6 @@ using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Praxis.Application.Services;
 using Praxis.Client.Logic.UI;
 using Praxis.Client.Views;
 using Praxis.Domain.Constants;
@@ -14,7 +13,8 @@ using Praxis.Domain.Entities;
 using Praxis.Infrastructure;
 using Praxis.Infrastructure.Persistence;
 using Praxis.Infrastructure.Services;
-using Praxis.Infrastructure.Services.Interface;
+
+using Praxis.Application.Interfaces;
 using MessageBox = System.Windows.MessageBox;
 namespace Praxis.Client;
 
@@ -74,6 +74,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<AuditLogWindow>();
                 services.AddTransient<OnlineBookingWindow>();
                 services.AddTransient<TaskEditWindow>();
+                services.AddTransient<NoticeEditWindow>();
 
 
             })
@@ -112,7 +113,7 @@ public partial class App : System.Windows.Application
 
         try
         {
-            ShutdownMode = ShutdownMode.OnLastWindowClose;
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
 
             var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
             MainWindow = loginWindow;

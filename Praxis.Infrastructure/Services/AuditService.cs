@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Persistence;
 
 namespace Praxis.Infrastructure.Services;
-
 /// <summary>
 /// Service für Audit-Logging.
 /// Speichert Benutzeraktionen (z.B. Create, Update, Delete) in der Datenbank.

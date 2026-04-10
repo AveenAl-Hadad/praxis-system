@@ -1,7 +1,7 @@
 ﻿using Praxis.Domain.Entities;
 
-namespace Praxis.Infrastructure.Services;
-
+namespace Praxis.Application.Interfaces
+{ 
 public interface IPatientService
 {
     Task<IEnumerable<Patient>> GetAllPatientsAsync();
@@ -9,4 +9,5 @@ public interface IPatientService
     Task UpdatePatientAsync(Patient patient);
     Task DeletePatientAsync(int id, string userName);
     Task ToggleActiveAsync(int id);
+}
 }

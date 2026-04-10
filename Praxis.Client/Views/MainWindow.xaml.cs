@@ -15,13 +15,12 @@ using Praxis.Client.Views.Pages.UserManagement;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
-using Praxis.Infrastructure.Services.Interface;
 using Praxis.Client.Views.Pages.Abrechnung;
-using Praxis.Application.Services;
 
 using MessageBox = System.Windows.MessageBox;
 using Button = System.Windows.Controls.Button;
 using System.Windows.Threading;
+using Praxis.Application.Interfaces;
 
 
 namespace Praxis.Client.Views
@@ -84,10 +83,10 @@ namespace Praxis.Client.Views
         private DispatcherTimer _sessionTimer;
         private DispatcherTimer _warningTimer;
 
-        //private readonly TimeSpan _timeout = TimeSpan.FromMinutes(2);
-        //private readonly TimeSpan _warningTime = TimeSpan.FromMinutes(1);
-        private readonly TimeSpan _timeout = TimeSpan.FromSeconds(30);
-        private readonly TimeSpan _warningTime = TimeSpan.FromSeconds(20);
+        private readonly TimeSpan _timeout = TimeSpan.FromMinutes(5);
+        private readonly TimeSpan _warningTime = TimeSpan.FromMinutes(1);
+        //private readonly TimeSpan _timeout = TimeSpan.FromSeconds(30);
+        //private readonly TimeSpan _warningTime = TimeSpan.FromSeconds(20);
 
         #endregion
         #region Konstrakture
@@ -652,6 +651,15 @@ namespace Praxis.Client.Views
         public async Task AddDashboardTaskAsync(DashboardTask task)
         {
             await _dashboardTaskService.AddTaskAsync(task);
+        }
+        public async Task AddPracticeNoticeAsync(PracticeNotice notice)
+        {
+            await _practiceNoticeService.AddNoticeAsync(notice);
+        }
+
+        public async Task DeactivatePracticeNoticeAsync(int noticeId)
+        {
+            await _practiceNoticeService.DeactivateNoticeAsync(noticeId);
         }
 
         public async Task MarkDashboardTaskAsDoneAsync(int taskId)

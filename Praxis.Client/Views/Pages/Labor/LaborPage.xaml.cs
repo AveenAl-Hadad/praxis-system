@@ -1,6 +1,7 @@
-﻿using Praxis.Domain.Entities;
+﻿using Praxis.Application.Interfaces;
+using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
-using Praxis.Infrastructure.Services.Interface;
+
 using System;
 using System.Collections.Generic;
 using System.IO;

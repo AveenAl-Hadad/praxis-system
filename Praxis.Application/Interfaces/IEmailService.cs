@@ -1,6 +1,7 @@
-﻿namespace Praxis.Infrastructure.Services;
-
+﻿namespace Praxis.Application.Interfaces
+{ 
 public interface IEmailService
 {
     Task SendEmailAsync(string to, string subject, string body);
+}
 }

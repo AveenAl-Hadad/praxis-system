@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Praxis.Application.Interfaces;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Persistence;
 
 namespace Praxis.Infrastructure.Services;
-
 /// <summary>
 /// Service für Authentifizierung und Benutzerverwaltung.
 /// Zuständig für Registrierung, Login und Passwortänderung.

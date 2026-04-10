@@ -1,8 +1,9 @@
 ﻿using System.Net;
 using System.Net.Mail;
 
-namespace Praxis.Infrastructure.Services;
+using Praxis.Application.Interfaces;
 
+namespace Praxis.Infrastructure.Services;
 /// <summary>
 /// Service zum Versenden von E-Mails über SMTP (z.B. Gmail).
 /// </summary>

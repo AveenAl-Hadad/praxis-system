@@ -1,4 +1,5 @@
-﻿using Praxis.Domain.Entities;
+﻿using Praxis.Application.Interfaces;
+using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 using System;
 using System.Threading.Tasks;

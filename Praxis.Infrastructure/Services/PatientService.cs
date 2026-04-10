@@ -3,9 +3,9 @@ using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Persistence;
 using Praxis.Infrastructure.Exceptions;
 using Microsoft.Data.Sqlite;
+using Praxis.Application.Interfaces;
 
 namespace Praxis.Infrastructure.Services;
-
 /// <summary>
 /// Service zur Verwaltung von Patienten.
 /// Enthält CRUD-Operationen, Duplikatsprüfung, Suche und Audit-Logging.

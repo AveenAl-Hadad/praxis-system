@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Persistence;
 
 namespace Praxis.Infrastructure.Services;
-
 public class PracticeNoticeService : IPracticeNoticeService
 {
     private readonly PraxisDbContext _db;

@@ -1,8 +1,9 @@
 ﻿using Praxis.Domain.Entities;
 
-namespace Praxis.Infrastructure.Services;
-
+namespace Praxis.Application.Interfaces
+{ 
 public interface IInvoicePdfService
 {
     void ExportInvoiceToPdf(Invoice invoice, string filePath);
+}
 }
