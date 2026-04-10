@@ -13,6 +13,8 @@
                 <RowDefinition Height="14"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="14"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="14"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -184,8 +186,147 @@
                 </Border>
             </Grid>
 
+            <!-- Aufgaben + Hinweise -->
+            <Grid Grid.Row="6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="14"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Aufgaben -->
+                <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="Aufgaben &amp; Wiedervorlagen"
+                                       FontWeight="Bold"
+                                       FontSize="15"/>
+                            <TextBlock Text="Offene und fällige Aufgaben"
+                                       Margin="0,2,0,0"
+                                       Foreground="{DynamicResource MutedTextBrush}"/>
+                        </StackPanel>
+
+                        <UniformGrid Grid.Row="2" Columns="3">
+                            <StackPanel>
+                                <TextBlock Text="Offen"
+                                           Foreground="{DynamicResource MutedTextBrush}"/>
+                                <TextBlock x:Name="OpenTasksText"
+                                           Text="0"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel>
+                                <TextBlock Text="Heute fällig"
+                                           Foreground="{DynamicResource MutedTextBrush}"/>
+                                <TextBlock x:Name="DueTodayTasksText"
+                                           Text="0"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel>
+                                <TextBlock Text="Überfällig"
+                                           Foreground="{DynamicResource MutedTextBrush}"/>
+                                <TextBlock x:Name="OverdueTasksText"
+                                           Text="0"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </UniformGrid>
+
+                        <DataGrid Grid.Row="4"
+                                  x:Name="TasksGrid"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  IsReadOnly="True"
+                                  SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="180"/>
+                                <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="180"/>
+                                <DataGridTextColumn Header="Priorität" Binding="{Binding Priority}" Width="100"/>
+                                <DataGridTextColumn Header="Fällig" Binding="{Binding DueDate}" Width="120"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110"/>
+                                <DataGridTextColumn Header="Zuständig" Binding="{Binding AssignedTo}" Width="140"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+
+                <!-- Hinweise -->
+                <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="Praxis-Hinweise"
+                                       FontWeight="Bold"
+                                       FontSize="15"/>
+                            <TextBlock Text="Wichtige Informationen für den Tag"
+                                       Margin="0,2,0,0"
+                                       Foreground="{DynamicResource MutedTextBrush}"/>
+                        </StackPanel>
+
+                        <UniformGrid Grid.Row="2" Columns="2">
+                            <StackPanel>
+                                <TextBlock Text="Aktive Hinweise"
+                                           Foreground="{DynamicResource MutedTextBrush}"/>
+                                <TextBlock x:Name="ActiveNoticesText"
+                                           Text="0"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel>
+                                <TextBlock Text="Angeheftet"
+                                           Foreground="{DynamicResource MutedTextBrush}"/>
+                                <TextBlock x:Name="PinnedNoticesText"
+                                           Text="0"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </UniformGrid>
+
+                        <DataGrid Grid.Row="4"
+                                  x:Name="NoticesGrid"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  IsReadOnly="True"
+                                  SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="170"/>
+                                <DataGridTextColumn Header="Kategorie" Binding="{Binding Category}" Width="100"/>
+                                <DataGridTextColumn Header="Hinweis" Binding="{Binding Content}" Width="280"/>
+                                <DataGridTextColumn Header="Bis" Binding="{Binding VisibleUntil}" Width="120"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+
             <!-- Heutige Termine -->
-            <Border Grid.Row="6" Style="{StaticResource CardBorderStyle}">
+            <Border Grid.Row="8" Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

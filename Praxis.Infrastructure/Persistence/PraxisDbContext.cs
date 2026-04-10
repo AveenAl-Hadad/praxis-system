@@ -17,6 +17,8 @@ public class PraxisDbContext : DbContext
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<Abrechnungsbeleg> Abrechnungsbelegs => Set<Abrechnungsbeleg>();
     public DbSet<LaborRecord> LaborRecords => Set<LaborRecord>();
+    public DbSet<DashboardTask> DashboardTasks => Set<DashboardTask>();
+    public DbSet<PracticeNotice> PracticeNotices => Set<PracticeNotice>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,5 +68,18 @@ public class PraxisDbContext : DbContext
             .WithMany(p => p.Documents)
             .HasForeignKey(d => d.PatientId)
             .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<DashboardTask>()
+            .HasOne(t => t.Patient)
+            .WithMany()
+            .HasForeignKey(t => t.PatientId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<DashboardTask>()
+            .Property(t => t.Title)
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<PracticeNotice>()
+            .Property(n => n.Title)
+            .HasMaxLength(200);
     }
 }

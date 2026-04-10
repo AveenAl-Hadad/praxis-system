@@ -55,7 +55,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IPrescriptionService, PrescriptionService>();
                 services.AddTransient<IPrescriptionPdfService, PrescriptionPdfService>();
                 services.AddTransient<IDocumentService, DocumentService>();
-                services.AddTransient<IDashboardService, DashboardService>();
+               ;
                 services.AddTransient<IEmailService, EmailService>();
                 services.AddTransient<IReminderService, ReminderService>();
                 services.AddTransient<IAuditService, AuditService>();
@@ -64,24 +64,17 @@ public partial class App : System.Windows.Application
                 services.AddTransient<ILaborService, LaborService>();
                 services.AddTransient<IAbrechnungService, AbrechnungService>();
 
-
+                services.AddTransient<IDashboardService, DashboardService>();
+                services.AddTransient<IDashboardTaskService, DashboardTaskService>();
+                services.AddTransient<IPracticeNoticeService, PracticeNoticeService>();
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
-               // services.AddTransient<WaitingRoomWindow>();
-              //  services.AddTransient<AddAppointmentWindow>();
-                //services.AddTransient<AppointmentWindow>();
-                //services.AddTransient<AppointmentCalendarWindow>();
-                //services.AddTransient<AddPatientWindow>();
-                //services.AddTransient<UserManagementWindow>();
-                //services.AddTransient<InvoiceWindow>();
-                //services.AddTransient<AddInvoiceWindow>();
                 services.AddTransient<ChangePasswordWindow>();
-                //services.AddTransient<PrescriptionWindow>();
-                //services.AddTransient<AddPrescriptionWindow>();
-               // services.AddTransient<DocumentWindow>();
                 services.AddTransient<AuditLogWindow>();
                 services.AddTransient<OnlineBookingWindow>();
+                
+
             })
             .Build();
 
@@ -114,35 +107,8 @@ public partial class App : System.Windows.Application
                 await authService.RegisterUserAsync("admin", "admin123", Roles.Administrator);
             }
         }
+        await SeedDashboardDataAsync(_host.Services);
 
-        //try
-        //{
-        //    ShutdownMode = ShutdownMode.OnExplicitShutdown;
-
-        //    var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
-        //    var loginResult = loginWindow.ShowDialog();
-
-        //    if (loginResult == true)
-        //    {
-        //        var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-        //        MainWindow = mainWindow;
-        //        ShutdownMode = ShutdownMode.OnMainWindowClose;
-        //        mainWindow.Show();
-        //    }
-        //    else
-        //    {
-        //        Shutdown();
-        //    }
-        //}
-        //catch (Exception ex)
-        //{
-        //    MessageBox.Show(
-        //        $"Fehler beim Starten der Anwendung:\n{ex.Message}",
-        //        "Startfehler",
-        //        MessageBoxButton.OK,
-        //        MessageBoxImage.Error);
-        //    Shutdown();
-        //}
         try
         {
             ShutdownMode = ShutdownMode.OnLastWindowClose;
@@ -171,5 +137,56 @@ public partial class App : System.Windows.Application
         }
 
         base.OnExit(e);
+    }
+
+    private async Task SeedDashboardDataAsync(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+
+        var taskService = scope.ServiceProvider.GetRequiredService<IDashboardTaskService>();
+        var noticeService = scope.ServiceProvider.GetRequiredService<IPracticeNoticeService>();
+
+        // Prüfen ob schon Daten existieren
+        var existingTasks = await taskService.GetOpenTasksAsync();
+        var existingNotices = await noticeService.GetActiveNoticesAsync();
+
+        if (!existingTasks.Any())
+        {
+            await taskService.AddTaskAsync(new DashboardTask
+            {
+                Title = "Laborwerte kontrollieren",
+                Description = "Laborergebnisse vom Morgen prüfen",
+                Priority = "Hoch",
+                DueDate = DateTime.Today,
+                AssignedTo = "Dr. Mustermann"
+            });
+
+            await taskService.AddTaskAsync(new DashboardTask
+            {
+                Title = "Rückruf Patient",
+                Description = "Patient wegen Befund informieren",
+                Priority = "Normal",
+                DueDate = DateTime.Today.AddDays(1),
+                AssignedTo = "Anmeldung"
+            });
+        }
+
+        if (!existingNotices.Any())
+        {
+            await noticeService.AddNoticeAsync(new PracticeNotice
+            {
+                Title = "TI-Wartung",
+                Content = "Heute zwischen 12:00 und 12:30 kann es zu Unterbrechungen kommen.",
+                Category = "Wichtig",
+                IsPinned = true
+            });
+
+            await noticeService.AddNoticeAsync(new PracticeNotice
+            {
+                Title = "Vertretung",
+                Content = "Dr. Meier übernimmt heute Zimmer 2.",
+                Category = "Info"
+            });
+        }
     }
 }

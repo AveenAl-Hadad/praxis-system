@@ -76,6 +76,8 @@ namespace Praxis.Client.Views
         private readonly IUserManagementService _userManagementService;        
         private readonly ILaborService _laborService;
         private readonly IAbrechnungService _abrechnungService;
+        private readonly IDashboardTaskService _dashboardTaskService;
+        private readonly IPracticeNoticeService _practiceNoticeService;
 
         private Patient? _selectedPatient;
 
@@ -101,7 +103,9 @@ namespace Praxis.Client.Views
                              IUserManagementService userManagementService,
                              IDocumentService documentService,
                              ILaborService laborService,
-                             IAbrechnungService abrechnungService)
+                             IAbrechnungService abrechnungService,
+                             IDashboardTaskService dashboardTaskService,
+                             IPracticeNoticeService practiceNoticeService)
         {
             InitializeComponent();
             
@@ -118,6 +122,8 @@ namespace Praxis.Client.Views
             Loaded += Window_Loaded;
             _laborService = laborService;
             _abrechnungService = abrechnungService;
+            _dashboardTaskService = dashboardTaskService;
+            _practiceNoticeService = practiceNoticeService;
 
 
             _laborPage = new LaborPage(_laborService);
@@ -633,6 +639,15 @@ namespace Praxis.Client.Views
         public async Task<IEnumerable<Appointment>> GetAppointmentsByDateAsync(DateTime date)
         {
             return await _appointmentService.GetAppointmentsByDateAsync(date);
+        }
+        public async Task<IEnumerable<DashboardTask>> GetOpenDashboardTasksAsync()
+        {
+            return await _dashboardTaskService.GetOpenTasksAsync();
+        }
+
+        public async Task<IEnumerable<PracticeNotice>> GetActivePracticeNoticesAsync()
+        {
+            return await _practiceNoticeService.GetActiveNoticesAsync();
         }
 
 

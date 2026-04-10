@@ -28,6 +28,12 @@ namespace Praxis.Client.Views.Pages
                 var todayAppointments = (await mainWindow.GetAppointmentsByDateAsync(DateTime.Today))
                     .OrderBy(a => a.StartTime)
                     .ToList();
+                var openTasks = (await mainWindow.GetOpenDashboardTasksAsync())
+                    .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
+                    .ToList();
+
+                var activeNotices = (await mainWindow.GetActivePracticeNoticesAsync())
+                    .ToList();
 
                 // Gesamtzahlen
                 TotalPatientsText.Text = stats.TotalPatients.ToString();
@@ -54,6 +60,20 @@ namespace Praxis.Client.Views.Pages
                     string.Equals(a.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase)).ToString();
 
                 TodayDateText.Text = $"Stand: {DateTime.Now:dd.MM.yyyy HH:mm}";
+                // Aufgaben-Kennzahlen
+                OpenTasksText.Text = openTasks.Count.ToString();
+
+                DueTodayTasksText.Text = openTasks.Count(t =>
+                    t.DueDate != null &&
+                    t.DueDate.Value.Date == DateTime.Today).ToString();
+
+                OverdueTasksText.Text = openTasks.Count(t =>
+                    t.DueDate != null &&
+                    t.DueDate.Value.Date < DateTime.Today).ToString();
+
+                // Hinweise-Kennzahlen
+                ActiveNoticesText.Text = activeNotices.Count.ToString();
+                PinnedNoticesText.Text = activeNotices.Count(n => n.IsPinned).ToString();
 
                 TodayAppointmentsGrid.ItemsSource = todayAppointments.Select(a => new DashboardAppointmentRow
                 {
@@ -62,6 +82,24 @@ namespace Praxis.Client.Views.Pages
                     Reason = string.IsNullOrWhiteSpace(a.Reason) ? "-" : a.Reason,
                     Status = string.IsNullOrWhiteSpace(a.Status) ? "Geplant" : a.Status,
                     DurationMinutes = a.DurationMinutes
+                }).ToList();
+
+                TasksGrid.ItemsSource = openTasks.Select(t => new DashboardTaskRow
+                {
+                    Title = string.IsNullOrWhiteSpace(t.Title) ? "-" : t.Title,
+                    PatientName = t.Patient?.FullName ?? "-",
+                    Priority = string.IsNullOrWhiteSpace(t.Priority) ? "Normal" : t.Priority,
+                    DueDate = t.DueDate?.ToString("dd.MM.yyyy") ?? "-",
+                    Status = string.IsNullOrWhiteSpace(t.Status) ? "Offen" : t.Status,
+                    AssignedTo = string.IsNullOrWhiteSpace(t.AssignedTo) ? "-" : t.AssignedTo
+                }).ToList();
+
+                NoticesGrid.ItemsSource = activeNotices.Select(n => new DashboardNoticeRow
+                {
+                    Title = string.IsNullOrWhiteSpace(n.Title) ? "-" : n.Title,
+                    Category = string.IsNullOrWhiteSpace(n.Category) ? "Info" : n.Category,
+                    Content = string.IsNullOrWhiteSpace(n.Content) ? "-" : n.Content,
+                    VisibleUntil = n.VisibleUntil?.ToString("dd.MM.yyyy") ?? "-"
                 }).ToList();
             }
             catch (Exception ex)
@@ -94,6 +132,23 @@ namespace Praxis.Client.Views.Pages
             public string Reason { get; set; } = string.Empty;
             public string Status { get; set; } = string.Empty;
             public int DurationMinutes { get; set; }
+        }
+        private sealed class DashboardTaskRow
+        {
+            public string Title { get; set; } = string.Empty;
+            public string PatientName { get; set; } = string.Empty;
+            public string Priority { get; set; } = string.Empty;
+            public string DueDate { get; set; } = string.Empty;
+            public string Status { get; set; } = string.Empty;
+            public string AssignedTo { get; set; } = string.Empty;
+        }
+
+        private sealed class DashboardNoticeRow
+        {
+            public string Title { get; set; } = string.Empty;
+            public string Category { get; set; } = string.Empty;
+            public string Content { get; set; } = string.Empty;
+            public string VisibleUntil { get; set; } = string.Empty;
         }
     }
 }
