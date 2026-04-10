@@ -269,9 +269,37 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="180"/>
                                 <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="180"/>
-                                <DataGridTextColumn Header="Priorität" Binding="{Binding Priority}" Width="100"/>
+                                <DataGridTemplateColumn Header="Priorität" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{Binding PriorityColor}"
+                                                    CornerRadius="10"
+                                                    Padding="8,3"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding Priority}"
+                                                           Foreground="White"
+                                                           FontWeight="SemiBold"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
                                 <DataGridTextColumn Header="Fällig" Binding="{Binding DueDate}" Width="120"/>
-                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110"/>
+
+                                <DataGridTemplateColumn Header="Status" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{Binding StatusColor}"
+                                                    CornerRadius="10"
+                                                    Padding="8,3"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding Status}"
+                                                           Foreground="White"
+                                                           FontWeight="SemiBold"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Zuständig" Binding="{Binding AssignedTo}" Width="140"/>
                             </DataGrid.Columns>
                         </DataGrid>
@@ -343,7 +371,20 @@
                                   MouseDoubleClick="NoticesGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="170"/>
-                                <DataGridTextColumn Header="Kategorie" Binding="{Binding Category}" Width="100"/>
+                                <DataGridTemplateColumn Header="Kategorie" Width="110">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{Binding CategoryColor}"
+                                                    CornerRadius="10"
+                                                    Padding="8,3"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding Category}"
+                                                           Foreground="White"
+                                                           FontWeight="SemiBold"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Hinweis" Binding="{Binding Content}" Width="280"/>
                                 <DataGridTextColumn Header="Bis" Binding="{Binding VisibleUntil}" Width="120"/>
                             </DataGrid.Columns>

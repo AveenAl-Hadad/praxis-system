@@ -86,24 +86,38 @@ namespace Praxis.Client.Views.Pages
                     DurationMinutes = a.DurationMinutes
                 }).ToList();
 
-                TasksGrid.ItemsSource = openTasks.Select(t => new DashboardTaskRow
+                TasksGrid.ItemsSource = openTasks.Select(t =>
                 {
-                    Id = t.Id,
-                    Title = string.IsNullOrWhiteSpace(t.Title) ? "-" : t.Title,
-                    PatientName = t.Patient?.FullName ?? "-",
-                    Priority = string.IsNullOrWhiteSpace(t.Priority) ? "Normal" : t.Priority,
-                    DueDate = t.DueDate?.ToString("dd.MM.yyyy") ?? "-",
-                    Status = string.IsNullOrWhiteSpace(t.Status) ? "Offen" : t.Status,
-                    AssignedTo = string.IsNullOrWhiteSpace(t.AssignedTo) ? "-" : t.AssignedTo
+                    var priority = string.IsNullOrWhiteSpace(t.Priority) ? "Normal" : t.Priority;
+                    var status = string.IsNullOrWhiteSpace(t.Status) ? "Offen" : t.Status;
+
+                    return new DashboardTaskRow
+                    {
+                        Id = t.Id,
+                        Title = string.IsNullOrWhiteSpace(t.Title) ? "-" : t.Title,
+                        PatientName = t.Patient?.FullName ?? "-",
+                        Priority = priority,
+                        DueDate = t.DueDate?.ToString("dd.MM.yyyy") ?? "-",
+                        Status = status,
+                        AssignedTo = string.IsNullOrWhiteSpace(t.AssignedTo) ? "-" : t.AssignedTo,
+                        PriorityColor = GetPriorityColor(priority),
+                        StatusColor = GetTaskStatusColor(status)
+                    };
                 }).ToList();
 
-                NoticesGrid.ItemsSource = activeNotices.Select(n => new DashboardNoticeRow
+                NoticesGrid.ItemsSource = activeNotices.Select(n =>
                 {
-                    Id = n.Id,
-                    Title = string.IsNullOrWhiteSpace(n.Title) ? "-" : n.Title,
-                    Category = string.IsNullOrWhiteSpace(n.Category) ? "Info" : n.Category,
-                    Content = string.IsNullOrWhiteSpace(n.Content) ? "-" : n.Content,
-                    VisibleUntil = n.VisibleUntil?.ToString("dd.MM.yyyy") ?? "-"
+                    var category = string.IsNullOrWhiteSpace(n.Category) ? "Info" : n.Category;
+
+                    return new DashboardNoticeRow
+                    {
+                        Id = n.Id,
+                        Title = string.IsNullOrWhiteSpace(n.Title) ? "-" : n.Title,
+                        Category = category,
+                        Content = string.IsNullOrWhiteSpace(n.Content) ? "-" : n.Content,
+                        VisibleUntil = n.VisibleUntil?.ToString("dd.MM.yyyy") ?? "-",
+                        CategoryColor = GetNoticeCategoryColor(category)
+                    };
                 }).ToList();
             }
             catch (Exception ex)
@@ -336,6 +350,39 @@ namespace Praxis.Client.Views.Pages
             }
         }
 
+        private static string GetPriorityColor(string? priority)
+        {
+            return (priority ?? string.Empty).Trim().ToLower() switch
+            {
+                "hoch" => "#DC2626",      // rot
+                "normal" => "#D97706",    // orange
+                "niedrig" => "#16A34A",   // grün
+                _ => "#6B7280"            // grau
+            };
+        }
+
+        private static string GetTaskStatusColor(string? status)
+        {
+            return (status ?? string.Empty).Trim().ToLower() switch
+            {
+                "offen" => "#2563EB",          // blau
+                "inbearbeitung" => "#D97706",  // orange
+                "erledigt" => "#6B7280",       // grau
+                _ => "#6B7280"
+            };
+        }
+
+        private static string GetNoticeCategoryColor(string? category)
+        {
+            return (category ?? string.Empty).Trim().ToLower() switch
+            {
+                "warnung" => "#DC2626",   // rot
+                "wichtig" => "#D97706",   // orange
+                "info" => "#2563EB",      // blau
+                _ => "#6B7280"
+            };
+        }
+
         private sealed class DashboardAppointmentRow
         {
             public string Time { get; set; } = string.Empty;
@@ -353,6 +400,10 @@ namespace Praxis.Client.Views.Pages
             public string DueDate { get; set; } = string.Empty;
             public string Status { get; set; } = string.Empty;
             public string AssignedTo { get; set; } = string.Empty;
+            public bool IsOverdue { get; set; }
+
+            public string PriorityColor { get; set; } = "#6B7280";
+            public string StatusColor { get; set; } = "#6B7280";
         }
 
         private sealed class DashboardNoticeRow
@@ -362,6 +413,8 @@ namespace Praxis.Client.Views.Pages
             public string Category { get; set; } = string.Empty;
             public string Content { get; set; } = string.Empty;
             public string VisibleUntil { get; set; } = string.Empty;
+
+            public string CategoryColor { get; set; } = "#6B7280";
         }
     }
 }
