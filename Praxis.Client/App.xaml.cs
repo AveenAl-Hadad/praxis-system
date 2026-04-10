@@ -115,24 +115,41 @@ public partial class App : System.Windows.Application
             }
         }
 
+        //try
+        //{
+        //    ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+        //    var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
+        //    var loginResult = loginWindow.ShowDialog();
+
+        //    if (loginResult == true)
+        //    {
+        //        var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+        //        MainWindow = mainWindow;
+        //        ShutdownMode = ShutdownMode.OnMainWindowClose;
+        //        mainWindow.Show();
+        //    }
+        //    else
+        //    {
+        //        Shutdown();
+        //    }
+        //}
+        //catch (Exception ex)
+        //{
+        //    MessageBox.Show(
+        //        $"Fehler beim Starten der Anwendung:\n{ex.Message}",
+        //        "Startfehler",
+        //        MessageBoxButton.OK,
+        //        MessageBoxImage.Error);
+        //    Shutdown();
+        //}
         try
         {
-            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            ShutdownMode = ShutdownMode.OnLastWindowClose;
 
             var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
-            var loginResult = loginWindow.ShowDialog();
-
-            if (loginResult == true)
-            {
-                var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-                MainWindow = mainWindow;
-                ShutdownMode = ShutdownMode.OnMainWindowClose;
-                mainWindow.Show();
-            }
-            else
-            {
-                Shutdown();
-            }
+            MainWindow = loginWindow;
+            loginWindow.Show();
         }
         catch (Exception ex)
         {

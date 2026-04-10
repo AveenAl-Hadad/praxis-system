@@ -45,6 +45,46 @@ public partial class LoginWindow : Window
     /// - bei Erfolg Benutzer in die Session speichern
     /// - Fenster schließen
     /// </summary>
+    //private async void Login_Click(object sender, RoutedEventArgs e)
+    //{
+    //    try
+    //    {
+    //        var password = ShowPasswordCheckBox.IsChecked == true
+    //            ? VisiblePasswordTextBox.Text
+    //            : PasswordBox.Password;
+
+    //        var user = await _authService.LoginAsync(
+    //            UsernameTextBox.Text,
+    //            password);
+
+    //        if (user == null)
+    //        {
+    //            MessageBox.Show(
+    //                "Benutzername oder Passwort ist ungültig.",
+    //                "Login",
+    //                MessageBoxButton.OK,
+    //                MessageBoxImage.Warning);
+    //            return;
+    //        }
+
+    //        UserSession.Login(user);
+
+    //        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+    //        System.Windows.Application.Current.MainWindow = mainWindow;
+    //        mainWindow.Show();
+
+    //      Close();
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        MessageBox.Show(
+    //            $"Login-Fehler:\n{ex.Message}",
+    //            "Fehler",
+    //            MessageBoxButton.OK,
+    //            MessageBoxImage.Error);
+    //    }
+    //}
+
     private async void Login_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -73,7 +113,7 @@ public partial class LoginWindow : Window
             System.Windows.Application.Current.MainWindow = mainWindow;
             mainWindow.Show();
 
-          Close();
+            Close();
         }
         catch (Exception ex)
         {
