@@ -48,12 +48,19 @@ namespace Praxis.Client.Views
 
         private readonly LaborPage _laborPage;
         private readonly AbrechnungPage _abrechnungPage;
+        private readonly WaitingRoomPage _waitingRoomPage;
+
         private readonly ReportsPage _reportsPage = new ReportsPage();
         private readonly MessagesPage _messagesPage = new MessagesPage();
-
         private readonly PatientSearchPage _patientSearchPage = new PatientSearchPage();
         private readonly PatientCreatePage _patientCreatePage = new PatientCreatePage();
         private readonly PatientEditPage _patientEditPage = new PatientEditPage();
+        private readonly UserManagementPage _userManagementPage = new UserManagementPage();
+        private readonly AddUserPage _addUserPage = new AddUserPage();
+        private readonly EditUserPage _editUserPage = new EditUserPage();
+        private readonly PatientDeletePage _patientDeletePage = new PatientDeletePage();
+        private readonly PatientDocumentsPage _patientDocumentsPage = new PatientDocumentsPage();
+        private readonly PatientAppointmentsPage _patientAppointmentsPage = new PatientAppointmentsPage();
 
         private readonly IPatientService _patientService;
         private readonly IAppointmentService _appointmentService;
@@ -64,19 +71,11 @@ namespace Praxis.Client.Views
         private readonly IAuditService _auditService;
         private readonly IThemeService _themeService;
         private readonly IDocumentService _documentService;
-        private readonly IUserManagementService _userManagementService;
-        
+        private readonly IUserManagementService _userManagementService;        
         private readonly ILaborService _laborService;
         private readonly IAbrechnungService _abrechnungService;
 
         private Patient? _selectedPatient;
-
-        private readonly UserManagementPage _userManagementPage = new UserManagementPage();
-        private readonly AddUserPage _addUserPage = new AddUserPage();
-        private readonly EditUserPage _editUserPage = new EditUserPage();
-        private readonly PatientDeletePage _patientDeletePage = new PatientDeletePage();
-        private readonly PatientDocumentsPage _patientDocumentsPage = new PatientDocumentsPage();
-        private readonly PatientAppointmentsPage _patientAppointmentsPage = new PatientAppointmentsPage();
 
         private DispatcherTimer _sessionTimer;
         private DispatcherTimer _warningTimer;
@@ -121,6 +120,7 @@ namespace Praxis.Client.Views
 
             _laborPage = new LaborPage(_laborService);
             _abrechnungPage = new AbrechnungPage(_abrechnungService);
+            _waitingRoomPage = new WaitingRoomPage(_appointmentService);
 
             StartSessionTimer();
 
@@ -286,6 +286,7 @@ namespace Praxis.Client.Views
                     AddSidebarButton("Löschen", async (s, e) => await OpenPatientDeletePageAsync());
                     AddSidebarButton("Dokumente", async (s, e) => await OpenSelectedPatientDocumentsPageAsync());
                     AddSidebarButton("Termine", async (s, e) => await OpenSelectedPatientAppointmentsPageAsync());
+                    AddSidebarButton("Wartezimmer", async (s, e) => {LoadPage(_waitingRoomPage); await _waitingRoomPage.RefreshAsync();});
                     break;
 
                 case BottomModule.Labor:
@@ -824,6 +825,7 @@ namespace Praxis.Client.Views
         }
 
         #endregion
+
 
     }
 }

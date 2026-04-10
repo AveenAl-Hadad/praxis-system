@@ -99,7 +99,7 @@
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
                         <DataGridTextColumn Header="Beginn" Binding="{Binding StartTime, StringFormat=dd.MM.yyyy HH:mm}" Width="170"/>
                         <DataGridTextColumn Header="Ende" Binding="{Binding EndTime, StringFormat=dd.MM.yyyy HH:mm}" Width="170"/>
-                        <DataGridTextColumn Header="Beschreibung" Binding="{Binding Description}" Width="260"/>
+                        <DataGridTextColumn Header="Grund" Binding="{Binding Reason}" Width="260"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

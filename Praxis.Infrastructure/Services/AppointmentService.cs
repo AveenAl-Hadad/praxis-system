@@ -108,8 +108,8 @@ public class AppointmentService : IAppointmentService
         return await _context.Appointments
             .Include(a => a.Patient)
             .Where(a => a.StartTime >= startOfDay && a.StartTime < endOfDay)
-            .Where(a => a.Status != "Abgesagt" && a.Status != "Erledigt")
-            .OrderBy(a => a.StartTime)
+            .Where(a => a.TreatmentState != "Abgesagt" && a.TreatmentState != "Erledigt")
+            .OrderBy(a => a.CheckedInAt ?? a.StartTime)
             .ToListAsync();
     }
     /// <summary>
@@ -131,6 +131,11 @@ public class AppointmentService : IAppointmentService
         existing.DurationMinutes = appointment.DurationMinutes;
         existing.Reason = appointment.Reason;
         existing.Status = appointment.Status;
+        existing.RoomName = appointment.RoomName;
+        existing.QueueNumber = appointment.QueueNumber;
+        existing.CheckedInAt = appointment.CheckedInAt;
+        existing.InternalNote = appointment.InternalNote;
+        existing.TreatmentState = appointment.TreatmentState;
 
         await _context.SaveChangesAsync();
     }
@@ -301,6 +306,72 @@ public class AppointmentService : IAppointmentService
             endTime > a.StartTime);
 
         return !conflict;
+    }
+    public async Task CheckInAsync(int appointmentId, string? note = null)
+    {
+        var appointment = await _context.Appointments
+            .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+        if (appointment == null)
+            throw new InvalidOperationException("Termin wurde nicht gefunden.");
+
+        appointment.CheckedInAt = DateTime.Now;
+        appointment.TreatmentState = "ImWartezimmer";
+        appointment.Status = "Angemeldet";
+
+        if (!string.IsNullOrWhiteSpace(note))
+            appointment.InternalNote = note.Trim();
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task MoveToRoomAsync(int appointmentId, string roomName)
+    {
+        if (string.IsNullOrWhiteSpace(roomName))
+            throw new ArgumentException("Raumname darf nicht leer sein.");
+
+        var appointment = await _context.Appointments
+            .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+        if (appointment == null)
+            throw new InvalidOperationException("Termin wurde nicht gefunden.");
+
+        appointment.RoomName = roomName.Trim();
+        appointment.TreatmentState = "ImBehandlungsraum";
+        appointment.Status = "In Behandlung";
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task CompleteAppointmentAsync(int appointmentId)
+    {
+        var appointment = await _context.Appointments
+            .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+        if (appointment == null)
+            throw new InvalidOperationException("Termin wurde nicht gefunden.");
+
+        appointment.TreatmentState = "Erledigt";
+        appointment.Status = "Erledigt";
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task CancelAppointmentAsync(int appointmentId, string? note = null)
+    {
+        var appointment = await _context.Appointments
+            .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+        if (appointment == null)
+            throw new InvalidOperationException("Termin wurde nicht gefunden.");
+
+        appointment.TreatmentState = "Abgesagt";
+        appointment.Status = "Abgesagt";
+
+        if (!string.IsNullOrWhiteSpace(note))
+            appointment.InternalNote = note.Trim();
+
+        await _context.SaveChangesAsync();
     }
 
 }
