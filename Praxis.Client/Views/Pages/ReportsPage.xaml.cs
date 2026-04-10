@@ -18,7 +18,7 @@ namespace Praxis.Client.Views.Pages
     /// <summary>
     /// Interaction logic for ReportsPage.xaml
     /// </summary>
-    public partial class ReportsPage : UserControl
+    public partial class ReportsPage : System.Windows.Controls.UserControl
     {
         public ReportsPage()
         {

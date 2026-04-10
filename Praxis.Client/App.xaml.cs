@@ -6,6 +6,7 @@ using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Praxis.Application.Services;
 using Praxis.Client.Logic.UI;
 using Praxis.Client.Views;
 using Praxis.Domain.Constants;
@@ -14,7 +15,7 @@ using Praxis.Infrastructure;
 using Praxis.Infrastructure.Persistence;
 using Praxis.Infrastructure.Services;
 using Praxis.Infrastructure.Services.Interface;
-
+using MessageBox = System.Windows.MessageBox;
 namespace Praxis.Client;
 
 public partial class App : System.Windows.Application
@@ -60,22 +61,25 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IAuditService, AuditService>();
                 services.AddTransient<IBackupService, BackupService>();
                 services.AddSingleton<IThemeService, ThemeService>();
+                services.AddTransient<ILaborService, LaborService>();
+                services.AddTransient<IAbrechnungService, AbrechnungService>();
+
 
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
-                services.AddTransient<WaitingRoomWindow>();
-                services.AddTransient<AddAppointmentWindow>();
-                services.AddTransient<AppointmentWindow>();
-                services.AddTransient<AppointmentCalendarWindow>();
-                services.AddTransient<AddPatientWindow>();
-                services.AddTransient<UserManagementWindow>();
-                services.AddTransient<InvoiceWindow>();
-                services.AddTransient<AddInvoiceWindow>();
+               // services.AddTransient<WaitingRoomWindow>();
+              //  services.AddTransient<AddAppointmentWindow>();
+                //services.AddTransient<AppointmentWindow>();
+                //services.AddTransient<AppointmentCalendarWindow>();
+                //services.AddTransient<AddPatientWindow>();
+                //services.AddTransient<UserManagementWindow>();
+                //services.AddTransient<InvoiceWindow>();
+                //services.AddTransient<AddInvoiceWindow>();
                 services.AddTransient<ChangePasswordWindow>();
-                services.AddTransient<PrescriptionWindow>();
-                services.AddTransient<AddPrescriptionWindow>();
-                services.AddTransient<DocumentWindow>();
+                //services.AddTransient<PrescriptionWindow>();
+                //services.AddTransient<AddPrescriptionWindow>();
+               // services.AddTransient<DocumentWindow>();
                 services.AddTransient<AuditLogWindow>();
                 services.AddTransient<OnlineBookingWindow>();
             })

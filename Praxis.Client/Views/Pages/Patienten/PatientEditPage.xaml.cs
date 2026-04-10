@@ -8,7 +8,7 @@ using Praxis.Domain.Entities;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
-    public partial class PatientEditPage : UserControl
+    public partial class PatientEditPage : System.Windows.Controls.UserControl
     {
         private List<Patient> _allPatients = new();
         private Patient? _currentPatient;
@@ -33,7 +33,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         {
             try
             {
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 var patients = await mainWindow.GetPatientsAsync();
@@ -48,7 +48,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Fehler beim Laden der Patienten:\n{ex.Message}",
                     "Fehler",
                     MessageBoxButton.OK,
@@ -95,7 +95,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             SetComboBoxByContent(GeschlechtComboBox, patient.Geschlecht);
         }
 
-        private void SetComboBoxByContent(ComboBox comboBox, string value)
+        private void SetComboBoxByContent(System.Windows.Controls.ComboBox comboBox, string value)
         {
             foreach (var item in comboBox.Items)
             {
@@ -116,11 +116,11 @@ namespace Praxis.Client.Views.Pages.Patienten
             {
                 if (_currentPatient == null)
                 {
-                    MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+                    System.Windows.MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
                     return;
                 }
 
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 var vorname = VornameTextBox.Text?.Trim();
@@ -129,21 +129,21 @@ namespace Praxis.Client.Views.Pages.Patienten
 
                 if (string.IsNullOrWhiteSpace(vorname))
                 {
-                    MessageBox.Show("Bitte Vorname eingeben.");
+                    System.Windows.MessageBox.Show("Bitte Vorname eingeben.");
                     VornameTextBox.Focus();
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(nachname))
                 {
-                    MessageBox.Show("Bitte Nachname eingeben.");
+                    System.Windows.MessageBox.Show("Bitte Nachname eingeben.");
                     NachnameTextBox.Focus();
                     return;
                 }
 
                 if (geburtsdatum == null)
                 {
-                    MessageBox.Show("Bitte Geburtsdatum auswählen.");
+                    System.Windows.MessageBox.Show("Bitte Geburtsdatum auswählen.");
                     return;
                 }
 
@@ -168,14 +168,14 @@ namespace Praxis.Client.Views.Pages.Patienten
                 await mainWindow.UpdatePatientAysnc(updatedPatient);
                 await mainWindow.OpenPatientSearchPageAsync();
 
-                MessageBox.Show("Patient wurde erfolgreich aktualisiert.",
+                System.Windows.MessageBox.Show("Patient wurde erfolgreich aktualisiert.",
                     "Erfolg",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message,
+                System.Windows.MessageBox.Show(ex.Message,
                     "Fehler",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -192,7 +192,7 @@ namespace Praxis.Client.Views.Pages.Patienten
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Application.Current.MainWindow is MainWindow mainWindow)
+            if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
             {
                 await mainWindow.OpenPatientSearchPageAsync();
             }

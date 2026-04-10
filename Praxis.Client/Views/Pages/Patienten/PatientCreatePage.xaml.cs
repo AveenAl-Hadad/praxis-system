@@ -2,10 +2,10 @@
 using System.Windows;
 using System.Windows.Controls;
 using Praxis.Domain.Entities;
-
+using MessageBox = System.Windows.MessageBox;
 namespace Praxis.Client.Views.Pages.Patienten
 {
-    public partial class PatientCreatePage : UserControl
+    public partial class PatientCreatePage : System.Windows.Controls.UserControl
     {
         public PatientCreatePage()
         {
@@ -32,7 +32,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         {
             try
             {
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 var vorname = VornameTextBox.Text?.Trim();
@@ -146,7 +146,7 @@ namespace Praxis.Client.Views.Pages.Patienten
 
         private async void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Application.Current.MainWindow is MainWindow mainWindow)
+            if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
             {
                 await mainWindow.OpenPatientSearchPageAsync();
             }

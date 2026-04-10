@@ -8,7 +8,7 @@ using Praxis.Domain.Entities;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
-    public partial class PatientDeletePage : UserControl
+    public partial class PatientDeletePage : System.Windows.Controls.UserControl
     {
         private List<Patient> _allPatients = new();
         private Patient? _currentPatient;
@@ -33,7 +33,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         {
             try
             {
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 var patients = await mainWindow.GetPatientsAsync();
@@ -51,7 +51,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Fehler beim Laden der Patienten:\n{ex.Message}",
                     "Fehler",
                     MessageBoxButton.OK,
@@ -97,14 +97,14 @@ namespace Praxis.Client.Views.Pages.Patienten
             {
                 if (_currentPatient == null)
                 {
-                    MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+                    System.Windows.MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
                     return;
                 }
 
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
-                var result = MessageBox.Show(
+                var result = System.Windows.MessageBox.Show(
                     $"Patient '{_currentPatient.FullName}' wirklich löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden.",
                     "Sicherheitsabfrage",
                     MessageBoxButton.YesNo,
@@ -116,14 +116,14 @@ namespace Praxis.Client.Views.Pages.Patienten
                 await mainWindow.DeletePatientByIdAsync(_currentPatient.Id);
                 await mainWindow.OpenPatientSearchPageAsync();
 
-                MessageBox.Show("Patient wurde gelöscht.",
+                System.Windows.MessageBox.Show("Patient wurde gelöscht.",
                     "Erfolg",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message,
+                System.Windows.MessageBox.Show(ex.Message,
                     "Fehler",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -132,7 +132,7 @@ namespace Praxis.Client.Views.Pages.Patienten
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Application.Current.MainWindow is MainWindow mainWindow)
+            if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
             {
                 await mainWindow.OpenPatientSearchPageAsync();
             }

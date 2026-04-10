@@ -18,7 +18,7 @@ namespace Praxis.Client.Views.Pages
     /// <summary>
     /// Interaction logic for MessagesPage.xaml
     /// </summary>
-    public partial class MessagesPage : UserControl
+    public partial class MessagesPage : System.Windows.Controls.UserControl
     {
         public MessagesPage()
         {

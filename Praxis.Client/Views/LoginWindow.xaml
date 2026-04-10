@@ -101,17 +101,22 @@
                                VerticalAlignment="Center"
                                Margin="0,0,12,12"/>
                     <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,12">
-                        <PasswordBox x:Name="PasswordBox" Height="32"/>
+                        <PasswordBox x:Name="PasswordBox" 
+                                     Height="32"
+                                     PasswordChanged="PasswordBox_PasswordChanged"/>
                         <TextBox x:Name="VisiblePasswordTextBox"
                                  Height="32"
-                                 Visibility="Collapsed"/>
+                                 Visibility="Collapsed"
+                                 TextChanged="VisiblePasswordTextBox_TextChanged"/>
                     </Grid>
 
                     <CheckBox x:Name="ShowPasswordCheckBox"
                               Grid.Row="2"
                               Grid.Column="1"
                               Content="Passwort anzeigen"
-                              Margin="0,0,0,12"/>
+                              Margin="0,0,0,12"
+                              Checked="ShowPasswordCheckBox_Checked"
+                              Unchecked="ShowPasswordCheckBox_Checked"/>
 
                     <TextBlock x:Name="ErrorTextBlock"
                                Grid.Row="3"

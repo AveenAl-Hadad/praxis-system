@@ -15,6 +15,8 @@ public class PraxisDbContext : DbContext
     public DbSet<Prescription> Prescriptions => Set<Prescription>();
     public DbSet<PatientDocument> PatientDocuments => Set<PatientDocument>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Abrechnungsbeleg> Abrechnungsbelegs => Set<Abrechnungsbeleg>();
+    public DbSet<LaborRecord> LaborRecords => Set<LaborRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

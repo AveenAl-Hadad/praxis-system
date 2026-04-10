@@ -1,7 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using Praxis.Client.Session;
 using Praxis.Infrastructure.Services;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Praxis.Client.Views;
 
@@ -21,14 +23,17 @@ public partial class LoginWindow : Window
     /// </summary>
     private readonly IAuthService _authService;
 
+    private readonly IServiceProvider _serviceProvider;
+
     /// <summary>
     /// Konstruktor des Fensters.
     /// Initialisiert die Benutzeroberfläche und den AuthService.
     /// </summary>
-    public LoginWindow(IAuthService authService)
+    public LoginWindow(IAuthService authService, IServiceProvider serviceProvider)
     {
         InitializeComponent();
         _authService = authService;
+        _serviceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -44,29 +49,31 @@ public partial class LoginWindow : Window
     {
         try
         {
-            // Passwort je nach Anzeige-Modus holen
             var password = ShowPasswordCheckBox.IsChecked == true
-                            ? VisiblePasswordTextBox.Text
-                            : PasswordBox.Password;
+                ? VisiblePasswordTextBox.Text
+                : PasswordBox.Password;
 
-            // Login durchführen
             var user = await _authService.LoginAsync(
-                            UsernameTextBox.Text,
-                            PasswordBox.Password);
+                UsernameTextBox.Text,
+                password);
 
-            // Falls Login fehlschlägt
             if (user == null)
             {
-                MessageBox.Show("Benutzername oder Passwort ist ungültig.");
+                MessageBox.Show(
+                    "Benutzername oder Passwort ist ungültig.",
+                    "Login",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
                 return;
             }
 
-            // Benutzer in Session speichern
             UserSession.Login(user);
 
-            // Fenster erfolgreich schließen
-            DialogResult = true;
-            Close();
+            var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+            System.Windows.Application.Current.MainWindow = mainWindow;
+            mainWindow.Show();
+
+          Close();
         }
         catch (Exception ex)
         {
@@ -77,7 +84,6 @@ public partial class LoginWindow : Window
                 MessageBoxImage.Error);
         }
     }
-
     /// <summary>
     /// Wird ausgelöst, wenn die Checkbox "Passwort anzeigen" geändert wird.
     /// 

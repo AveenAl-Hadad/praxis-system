@@ -7,7 +7,7 @@ using Praxis.Domain.Entities;
 
 namespace Praxis.Client.Views.Pages.UserManagement
 {
-    public partial class EditUserPage : UserControl
+    public partial class EditUserPage : System.Windows.Controls.UserControl
     {
         private User? _currentUser;
 
@@ -43,17 +43,17 @@ namespace Praxis.Client.Views.Pages.UserManagement
             {
                 if (_currentUser == null)
                 {
-                    MessageBox.Show("Kein Benutzer geladen.");
+                    System.Windows.MessageBox.Show("Kein Benutzer geladen.");
                     return;
                 }
 
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 var selectedRole = RoleComboBox.SelectedItem?.ToString();
                 if (string.IsNullOrWhiteSpace(selectedRole))
                 {
-                    MessageBox.Show("Bitte eine Rolle auswählen.");
+                    System.Windows.MessageBox.Show("Bitte eine Rolle auswählen.");
                     return;
                 }
 
@@ -72,7 +72,7 @@ namespace Praxis.Client.Views.Pages.UserManagement
                 {
                     if (newPassword != confirmPassword)
                     {
-                        MessageBox.Show("Die Passwörter stimmen nicht überein.");
+                        System.Windows.MessageBox.Show("Die Passwörter stimmen nicht überein.");
                         return;
                     }
 
@@ -81,19 +81,19 @@ namespace Praxis.Client.Views.Pages.UserManagement
 
                 await mainWindow.OpenUserManagementPageAsync();
 
-                MessageBox.Show("Benutzer wurde aktualisiert.",
+                System.Windows.MessageBox.Show("Benutzer wurde aktualisiert.",
                     "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message,
+                System.Windows.MessageBox.Show(ex.Message,
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Application.Current.MainWindow is MainWindow mainWindow)
+            if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
             {
                 await mainWindow.OpenUserManagementPageAsync();
             }
@@ -105,21 +105,21 @@ namespace Praxis.Client.Views.Pages.UserManagement
             {
                 if (_currentUser == null)
                 {
-                    MessageBox.Show("Kein Benutzer geladen.");
+                    System.Windows.MessageBox.Show("Kein Benutzer geladen.");
                     return;
                 }
 
                 if (_currentUser.Username == UserSession.CurrentUser?.Username)
                 {
-                    MessageBox.Show("Du kannst dich nicht selbst löschen.",
+                    System.Windows.MessageBox.Show("Du kannst dich nicht selbst löschen.",
                         "Sicherheit", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
-                var result = MessageBox.Show(
+                var result = System.Windows.MessageBox.Show(
                     $"Benutzer '{_currentUser.Username}' wirklich löschen?",
                     "Bestätigung",
                     MessageBoxButton.YesNo,
@@ -131,12 +131,12 @@ namespace Praxis.Client.Views.Pages.UserManagement
                 await mainWindow.DeleteUserAsync(_currentUser.Id);
                 await mainWindow.OpenUserManagementPageAsync();
 
-                MessageBox.Show("Benutzer wurde gelöscht.",
+                System.Windows.MessageBox.Show("Benutzer wurde gelöscht.",
                     "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message,
+                System.Windows.MessageBox.Show(ex.Message,
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

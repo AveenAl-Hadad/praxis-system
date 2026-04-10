@@ -30,7 +30,7 @@ public class ThemeService : IThemeService
 
     private void ReplaceTheme(ResourceDictionary newTheme)
     {
-        var appResources = Application.Current.Resources;
+        var appResources = System.Windows.Application.Current.Resources;
 
         // Entferne alte Theme
         var existingTheme = appResources.MergedDictionaries

@@ -5,7 +5,7 @@ using Praxis.Domain.Constants;
 
 namespace Praxis.Client.Views.Pages.UserManagement
 {
-    public partial class AddUserPage : UserControl
+    public partial class AddUserPage : System.Windows.Controls.UserControl
     {
         public AddUserPage()
         {
@@ -26,7 +26,7 @@ namespace Praxis.Client.Views.Pages.UserManagement
         {
             try
             {
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 var username = UsernameTextBox.Text?.Trim();
@@ -36,13 +36,13 @@ namespace Praxis.Client.Views.Pages.UserManagement
 
                 if (string.IsNullOrWhiteSpace(username))
                 {
-                    MessageBox.Show("Bitte Benutzername eingeben.");
+                    System.Windows.MessageBox.Show("Bitte Benutzername eingeben.");
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(password))
                 {
-                    MessageBox.Show("Bitte Passwort eingeben.");
+                    System.Windows.MessageBox.Show("Bitte Passwort eingeben.");
                     return;
                 }
 
@@ -55,12 +55,12 @@ namespace Praxis.Client.Views.Pages.UserManagement
 
                 await mainWindow.OpenUserManagementPageAsync();
 
-                MessageBox.Show("Benutzer wurde erfolgreich erstellt.",
+                System.Windows.MessageBox.Show("Benutzer wurde erfolgreich erstellt.",
                     "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message,
+                System.Windows.MessageBox.Show(ex.Message,
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -75,7 +75,7 @@ namespace Praxis.Client.Views.Pages.UserManagement
 
         private async void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Application.Current.MainWindow is MainWindow mainWindow)
+            if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
             {
                 await mainWindow.OpenUserManagementPageAsync();
             }

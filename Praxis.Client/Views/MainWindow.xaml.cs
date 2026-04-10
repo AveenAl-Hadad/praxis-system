@@ -16,6 +16,12 @@ using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 using Praxis.Infrastructure.Services.Interface;
+using Praxis.Client.Views.Pages.Abrechnung;
+using Praxis.Application.Services;
+
+using MessageBox = System.Windows.MessageBox;
+using Button = System.Windows.Controls.Button;
+using System.Windows.Threading;
 
 
 namespace Praxis.Client.Views
@@ -40,8 +46,8 @@ namespace Praxis.Client.Views
         private Button _activeSidebarButton;
         private Button _activeBottomButton;
 
-        private readonly LaborPage _laborPage = new LaborPage();
-        private readonly BillingPage _billingPage = new BillingPage();
+        private readonly LaborPage _laborPage;
+        private readonly AbrechnungPage _abrechnungPage;
         private readonly ReportsPage _reportsPage = new ReportsPage();
         private readonly MessagesPage _messagesPage = new MessagesPage();
 
@@ -59,9 +65,11 @@ namespace Praxis.Client.Views
         private readonly IThemeService _themeService;
         private readonly IDocumentService _documentService;
         private readonly IUserManagementService _userManagementService;
-        private readonly IEmailService _emailService;
+        
+        private readonly ILaborService _laborService;
+        private readonly IAbrechnungService _abrechnungService;
 
-      private Patient? _selectedPatient;
+        private Patient? _selectedPatient;
 
         private readonly UserManagementPage _userManagementPage = new UserManagementPage();
         private readonly AddUserPage _addUserPage = new AddUserPage();
@@ -69,6 +77,14 @@ namespace Praxis.Client.Views
         private readonly PatientDeletePage _patientDeletePage = new PatientDeletePage();
         private readonly PatientDocumentsPage _patientDocumentsPage = new PatientDocumentsPage();
         private readonly PatientAppointmentsPage _patientAppointmentsPage = new PatientAppointmentsPage();
+
+        private DispatcherTimer _sessionTimer;
+        private DispatcherTimer _warningTimer;
+
+        //private readonly TimeSpan _timeout = TimeSpan.FromMinutes(2);
+        //private readonly TimeSpan _warningTime = TimeSpan.FromMinutes(1);
+        private readonly TimeSpan _timeout = TimeSpan.FromSeconds(30);
+        private readonly TimeSpan _warningTime = TimeSpan.FromSeconds(20);
 
         #endregion
         #region Konstrakture
@@ -82,9 +98,12 @@ namespace Praxis.Client.Views
                              IAuditService auditService,
                              IThemeService themeService,
                              IUserManagementService userManagementService,
-                             IDocumentService documentService)
+                             IDocumentService documentService,
+                             ILaborService laborService,
+                             IAbrechnungService abrechnungService)
         {
             InitializeComponent();
+            
             _patientService = patientService;
             _appointmentService = appointmentService;
             _authService = authService;
@@ -96,6 +115,14 @@ namespace Praxis.Client.Views
             _documentService = documentService;
             _userManagementService = userManagementService;
             Loaded += Window_Loaded;
+            _laborService = laborService;
+            _abrechnungService = abrechnungService;
+
+
+            _laborPage = new LaborPage(_laborService);
+            _abrechnungPage = new AbrechnungPage(_abrechnungService);
+
+            StartSessionTimer();
 
         }
         #endregion
@@ -117,7 +144,7 @@ namespace Praxis.Client.Views
             }
         }
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
@@ -126,7 +153,7 @@ namespace Praxis.Client.Views
         }
 
         #region Seiten laden
-        private void LoadPage(UserControl page)
+        private void LoadPage(System.Windows.Controls.UserControl page)
         {
             if (MainContentControl != null)
                 MainContentControl.Content = page;
@@ -143,11 +170,11 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Labor:
-                    MainContentControl.Content = _laborPage;
+                    LoadPage(_laborPage);
                     break;
 
                 case BottomModule.Abrechnung:
-                    LoadPage(_billingPage);
+                    LoadPage(_abrechnungPage);
                     break;
 
                 case BottomModule.Auswertungen:
@@ -191,7 +218,7 @@ namespace Praxis.Client.Views
                 FontSize = 24,
                 FontWeight = FontWeights.SemiBold,
                 VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center
             };
 
             grid.Children.Add(text);
@@ -234,7 +261,7 @@ namespace Praxis.Client.Views
 
             return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
         }
-
+        
         #endregion
 
         #region Sidebar
@@ -262,15 +289,15 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Labor:
-                    AddSidebarButton("Labordaten importieren", (s, e) => MainContentControl.Content = _laborPage, true);
-                    AddSidebarButton("Laborbücher zuordnen", (s, e) => MainContentControl.Content = _laborPage);
-                    AddSidebarButton("Zugeordnete Laborberichte", (s, e) => MainContentControl.Content = _laborPage);
-                    AddSidebarButton("Labortagesliste", (s, e) => MainContentControl.Content = _laborPage);
-                    AddSidebarButton("Labore", (s, e) => MainContentControl.Content = _laborPage);
+                    AddSidebarButton("Labordaten importieren", (s, e) => LoadPage(_laborPage), true);
+                    AddSidebarButton("Laborbücher zuordnen", (s, e) => MessageBox.Show("Bereich 'Laborbücher zuordnen' folgt als Nächstes."));
+                    AddSidebarButton("Zugeordnete Laborberichte", (s, e) => MessageBox.Show("Bereich 'Zugeordnete Laborberichte' folgt als Nächstes."));
+                    AddSidebarButton("Labortagesliste", (s, e) => MessageBox.Show("Bereich 'Labortagesliste' folgt als Nächstes."));
+                    AddSidebarButton("Labore", (s, e) => MessageBox.Show("Bereich 'Labore' folgt als Nächstes."));
                     break;
 
                 case BottomModule.Abrechnung:
-                    AddSidebarButton("Neue KV-Abrechnung", (s, e) => LoadPage(_billingPage), true);
+                    AddSidebarButton("Neue KV-Abrechnung", (s, e) => LoadPage(_abrechnungPage), true);
                     AddSidebarButton("KV-Abrechnungen", DummySidebarClick);
                     AddSidebarButton("Neue Privatabrechnung", DummySidebarClick);
                     AddSidebarButton("Rechnungen", OpenInvoices_Click);
@@ -368,6 +395,7 @@ namespace Praxis.Client.Views
                 MessageBoxImage.Information);
         }
 
+
         #endregion
 
         #region Bottom Navigation
@@ -464,7 +492,7 @@ namespace Praxis.Client.Views
                         break;
 
                     case BottomModule.Abrechnung:
-                        LoadPage(_billingPage);
+                        LoadPage(_abrechnungPage);
                         break;
 
                     case BottomModule.Auswertungen:
@@ -674,6 +702,129 @@ namespace Praxis.Client.Views
             LoadPage(_editUserPage);
         }
         #endregion
+
+        #region Automatisch Abmeldung
+        private void StartSessionTimer()
+        {
+            // Haupttimer (Logout)
+            _sessionTimer = new DispatcherTimer();
+            _sessionTimer.Interval = _timeout;
+            _sessionTimer.Tick += SessionTimer_Tick;
+
+            // Warn-Timer
+            _warningTimer = new DispatcherTimer();
+            _warningTimer.Interval = _warningTime;
+            _warningTimer.Tick += WarningTimer_Tick;
+
+            _sessionTimer.Start();
+            _warningTimer.Start();
+
+            // Aktivität überwachen
+            this.MouseMove += ResetSessionTimer;
+            this.KeyDown += ResetSessionTimer;
+        }
+        //Timer reset bei Aktivität
+        private void ResetSessionTimer(object sender, EventArgs e)
+        {
+            if (_sessionTimer == null || _warningTimer == null)
+                return;
+
+            _sessionTimer.Stop();
+            _warningTimer.Stop();
+
+            _sessionTimer.Start();
+            _warningTimer.Start();
+        }
+        private void WarningTimer_Tick(object? sender, EventArgs e)
+        {
+            if (!UserSession.IsLoggedIn)
+                return;
+
+            _warningTimer.Stop();
+
+            var result = MessageBox.Show(
+                "Ihre Sitzung läuft in 1 Minute ab.\nMöchten Sie weiterarbeiten?",
+                "Session läuft ab",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                ResetSessionTimer(this, EventArgs.Empty);
+            }
+            else
+            {
+                LogoutAuto();
+            }
+        }
+        //Auto Logout
+        private void SessionTimer_Tick(object? sender, EventArgs e)
+        {
+            // WICHTIG: nur ausführen wenn eingeloggt
+            if (!UserSession.IsLoggedIn)
+                return;
+
+            _sessionTimer.Stop();
+            _warningTimer?.Stop();
+
+            LogoutAuto(true);
+        }
+
+        // Logout Mthode ohne Dialog
+        private void LogoutAuto(bool showMessage = false)
+        {
+            _sessionTimer?.Stop();
+            _warningTimer?.Stop();
+
+            this.MouseMove -= ResetSessionTimer;
+            this.KeyDown -= ResetSessionTimer;
+
+            UserSession.Logout();
+
+            var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
+            System.Windows.Application.Current.MainWindow = loginWindow;
+            loginWindow.Show();
+
+            if (showMessage)
+            {
+                MessageBox.Show(
+                    loginWindow,
+                    "Sie wurden aufgrund von Inaktivität automatisch abgemeldet.",
+                    "Session Timeout",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+
+            this.Close();
+        }
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Möchten Sie sich wirklich abmelden?",
+                "Abmelden",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            _sessionTimer?.Stop();
+            _warningTimer?.Stop();
+
+            this.MouseMove -= ResetSessionTimer;
+            this.KeyDown -= ResetSessionTimer;
+
+            UserSession.Logout();
+
+            var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
+            System.Windows.Application.Current.MainWindow = loginWindow;
+            loginWindow.Show();
+
+            this.Close();
+        }
+
+        #endregion
+
     }
 }
 

@@ -11,7 +11,7 @@ using Praxis.Domain.Entities;
 
 namespace Praxis.Client.Views.Pages.UserManagement
 {
-    public partial class UserManagementPage : UserControl
+    public partial class UserManagementPage : System.Windows.Controls.UserControl
     {
         private List<User> _allUsers = new();
 
@@ -35,7 +35,7 @@ namespace Praxis.Client.Views.Pages.UserManagement
         {
             try
             {
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 var users = await mainWindow.GetUsersAsync();
@@ -44,7 +44,7 @@ namespace Praxis.Client.Views.Pages.UserManagement
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Fehler beim Laden der Benutzer:\n{ex.Message}",
                     "Fehler",
                     MessageBoxButton.OK,
@@ -79,7 +79,7 @@ namespace Praxis.Client.Views.Pages.UserManagement
 
         private async void NewUserButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Application.Current.MainWindow is  MainWindow mainWindow)
+            if ( System.Windows.Application.Current.MainWindow is  MainWindow mainWindow)
             {
                 mainWindow.OpenAddUserPage();
             }
@@ -92,11 +92,11 @@ namespace Praxis.Client.Views.Pages.UserManagement
 
             if (selectedUser == null)
             {
-                MessageBox.Show("Bitte zuerst einen Benutzer auswählen.");
+                System.Windows.MessageBox.Show("Bitte zuerst einen Benutzer auswählen.");
                 return;
             }
 
-            if (Application.Current.MainWindow is MainWindow mainWindow)
+            if ( System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
             {
                 mainWindow.OpenEditUserPage(selectedUser);
             }
@@ -109,11 +109,11 @@ namespace Praxis.Client.Views.Pages.UserManagement
                 var selectedUser = GetSelectedUser();
                 if (selectedUser == null)
                 {
-                    MessageBox.Show("Bitte zuerst einen Benutzer auswählen.");
+                    System.Windows.MessageBox.Show("Bitte zuerst einen Benutzer auswählen.");
                     return;
                 }
 
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 var newPassword = Interaction.InputBox(
@@ -126,12 +126,12 @@ namespace Praxis.Client.Views.Pages.UserManagement
 
                 await mainWindow.ResetUserPasswordAsync(selectedUser.Id, newPassword);
 
-                MessageBox.Show("Passwort wurde zurückgesetzt.",
+                System.Windows.MessageBox.Show("Passwort wurde zurückgesetzt.",
                     "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message,
+                System.Windows.MessageBox.Show(ex.Message,
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -143,22 +143,22 @@ namespace Praxis.Client.Views.Pages.UserManagement
                 var selectedUser = GetSelectedUser();
                 if (selectedUser == null)
                 {
-                    MessageBox.Show("Bitte zuerst einen Benutzer auswählen.");
+                    System.Windows.MessageBox.Show("Bitte zuerst einen Benutzer auswählen.");
                     return;
                 }
 
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 await mainWindow.ToggleUserActiveAsync(selectedUser.Id);
                 await LoadUsersAsync();
 
-                MessageBox.Show("Benutzerstatus wurde geändert.",
+                System.Windows.MessageBox.Show("Benutzerstatus wurde geändert.",
                     "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message,
+                System.Windows.MessageBox.Show(ex.Message,
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -171,22 +171,22 @@ namespace Praxis.Client.Views.Pages.UserManagement
 
                 if (selectedUser == null)
                 {
-                    MessageBox.Show("Bitte zuerst einen Benutzer auswählen.");
+                    System.Windows.MessageBox.Show("Bitte zuerst einen Benutzer auswählen.");
                     return;
                 }
 
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if ( System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 // ❌ Admin darf sich selbst nicht löschen
                 if (selectedUser.Username == UserSession.CurrentUser?.Username)
                 {
-                    MessageBox.Show("Du kannst dich nicht selbst löschen!",
+                    System.Windows.MessageBox.Show("Du kannst dich nicht selbst löschen!",
                         "Sicherheit", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                var confirm = MessageBox.Show(
+                var confirm = System.Windows.MessageBox.Show(
                     $"Benutzer '{selectedUser.Username}' wirklich löschen?",
                     "Bestätigung",
                     MessageBoxButton.YesNo,
@@ -199,12 +199,12 @@ namespace Praxis.Client.Views.Pages.UserManagement
 
                 await LoadUsersAsync();
 
-                MessageBox.Show("Benutzer wurde gelöscht.",
+                System.Windows.MessageBox.Show("Benutzer wurde gelöscht.",
                     "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message,
+                System.Windows.MessageBox.Show(ex.Message,
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

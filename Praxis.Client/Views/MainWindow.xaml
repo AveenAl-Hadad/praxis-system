@@ -78,6 +78,31 @@
                         <TextBlock x:Name="LoggedInUserText" Text="Benutzername" FontWeight="SemiBold"/>
                         <TextBlock x:Name="LoggedInStatusText" Text="Angemeldet" Foreground="{DynamicResource MutedTextBrush}" FontSize="11"/>
                     </StackPanel>
+                    <Button Width="36"
+                            Height="36"
+                            Click="Logout_Click"
+                            ToolTip="Abmelden"
+                            Background="#F3F4F6"
+                            BorderThickness="0"
+                            Cursor="Hand">
+
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}"
+                    CornerRadius="18">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+
+                        <TextBlock Text="⇦"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="#111827"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>

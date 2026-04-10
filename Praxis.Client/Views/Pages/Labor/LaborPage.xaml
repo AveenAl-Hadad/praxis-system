@@ -13,7 +13,8 @@
         </Grid.RowDefinitions>
 
         <!-- Titel -->
-        <TextBlock Text="Labordaten importieren"
+        <TextBlock Grid.Row="0"
+                   Text="Labordaten importieren"
                    FontSize="28"
                    FontWeight="Bold"
                    Foreground="#1F2937"/>
@@ -34,12 +35,12 @@
 
                 <!-- Links -->
                 <StackPanel>
-                    <TextBlock Text="LDT-Dateien und Import"
+                    <TextBlock Text="LDT-Dateien und Vorschau"
                                FontWeight="Bold"
                                FontSize="15"
                                Foreground="#111827"/>
 
-                    <TextBlock Text="Dateien aus Verzeichnis lesen, prüfen und in die Übersicht übernehmen."
+                    <TextBlock Text="Dateien zuerst laden und prüfen. Erst mit 'Import speichern' werden sie in die Datenbank übernommen."
                                Margin="0,6,0,14"
                                Foreground="#6B7280"
                                TextWrapping="Wrap"/>
@@ -47,54 +48,58 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="130"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBox x:Name="DirectoryTextBox"
                                  Height="34"
                                  VerticalContentAlignment="Center"
-                                 Text="C:\Import\Labor"/>
+                                 Margin="0,0,10,0"/>
 
                         <Button Grid.Column="1"
+                                x:Name="BrowseButton"
                                 Content="Durchsuchen"
-                                Margin="10,0,0,0"
                                 Height="34"
+                                Click="BrowseButton_Click"
                                 Background="#E5E7EB"/>
-
-                        <Button Grid.Column="2"
-                                Content="KV-Connect prüfen"
-                                Margin="10,0,0,0"
-                                Height="34"
-                                Background="#F59E0B"
-                                Foreground="White"
-                                FontWeight="SemiBold"/>
                     </Grid>
 
                     <WrapPanel Margin="0,14,0,0">
-                        <Button Content="Einlesen"
-                                Width="120"
+                        <Button x:Name="PreviewButton"
+                                Content="Vorschau laden"
+                                Width="140"
                                 Height="36"
                                 Margin="0,0,10,10"
+                                Click="PreviewButton_Click"
                                 Background="#06B6D4"
                                 Foreground="White"
                                 FontWeight="SemiBold"/>
 
-                        <Button Content="Inhalt anzeigen"
+                        <Button x:Name="SaveImportButton"
+                                Content="Import speichern"
+                                Width="150"
+                                Height="36"
+                                Margin="0,0,10,10"
+                                Click="SaveImportButton_Click"
+                                Background="#16A34A"
+                                Foreground="White"
+                                FontWeight="SemiBold"/>
+
+                        <Button x:Name="RefreshStoredButton"
+                                Content="Gespeicherte laden"
+                                Width="160"
+                                Height="36"
+                                Margin="0,0,10,10"
+                                Click="RefreshStoredButton_Click"
+                                Background="#E5E7EB"/>
+
+                        <Button x:Name="ClearDirectoryButton"
+                                Content="Zurücksetzen"
                                 Width="130"
                                 Height="36"
                                 Margin="0,0,10,10"
+                                Click="ClearDirectoryButton_Click"
                                 Background="#E5E7EB"/>
-
-                        <Button Content="Aus Verzeichnis löschen"
-                                Width="170"
-                                Height="36"
-                                Margin="0,0,10,10"
-                                Background="#E5E7EB"/>
-
-                        <CheckBox Content="Prüfmodul verwenden"
-                                  VerticalAlignment="Center"
-                                  Margin="0,8,0,0"/>
                     </WrapPanel>
                 </StackPanel>
 
@@ -106,29 +111,26 @@
                         CornerRadius="8"
                         Padding="12">
                     <StackPanel>
-                        <TextBlock Text="Importstatus"
+                        <TextBlock Text="Status"
                                    FontWeight="Bold"
                                    FontSize="14"
                                    Foreground="#111827"/>
 
-                        <TextBlock Text="0 Dateien wartend"
+                        <TextBlock x:Name="WaitingCountTextBlock"
+                                   Text="0 Dateien in Vorschau"
                                    Margin="0,12,0,4"
                                    FontSize="13"/>
 
-                        <TextBlock Text="0 Dateien mit Fehler"
+                        <TextBlock x:Name="ErrorCountTextBlock"
+                                   Text="0 Dateien mit Fehler"
                                    Margin="0,0,0,4"
                                    FontSize="13"/>
 
-                        <TextBlock Text="Letzte Prüfung: heute"
+                        <TextBlock x:Name="LastCheckTextBlock"
+                                   Text="Noch keine Aktion"
                                    Margin="0,0,0,12"
                                    Foreground="#6B7280"
                                    FontSize="12"/>
-
-                        <Button Content="Laborbücher zuordnen"
-                                Height="34"
-                                Background="#06B6D4"
-                                Foreground="White"
-                                FontWeight="SemiBold"/>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -149,15 +151,14 @@
                       HeadersVisibility="Column"
                       GridLinesVisibility="Horizontal"
                       RowHeight="34">
-
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Dateiname" Binding="{Binding Datei}" Width="220"/>
-                    <DataGridTextColumn Header="Labor" Binding="{Binding Labor}" Width="220"/>
-                    <DataGridTextColumn Header="Erstellungsdatum" Binding="{Binding Erstellt}" Width="170"/>
-                    <DataGridTextColumn Header="Betriebsstätte" Binding="{Binding Betriebsstaette}" Width="200"/>
-                    <DataGridTextColumn Header="BSNR/BSID" Binding="{Binding Bsnr}" Width="140"/>
+                    <DataGridTextColumn Header="Labor" Binding="{Binding Labor}" Width="180"/>
+                    <DataGridTextColumn Header="Erstellt" Binding="{Binding Erstellt}" Width="170"/>
+                    <DataGridTextColumn Header="Betriebsstätte" Binding="{Binding Betriebsstaette}" Width="180"/>
+                    <DataGridTextColumn Header="BSNR/BSID" Binding="{Binding Bsnr}" Width="120"/>
                     <DataGridTextColumn Header="Kundennummer" Binding="{Binding Kundennummer}" Width="140"/>
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="180"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

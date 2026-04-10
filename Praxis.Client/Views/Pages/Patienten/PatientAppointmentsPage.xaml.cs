@@ -2,10 +2,11 @@
 using System.Windows;
 using System.Windows.Controls;
 using Praxis.Domain.Entities;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
-    public partial class PatientAppointmentsPage : UserControl
+    public partial class PatientAppointmentsPage : System.Windows.Controls.UserControl
     {
         private Patient? _currentPatient;
 
@@ -23,7 +24,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             TelefonTextBox.Text = patient.Telefonnummer;
             EmailTextBox.Text = patient.Email;
 
-            if (Application.Current.MainWindow is MainWindow mainWindow)
+            if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
             {
                 var appointments = await mainWindow.GetAppointmentsByPatientIdAsync(patient.Id);
                 AppointmentsGrid.ItemsSource = appointments;
@@ -37,7 +38,7 @@ namespace Praxis.Client.Views.Pages.Patienten
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Application.Current.MainWindow is MainWindow mainWindow)
+            if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
             {
                 await mainWindow.OpenPatientSearchPageAsync();
             }

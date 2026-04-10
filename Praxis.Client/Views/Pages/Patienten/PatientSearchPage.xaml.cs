@@ -9,7 +9,7 @@ using Praxis.Domain.Entities;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
-    public partial class PatientSearchPage : UserControl
+    public partial class PatientSearchPage : System.Windows.Controls.UserControl
     {
         private List<Patient> _allPatients = new();
 
@@ -33,7 +33,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         {
             try
             {
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if ( System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 var patients = await mainWindow.GetPatientsAsync();
@@ -43,7 +43,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Fehler beim Laden der Patientendaten:\n{ex.Message}",
                     "Fehler",
                     MessageBoxButton.OK,
@@ -101,13 +101,13 @@ namespace Praxis.Client.Views.Pages.Patienten
                 if (PatientsGrid.SelectedItem is not Patient selectedPatient)
                     return;
 
-                var result = MessageBox.Show(
+                var result = System.Windows.MessageBox.Show(
                     $"Was möchtest du für '{selectedPatient.FullName}' öffnen?\n\nJa = Dokumente\nNein = Termine\nAbbrechen = Nichts",
                     "Patientenaktion",
                     MessageBoxButton.YesNoCancel,
                     MessageBoxImage.Question);
 
-                if (Application.Current.MainWindow is not MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                     return;
 
                 if (result == MessageBoxResult.Yes)
@@ -121,7 +121,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Fehler beim Öffnen der Patientenaktion:\n{ex.Message}",
                     "Fehler",
                     MessageBoxButton.OK,
@@ -131,7 +131,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         private void PatientsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (PatientsGrid.SelectedItem is Patient selectedPatient &&
-                Application.Current.MainWindow is MainWindow mainWindow)
+                System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
             {
                 mainWindow.SetSelectedPatient(selectedPatient);
             }

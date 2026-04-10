@@ -1,0 +1,232 @@
+﻿<UserControl x:Class="Praxis.Client.Views.Pages.Abrechnung.AbrechnungPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Titel -->
+        <TextBlock Grid.Row="0"
+                   Text="Abrechnung"
+                   FontSize="28"
+                   FontWeight="Bold"
+                   Foreground="#1F2937"/>
+
+        <!-- Oberer Bereich -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Kacheln -->
+            <UniformGrid Grid.Column="0" Columns="3">
+                <Border Background="White"
+                        BorderBrush="#D1D5DB"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="16"
+                        Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="KV-Abrechnung"
+                                   FontWeight="Bold"
+                                   FontSize="15"/>
+                        <TextBlock Text="Quartalsbezogene KV-Fälle vorbereiten."
+                                   Margin="0,8,0,12"
+                                   Foreground="#6B7280"
+                                   TextWrapping="Wrap"/>
+                        <Button Content="Neue KV-Abrechnung"
+                                Height="36"
+                                Click="NewButton_Click"
+                                Background="#06B6D4"
+                                Foreground="White"
+                                FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White"
+                        BorderBrush="#D1D5DB"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="16"
+                        Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="Privatabrechnung"
+                                   FontWeight="Bold"
+                                   FontSize="15"/>
+                        <TextBlock Text="Rechnungen und offene Posten pflegen."
+                                   Margin="0,8,0,12"
+                                   Foreground="#6B7280"
+                                   TextWrapping="Wrap"/>
+                        <Button Content="Neue Privatabrechnung"
+                                Height="36"
+                                Click="NewButton_Click"
+                                Background="#E5E7EB"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White"
+                        BorderBrush="#D1D5DB"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="Rechnungen"
+                                   FontWeight="Bold"
+                                   FontSize="15"/>
+                        <TextBlock Text="Offene und bezahlte Rechnungen anzeigen."
+                                   Margin="0,8,0,12"
+                                   Foreground="#6B7280"
+                                   TextWrapping="Wrap"/>
+                        <Button Content="Rechnungen öffnen"
+                                Height="36"
+                                Background="#E5E7EB"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Aktionsbuttons rechts -->
+            <Border Grid.Column="2"
+                    Background="White"
+                    BorderBrush="#D1D5DB"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <Button Content="Bearbeiten"
+                            Width="80"
+                            Height="40"
+                            Margin="0,0,10,0"
+                            Click="EditButton_Click"
+                            Foreground="White"
+                            Background="#06B6D4"
+                            FontWeight="SemiBold"/>
+
+                    <Button Content="Löschen"
+                            Width="80"
+                            Height="40"
+                            Click="DeleteButton_Click"
+                            Background="#DC2626"
+                            Foreground="White"
+                            FontWeight="SemiBold"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Editor -->
+        <Border Grid.Row="4"
+                Margin="0,0,0,0"
+                Background="White"
+                BorderBrush="#D1D5DB"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="16"
+                x:Name="EditorBorder"
+                Visibility="Collapsed">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Name="EditorTitleTextBlock"
+                           Text="Abrechnung bearbeiten"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="#1F2937"/>
+                <!-- Formular -->
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Text="Typ"/>
+                        <TextBox x:Name="TypTextBox" Height="34" Margin="0,4,0,10"/>
+
+                        <TextBlock Text="Zeitraum"/>
+                        <TextBox x:Name="ZeitraumTextBox" Height="34" Margin="0,4,0,10"/>
+
+                        <TextBlock Text="Anzahl Fälle"/>
+                        <TextBox x:Name="FaelleTextBox" Height="34" Margin="0,4,0,10"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Betrag"/>
+                        <TextBox x:Name="BetragTextBox" Height="34" Margin="0,4,0,10"/>
+
+                        <TextBlock Text="Status"/>
+                        <TextBox x:Name="StatusTextBox" Height="34" Margin="0,4,0,10"/>
+
+                        <TextBlock Text="Letzte Aktion"/>
+                        <TextBox x:Name="AktionTextBox" Height="34" Margin="0,4,0,10"/>
+                    </StackPanel>
+                </Grid>
+                <!-- Button Formular -->
+                <StackPanel Grid.Row="4"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button Content="Speichern"
+                            Width="120"
+                            Height="38"
+                            Margin="0,0,10,0"
+                            Click="SaveButton_Click"
+                            Background="#16A34A"
+                            Foreground="White"
+                            FontWeight="SemiBold"/>
+
+                    <Button Content="Abbrechen"
+                            Width="120"
+                            Height="38"
+                            Click="CancelButton_Click"
+                            Background="#E5E7EB"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Tabelle -->
+        <Border Grid.Row="6"
+                Background="White"
+                BorderBrush="#D1D5DB"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="10">
+            <DataGrid x:Name="AbrechnungGrid"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="True"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
+                      RowHeight="34">
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Typ" Binding="{Binding Typ}" Width="160"/>
+                    <DataGridTextColumn Header="Zeitraum" Binding="{Binding Zeitraum}" Width="160"/>
+                    <DataGridTextColumn Header="Anzahl Fälle" Binding="{Binding Faelle}" Width="120"/>
+                    <DataGridTextColumn Header="Betrag" Binding="{Binding Betrag}" Width="120"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="160"/>
+                    <DataGridTextColumn Header="Letzte Aktion" Binding="{Binding Aktion}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

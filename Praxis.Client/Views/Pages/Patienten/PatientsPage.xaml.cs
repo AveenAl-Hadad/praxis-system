@@ -18,7 +18,7 @@ namespace Praxis.Client.Views.Pages.Patienten
     /// <summary>
     /// Interaction logic for PatientsPage.xaml
     /// </summary>
-    public partial class PatientsPage : UserControl
+    public partial class PatientsPage : System.Windows.Controls.UserControl
     {
        
     }

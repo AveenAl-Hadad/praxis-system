@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-
+using MessageBox = System.Windows.MessageBox;
 namespace Praxis.Client.Logic.UI;
 
 public class WpfMessageBoxService : IMessageBoxService

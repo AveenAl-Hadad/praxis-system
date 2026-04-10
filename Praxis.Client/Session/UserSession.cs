@@ -18,10 +18,7 @@ public static class UserSession
         CurrentUser = null;
     }
 
-    //public static bool HasRole(string role)
-    //{
-    //    return CurrentUser?.Role == role;
-    //}
+    
     public static bool HasRole(string role)
     {
         return CurrentUser != null &&
