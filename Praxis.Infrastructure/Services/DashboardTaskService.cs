@@ -36,6 +36,13 @@ public class DashboardTaskService : IDashboardTaskService
             .ToListAsync();
     }
 
+    public async Task<DashboardTask?> GetByIdAsync(int id)
+    {
+        return await _db.DashboardTasks
+            .Include(t => t.Patient)
+            .FirstOrDefaultAsync(t => t.Id == id);
+    }
+
     public async Task AddTaskAsync(DashboardTask task)
     {
         _db.DashboardTasks.Add(task);

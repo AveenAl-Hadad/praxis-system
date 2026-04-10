@@ -1,5 +1,7 @@
 ﻿using System.Windows;
 using MessageBox = System.Windows.MessageBox;
+using Praxis.Client.Views;
+using Praxis.Domain.Entities;
 
 
 namespace Praxis.Client.Views.Pages
@@ -86,6 +88,7 @@ namespace Praxis.Client.Views.Pages
 
                 TasksGrid.ItemsSource = openTasks.Select(t => new DashboardTaskRow
                 {
+                    Id = t.Id,
                     Title = string.IsNullOrWhiteSpace(t.Title) ? "-" : t.Title,
                     PatientName = t.Patient?.FullName ?? "-",
                     Priority = string.IsNullOrWhiteSpace(t.Priority) ? "Normal" : t.Priority,
@@ -125,6 +128,70 @@ namespace Praxis.Client.Views.Pages
             await mainWindow.OpenPatientSearchPageAsync();
         }
 
+        private async void AddTaskButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+                return;
+
+            var dialog = new TaskEditWindow
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            var result = dialog.ShowDialog();
+            if (result != true || dialog.ResultTask == null)
+                return;
+
+            try
+            {
+                await mainWindow.AddDashboardTaskAsync(dialog.ResultTask);
+                await RefreshAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Fehler beim Speichern der Aufgabe:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private async void CompleteTaskButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+                return;
+
+            if (TasksGrid.SelectedItem is not DashboardTaskRow selectedTask)
+            {
+                MessageBox.Show("Bitte zuerst eine Aufgabe auswählen.");
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"Aufgabe '{selectedTask.Title}' als erledigt markieren?",
+                "Aufgabe erledigen",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                await mainWindow.MarkDashboardTaskAsDoneAsync(selectedTask.Id);
+                await RefreshAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Fehler beim Abschließen der Aufgabe:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         private sealed class DashboardAppointmentRow
         {
             public string Time { get; set; } = string.Empty;
@@ -135,6 +202,7 @@ namespace Praxis.Client.Views.Pages
         }
         private sealed class DashboardTaskRow
         {
+            public int Id { get; set; }
             public string Title { get; set; } = string.Empty;
             public string PatientName { get; set; } = string.Empty;
             public string Priority { get; set; } = string.Empty;

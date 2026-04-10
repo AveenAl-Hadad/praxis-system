@@ -649,6 +649,15 @@ namespace Praxis.Client.Views
         {
             return await _practiceNoticeService.GetActiveNoticesAsync();
         }
+        public async Task AddDashboardTaskAsync(DashboardTask task)
+        {
+            await _dashboardTaskService.AddTaskAsync(task);
+        }
+
+        public async Task MarkDashboardTaskAsDoneAsync(int taskId)
+        {
+            await _dashboardTaskService.MarkAsDoneAsync(taskId);
+        }
 
 
         #endregion

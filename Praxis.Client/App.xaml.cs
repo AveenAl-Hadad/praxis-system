@@ -73,7 +73,8 @@ public partial class App : System.Windows.Application
                 services.AddTransient<ChangePasswordWindow>();
                 services.AddTransient<AuditLogWindow>();
                 services.AddTransient<OnlineBookingWindow>();
-                
+                services.AddTransient<TaskEditWindow>();
+
 
             })
             .Build();

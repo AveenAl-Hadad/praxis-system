@@ -202,6 +202,8 @@
                             <RowDefinition Height="10"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="10"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
@@ -213,8 +215,18 @@
                                        Margin="0,2,0,0"
                                        Foreground="{DynamicResource MutedTextBrush}"/>
                         </StackPanel>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal">
+                            <Button Content="Neue Aufgabe"
+                                    Width="130"
+                                    Margin="0,0,10,0"
+                                    Click="AddTaskButton_Click"/>
 
-                        <UniformGrid Grid.Row="2" Columns="3">
+                            <Button Content="Erledigen"
+                                    Width="110"
+                                    Click="CompleteTaskButton_Click"/>
+                        </StackPanel>
+
+                        <UniformGrid Grid.Row="4" Columns="3">
                             <StackPanel>
                                 <TextBlock Text="Offen"
                                            Foreground="{DynamicResource MutedTextBrush}"/>
@@ -246,7 +258,7 @@
                             </StackPanel>
                         </UniformGrid>
 
-                        <DataGrid Grid.Row="4"
+                        <DataGrid Grid.Row="6"
                                   x:Name="TasksGrid"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
