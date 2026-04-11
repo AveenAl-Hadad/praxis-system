@@ -79,6 +79,9 @@ namespace Praxis.Client.Views
         private readonly IAbrechnungService _abrechnungService;
         private readonly IDashboardTaskService _dashboardTaskService;
         private readonly IPracticeNoticeService _practiceNoticeService;
+        private readonly IDashboardLayoutService _dashboardLayoutService;
+
+
 
         private Patient? _selectedPatient;
 
@@ -106,10 +109,11 @@ namespace Praxis.Client.Views
                              ILaborService laborService,
                              IAbrechnungService abrechnungService,
                              IDashboardTaskService dashboardTaskService,
-                             IPracticeNoticeService practiceNoticeService)
+                             IPracticeNoticeService practiceNoticeService,
+                             IDashboardLayoutService dashboardLayoutService)
         {
             InitializeComponent();
-            
+
             _patientService = patientService;
             _appointmentService = appointmentService;
             _authService = authService;
@@ -132,7 +136,7 @@ namespace Praxis.Client.Views
             _waitingRoomPage = new WaitingRoomPage(_appointmentService);
 
             StartSessionTimer();
-
+            _dashboardLayoutService = dashboardLayoutService;
         }
         #endregion
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -636,7 +640,6 @@ namespace Praxis.Client.Views
         {
             return await _dashboardService.GetStatsAsync();
         }
-
         public async Task<IEnumerable<Appointment>> GetAppointmentsByDateAsync(DateTime date)
         {
             return await _appointmentService.GetAppointmentsByDateAsync(date);
@@ -645,7 +648,6 @@ namespace Praxis.Client.Views
         {
             return await _dashboardTaskService.GetOpenTasksAsync();
         }
-
         public async Task<IEnumerable<PracticeNotice>> GetActivePracticeNoticesAsync()
         {
             return await _practiceNoticeService.GetActiveNoticesAsync();
@@ -658,32 +660,69 @@ namespace Praxis.Client.Views
         {
             await _practiceNoticeService.AddNoticeAsync(notice);
         }
-
         public async Task DeactivatePracticeNoticeAsync(int noticeId)
         {
             await _practiceNoticeService.DeactivateNoticeAsync(noticeId);
         }
-
         public async Task MarkDashboardTaskAsDoneAsync(int taskId)
         {
             await _dashboardTaskService.MarkAsDoneAsync(taskId);
+        }
+        public async Task<IEnumerable<DashboardTask>> GetAllDashboardTasksAsync()
+        {
+            return await _dashboardTaskService.GetAllTasksAsync();
         }
         public async Task<DashboardTask?> GetDashboardTaskByIdAsync(int taskId)
         {
             return await _dashboardTaskService.GetByIdAsync(taskId);
         }
-
         public async Task UpdateDashboardTaskAsync(DashboardTask task)
         {
             await _dashboardTaskService.UpdateTaskAsync(task);
         }
-
         public async Task UpdatePracticeNoticeAsync(PracticeNotice notice)
         {
             await _practiceNoticeService.UpdateNoticeAsync(notice);
         }
+        public async Task DeleteDashboardTaskAsync(int taskId)
+        {
+            await _dashboardTaskService.DeleteTaskAsync(taskId);
+        }
 
+        public async Task MoveDashboardTaskToOpenAsync(int taskId)
+        {
+            var task = await _dashboardTaskService.GetByIdAsync(taskId);
+            if (task == null)
+                throw new InvalidOperationException("Aufgabe wurde nicht gefunden.");
 
+            task.Status = "Offen";
+
+            if (task.DueDate != null && task.DueDate.Value.Date <= DateTime.Today)
+            {
+                task.DueDate = DateTime.Today.AddDays(1);
+            }
+
+            await _dashboardTaskService.UpdateTaskAsync(task);
+        }
+        public async Task DeletePracticeNoticeAsync(int noticeId)
+        {
+            await _practiceNoticeService.DeleteNoticeAsync(noticeId);
+        }
+        public async Task<List<string>> GetDashboardWidgetOrderAsync()
+        {
+            var username = GetCurrentDashboardUsername();
+            return await _dashboardLayoutService.GetWidgetOrderAsync(username);
+        }
+
+        public async Task SaveDashboardWidgetOrderAsync(List<string> widgetOrder)
+        {
+            var username = GetCurrentDashboardUsername();
+            await _dashboardLayoutService.SaveWidgetOrderAsync(username, widgetOrder);
+        }
+        private string GetCurrentDashboardUsername()
+        {
+            return UserSession.CurrentUser?.Username ?? "default";
+        }
         #endregion
 
         #region Open Bereich

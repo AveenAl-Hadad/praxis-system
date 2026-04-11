@@ -8,5 +8,6 @@ public interface IPracticeNoticeService
     Task AddNoticeAsync(PracticeNotice notice);
     Task UpdateNoticeAsync(PracticeNotice notice);
     Task DeactivateNoticeAsync(int noticeId);
-}
+    Task DeleteNoticeAsync(int noticeId);
+    }
 }

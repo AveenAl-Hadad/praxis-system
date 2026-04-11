@@ -55,7 +55,8 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IPrescriptionService, PrescriptionService>();
                 services.AddTransient<IPrescriptionPdfService, PrescriptionPdfService>();
                 services.AddTransient<IDocumentService, DocumentService>();
-               ;
+                services.AddSingleton<IDashboardLayoutService, DashboardLayoutService>();
+                ;
                 services.AddTransient<IEmailService, EmailService>();
                 services.AddTransient<IReminderService, ReminderService>();
                 services.AddTransient<IAuditService, AuditService>();

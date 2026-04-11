@@ -12,7 +12,13 @@ public class DashboardTaskService : IDashboardTaskService
     {
         _db = db;
     }
-
+    public async Task<List<DashboardTask>> GetAllTasksAsync()
+    {
+        return await _db.DashboardTasks
+            .Include(t => t.Patient)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+    }
     public async Task<List<DashboardTask>> GetOpenTasksAsync()
     {
         return await _db.DashboardTasks
@@ -23,7 +29,6 @@ public class DashboardTaskService : IDashboardTaskService
             .ThenByDescending(t => t.CreatedAt)
             .ToListAsync();
     }
-
     public async Task<List<DashboardTask>> GetDueTasksAsync(DateTime date)
     {
         var dayEnd = date.Date.AddDays(1);
@@ -35,20 +40,17 @@ public class DashboardTaskService : IDashboardTaskService
             .OrderBy(t => t.DueDate)
             .ToListAsync();
     }
-
     public async Task<DashboardTask?> GetByIdAsync(int id)
     {
         return await _db.DashboardTasks
             .Include(t => t.Patient)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
-
     public async Task AddTaskAsync(DashboardTask task)
     {
         _db.DashboardTasks.Add(task);
         await _db.SaveChangesAsync();
     }
-
     public async Task UpdateTaskAsync(DashboardTask task)
     {
         var existing = await _db.DashboardTasks.FindAsync(task.Id);
@@ -65,7 +67,6 @@ public class DashboardTaskService : IDashboardTaskService
 
         await _db.SaveChangesAsync();
     }
-
     public async Task MarkAsDoneAsync(int taskId)
     {
         var existing = await _db.DashboardTasks.FindAsync(taskId);
@@ -75,4 +76,14 @@ public class DashboardTaskService : IDashboardTaskService
         existing.Status = "Erledigt";
         await _db.SaveChangesAsync();
     }
+    public async Task DeleteTaskAsync(int taskId)
+    {
+        var existing = await _db.DashboardTasks.FindAsync(taskId);
+        if (existing == null)
+            throw new InvalidOperationException("Aufgabe wurde nicht gefunden.");
+
+        _db.DashboardTasks.Remove(existing);
+        await _db.SaveChangesAsync();
+    }
+
 }

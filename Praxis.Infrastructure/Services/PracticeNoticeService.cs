@@ -56,4 +56,13 @@ public class PracticeNoticeService : IPracticeNoticeService
         existing.IsActive = false;
         await _db.SaveChangesAsync();
     }
+    public async Task DeleteNoticeAsync(int noticeId)
+    {
+        var existing = await _db.PracticeNotices.FindAsync(noticeId);
+        if (existing == null)
+            throw new InvalidOperationException("Hinweis wurde nicht gefunden.");
+
+        _db.PracticeNotices.Remove(existing);
+        await _db.SaveChangesAsync();
+    }
 }

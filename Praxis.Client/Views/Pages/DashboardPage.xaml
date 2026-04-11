@@ -7,14 +7,22 @@
                   HorizontalScrollBarVisibility="Disabled">
         <Grid Margin="12">
             <Grid.RowDefinitions>
+                <!-- Kopf -->
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="14"/>
+                <RowDefinition Height="20"/>
+                <!-- Gesamtzahlen -->
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="14"/>
+                <RowDefinition Height="20"/>
+                <!-- Monats- und Tagesübersicht -->
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="14"/>
+                <RowDefinition Height="20"/>
+                <!-- Aufgaben -->
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="14"/>
+                <RowDefinition Height="20"/>
+                <!-- Heutige Termine -->
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
+                
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -41,163 +49,196 @@
                             Margin="0,0,10,0"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Click="RefreshButton_Click"/>
+                    <Button Content="Layout zurücksetzen"
+                            Width="150"
+                            Margin="0,0,10,0"
+                            Click="ResetLayoutButton_Click"/>
 
                     <Button Content="Patientensuche"
                             Width="140"
-                            Click="OpenPatientsButton_Click"/>
+                            Click="OpenPatientsButton_Click"/>                    
+                 
                 </StackPanel>
             </Grid>
 
             <!-- Gesamtzahlen -->
-            <UniformGrid Grid.Row="2"
-                         Columns="4"
-                         Margin="0">
-                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
-                    <StackPanel>
-                        <TextBlock Text="Patienten gesamt"
-                                   Foreground="{DynamicResource MutedTextBrush}"/>
-                        <TextBlock x:Name="TotalPatientsText"
-                                   Text="0"
-                                   FontSize="28"
-                                   FontWeight="Bold"
-                                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                </Border>
+            <Border x:Name="StatsWidget"
+                    Grid.Row="2"
+                    Tag="Stats"
+                    AllowDrop="True"
+                    Background="Transparent"
+                    PreviewMouseLeftButtonDown="Widget_PreviewMouseLeftButtonDown"
+                    MouseMove="Widget_MouseMove"
+                    DragEnter="Widget_DragEnter"
+                    DragOver="Widget_DragOver"
+                    DragLeave="Widget_DragLeave"
+                    Drop="Widget_Drop">
+                <UniformGrid Columns="4"
+                 Margin="0">
+                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                        <StackPanel>
+                            <TextBlock Text="Patienten gesamt"
+                           Foreground="{DynamicResource MutedTextBrush}"/>
+                            <TextBlock x:Name="TotalPatientsText"
+                           Text="0"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
 
-                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
-                    <StackPanel>
-                        <TextBlock Text="Termine gesamt"
-                                   Foreground="{DynamicResource MutedTextBrush}"/>
-                        <TextBlock x:Name="TotalAppointmentsText"
-                                   Text="0"
-                                   FontSize="28"
-                                   FontWeight="Bold"
-                                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                </Border>
+                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                        <StackPanel>
+                            <TextBlock Text="Termine gesamt"
+                           Foreground="{DynamicResource MutedTextBrush}"/>
+                            <TextBlock x:Name="TotalAppointmentsText"
+                           Text="0"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
 
-                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
-                    <StackPanel>
-                        <TextBlock Text="Rechnungen gesamt"
-                                   Foreground="{DynamicResource MutedTextBrush}"/>
-                        <TextBlock x:Name="TotalInvoicesText"
-                                   Text="0"
-                                   FontSize="28"
-                                   FontWeight="Bold"
-                                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                </Border>
+                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,10,0">
+                        <StackPanel>
+                            <TextBlock Text="Rechnungen gesamt"
+                           Foreground="{DynamicResource MutedTextBrush}"/>
+                            <TextBlock x:Name="TotalInvoicesText"
+                           Text="0"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
 
-                <Border Style="{StaticResource CardBorderStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Rezepte gesamt"
-                                   Foreground="{DynamicResource MutedTextBrush}"/>
-                        <TextBlock x:Name="TotalPrescriptionsText"
-                                   Text="0"
-                                   FontSize="28"
-                                   FontWeight="Bold"
-                                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
+                    <Border Style="{StaticResource CardBorderStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Rezepte gesamt"
+                           Foreground="{DynamicResource MutedTextBrush}"/>
+                            <TextBlock x:Name="TotalPrescriptionsText"
+                           Text="0"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+            </Border>
 
             <!-- Monats- und Tagesübersicht -->
-            <Grid Grid.Row="4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="14"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+            <Border x:Name="OverviewWidget"
+                    Grid.Row="4"
+                    Tag="Overview"
+                    AllowDrop="True"
+                    Background="Transparent"
+                    PreviewMouseLeftButtonDown="Widget_PreviewMouseLeftButtonDown"
+                    MouseMove="Widget_MouseMove"
+                    DragEnter="Widget_DragEnter"
+                    DragOver="Widget_DragOver"
+                    DragLeave="Widget_DragLeave"
+                    Drop="Widget_Drop">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- Monatswerte -->
-                <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Aktueller Monat"
-                                   FontWeight="Bold"
-                                   FontSize="15"/>
-                        <TextBlock Text="Leistungs- und Umsatzübersicht"
-                                   Margin="0,2,0,12"
-                                   Foreground="{DynamicResource MutedTextBrush}"/>
+                    <!-- Monatswerte -->
+                    <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Aktueller Monat"
+                           FontWeight="Bold"
+                           FontSize="15"/>
+                            <TextBlock Text="Leistungs- und Umsatzübersicht"
+                           Margin="0,2,0,12"
+                           Foreground="{DynamicResource MutedTextBrush}"/>
 
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="180"/>
-                            </Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="180"/>
+                                </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="Termine im Monat" Grid.Row="0" Grid.Column="0" Margin="0,0,0,8"/>
-                            <TextBlock x:Name="MonthAppointmentsText" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="Termine im Monat" Grid.Row="0" Grid.Column="0" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="MonthAppointmentsText" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
-                            <TextBlock Text="Rechnungen im Monat" Grid.Row="1" Grid.Column="0" Margin="0,0,0,8"/>
-                            <TextBlock x:Name="MonthInvoicesText" Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="Rechnungen im Monat" Grid.Row="1" Grid.Column="0" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="MonthInvoicesText" Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
-                            <TextBlock Text="Umsatz im Monat" Grid.Row="2" Grid.Column="0" Margin="0,0,0,8"/>
-                            <TextBlock x:Name="MonthRevenueText" Grid.Row="2" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="Umsatz im Monat" Grid.Row="2" Grid.Column="0" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="MonthRevenueText" Grid.Row="2" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
-                            <TextBlock Text="Gesamtumsatz" Grid.Row="3" Grid.Column="0"/>
-                            <TextBlock x:Name="TotalRevenueText" Grid.Row="3" Grid.Column="1" FontWeight="SemiBold"/>
-                        </Grid>
-                    </StackPanel>
-                </Border>
+                                <TextBlock Text="Gesamtumsatz" Grid.Row="3" Grid.Column="0"/>
+                                <TextBlock x:Name="TotalRevenueText" Grid.Row="3" Grid.Column="1" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
 
-                <!-- Heute -->
-                <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Heute"
-                                   FontWeight="Bold"
-                                   FontSize="15"/>
-                        <TextBlock Text="Status der heutigen Termine"
-                                   Margin="0,2,0,12"
-                                   Foreground="{DynamicResource MutedTextBrush}"/>
+                    <!-- Heute -->
+                    <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Heute"
+                           FontWeight="Bold"
+                           FontSize="15"/>
+                            <TextBlock Text="Status der heutigen Termine"
+                           Margin="0,2,0,12"
+                           Foreground="{DynamicResource MutedTextBrush}"/>
 
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="90"/>
-                            </Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="90"/>
+                                </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="Heutige Termine" Grid.Row="0" Grid.Column="0" Margin="0,0,0,8"/>
-                            <TextBlock x:Name="TodayAppointmentsText" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="Heutige Termine" Grid.Row="0" Grid.Column="0" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="TodayAppointmentsText" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
-                            <TextBlock Text="Geplant" Grid.Row="1" Grid.Column="0" Margin="0,0,0,8"/>
-                            <TextBlock x:Name="PlannedAppointmentsText" Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="Geplant" Grid.Row="1" Grid.Column="0" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="PlannedAppointmentsText" Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
-                            <TextBlock Text="Erledigt" Grid.Row="2" Grid.Column="0" Margin="0,0,0,8"/>
-                            <TextBlock x:Name="CompletedAppointmentsText" Grid.Row="2" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="Erledigt" Grid.Row="2" Grid.Column="0" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="CompletedAppointmentsText" Grid.Row="2" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
-                            <TextBlock Text="Abgesagt" Grid.Row="3" Grid.Column="0"/>
-                            <TextBlock x:Name="CancelledAppointmentsText" Grid.Row="3" Grid.Column="1" FontWeight="SemiBold"/>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-            </Grid>
+                                <TextBlock Text="Abgesagt" Grid.Row="3" Grid.Column="0"/>
+                                <TextBlock x:Name="CancelledAppointmentsText" Grid.Row="3" Grid.Column="1" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
 
-            <!-- Aufgaben + Hinweise -->
-            <Grid Grid.Row="6">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="14"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Aufgaben -->
-                <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+            <!-- Aufgaben -->
+            <Border x:Name="TasksWidget"
+                    Grid.Row="6"
+                    Tag="Tasks"
+                    AllowDrop="True"
+                    Background="Transparent"
+                    PreviewMouseLeftButtonDown="Widget_PreviewMouseLeftButtonDown"
+                    MouseMove="Widget_MouseMove"
+                    DragEnter="Widget_DragEnter"
+                    DragOver="Widget_DragOver"
+                    DragLeave="Widget_DragLeave"
+                    Drop="Widget_Drop"
+                    Style="{StaticResource CardBorderStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="10"/>
                             <RowDefinition Height="Auto"/>
@@ -257,8 +298,343 @@
                                            Margin="0,6,0,0"/>
                             </StackPanel>
                         </UniformGrid>
+                        <Grid Grid.Row="6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                        <DataGrid Grid.Row="6"
+                            <!-- Offen -->
+                            <Border Grid.Column="0"
+                                    BorderBrush="#E5E7EB"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="10"
+                                    Background="#F9FAFB">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="8"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Offen"
+                                                    FontWeight="Bold"/>
+                                        <Border Margin="8,0,0,0"
+                                                Background="#DBEAFE"
+                                                CornerRadius="10"
+                                                Padding="8,2">
+                                            <TextBlock x:Name="KanbanOpenCountText"
+                                                       Text="0"
+                                                       Foreground="#1D4ED8"
+                                                       FontWeight="Bold"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <ListBox Grid.Row="2"
+                                             x:Name="KanbanOpenList"
+                                             Tag="Open"
+                                             AllowDrop="True"
+                                             BorderThickness="0"
+                                             Background="Transparent"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             MinHeight="140"
+                                             MouseDoubleClick="KanbanList_MouseDoubleClick"
+                                             PreviewMouseLeftButtonDown="KanbanList_PreviewMouseLeftButtonDown"
+                                             MouseMove="KanbanList_MouseMove"
+                                             DragEnter="KanbanList_DragEnter"
+                                             DragOver="KanbanList_DragOver"
+                                             DragLeave="KanbanList_DragLeave"
+                                             Drop="KanbanList_Drop">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,0,0,8"
+                                                        Padding="8"
+                                                        Background="White"
+                                                        CornerRadius="8"
+                                                        BorderBrush="#E5E7EB"
+                                                        BorderThickness="1">
+                                                    <Border.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Bearbeiten"
+                                                                Click="EditKanbanTaskMenuItem_Click"/>
+                                                            <MenuItem Header="Als erledigt markieren"
+                                                                     Click="CompleteKanbanTaskMenuItem_Click"/>
+                                                            <MenuItem Header="Zurück auf Offen"
+                                                                    Click="ReopenKanbanTaskMenuItem_Click"/>
+                                                            <Separator/>
+                                                            <MenuItem Header="Löschen"
+                                                                Click="DeleteKanbanTaskMenuItem_Click"/>
+                                                        </ContextMenu>
+                                                    </Border.ContextMenu>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Title}"
+                                                                   FontWeight="SemiBold"
+                                                                   TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding Subtitle}"
+                                                                   Margin="0,4,0,0"
+                                                                   Foreground="#6B7280"
+                                                                   FontSize="11"
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+                            </Border>
+
+                            <!-- Heute -->
+                            <Border Grid.Column="2"
+                                    BorderBrush="#FCD34D"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="10"
+                                    Background="#FFFBEB">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="8"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Heute"
+                                                FontWeight="Bold"/>
+                                        <Border Margin="8,0,0,0"
+                                                Background="#FDE68A"
+                                                CornerRadius="10"
+                                                Padding="8,2">
+                                            <TextBlock x:Name="KanbanTodayCountText"
+                                                       Text="0"
+                                                       Foreground="#92400E"
+                                                       FontWeight="Bold"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <ListBox Grid.Row="2"
+                                             x:Name="KanbanTodayList"
+                                             Tag="Open"
+                                             AllowDrop="True"
+                                             BorderThickness="0"
+                                             Background="Transparent"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             MinHeight="140"
+                                             MouseDoubleClick="KanbanList_MouseDoubleClick"
+                                             PreviewMouseLeftButtonDown="KanbanList_PreviewMouseLeftButtonDown"
+                                             MouseMove="KanbanList_MouseMove"
+                                             DragEnter="KanbanList_DragEnter"
+                                             DragOver="KanbanList_DragOver"
+                                             DragLeave="KanbanList_DragLeave"
+                                             Drop="KanbanList_Drop">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,0,0,8"
+                                                        Padding="8"
+                                                        Background="White"
+                                                        CornerRadius="8"
+                                                        BorderBrush="#FCD34D"
+                                                        BorderThickness="1">
+                                                    <Border.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Bearbeiten"
+                                                                 Click="EditKanbanTaskMenuItem_Click"/>
+                                                            <MenuItem Header="Als erledigt markieren"
+                                                                    Click="CompleteKanbanTaskMenuItem_Click"/>
+                                                            <MenuItem Header="Zurück auf Offen"
+                                                                Click="ReopenKanbanTaskMenuItem_Click"/>
+                                                            <Separator/>
+                                                            <MenuItem Header="Löschen"
+                                                            Click="DeleteKanbanTaskMenuItem_Click"/>
+                                                        </ContextMenu>
+                                                    </Border.ContextMenu>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Title}"
+                                                                   FontWeight="SemiBold"
+                                                                   TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding Subtitle}"
+                                                                   Margin="0,4,0,0"
+                                                                   Foreground="#92400E"
+                                                                   FontSize="11"
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+                            </Border>
+
+                            <!-- Überfällig -->
+                            <Border Grid.Column="4"
+                                    BorderBrush="#FCA5A5"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="10"
+                                    Background="#FEF2F2">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="8"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Überfällig"
+                                                    FontWeight="Bold"/>
+                                        <Border Margin="8,0,0,0"
+                                                Background="#FECACA"
+                                                CornerRadius="10"
+                                                Padding="8,2">
+                                            <TextBlock x:Name="KanbanOverdueCountText"
+                                                       Text="0"
+                                                       Foreground="#991B1B"
+                                                       FontWeight="Bold"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <ListBox Grid.Row="2"
+                                             x:Name="KanbanOverdueList"
+                                             Tag="Open"
+                                             AllowDrop="True"
+                                             BorderThickness="0"
+                                             Background="Transparent"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             MinHeight="140"
+                                             MouseDoubleClick="KanbanList_MouseDoubleClick"
+                                             PreviewMouseLeftButtonDown="KanbanList_PreviewMouseLeftButtonDown"
+                                             MouseMove="KanbanList_MouseMove"
+                                             DragEnter="KanbanList_DragEnter"
+                                             DragOver="KanbanList_DragOver"
+                                             DragLeave="KanbanList_DragLeave"
+                                             Drop="KanbanList_Drop">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,0,0,8"
+                                                        Padding="8"
+                                                        Background="White"
+                                                        CornerRadius="8"
+                                                        BorderBrush="#FCA5A5"
+                                                        BorderThickness="1">
+                                                    <Border.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Bearbeiten"
+                                                                    Click="EditKanbanTaskMenuItem_Click"/>
+                                                            <MenuItem Header="Als erledigt markieren"
+                                                                    Click="CompleteKanbanTaskMenuItem_Click"/>
+                                                            <MenuItem Header="Zurück auf Offen"
+                                                                      Click="ReopenKanbanTaskMenuItem_Click"/>
+                                                            <Separator/>
+                                                            <MenuItem Header="Löschen"
+                                                                    Click="DeleteKanbanTaskMenuItem_Click"/>
+                                                        </ContextMenu>
+                                                    </Border.ContextMenu>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Title}"
+                                                                   FontWeight="SemiBold"
+                                                                   TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding Subtitle}"
+                                                                   Margin="0,4,0,0"
+                                                                   Foreground="#991B1B"
+                                                                   FontSize="11"
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+                            </Border>
+
+                            <!-- Erledigt -->
+                            <Border Grid.Column="6"
+                                    BorderBrush="#D1D5DB"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="10"
+                                    Background="#F3F4F6">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="8"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Erledigt"
+                                                FontWeight="Bold"/>
+                                        <Border Margin="8,0,0,0"
+                                                Background="#E5E7EB"
+                                                CornerRadius="10"
+                                                Padding="8,2">
+                                            <TextBlock x:Name="KanbanCompletedCountText"
+                                                       Text="0"
+                                                       Foreground="#4B5563"
+                                                       FontWeight="Bold"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <ListBox Grid.Row="2"
+                                             x:Name="KanbanCompletedList"
+                                             Tag="Open"
+                                             AllowDrop="True"
+                                             BorderThickness="0"
+                                             Background="Transparent"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             MinHeight="140"
+                                             MouseDoubleClick="KanbanList_MouseDoubleClick"
+                                             PreviewMouseLeftButtonDown="KanbanList_PreviewMouseLeftButtonDown"
+                                             MouseMove="KanbanList_MouseMove"
+                                             DragEnter="KanbanList_DragEnter"
+                                             DragOver="KanbanList_DragOver"
+                                             DragLeave="KanbanList_DragLeave"
+                                             Drop="KanbanList_Drop">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,0,0,8"
+                                                        Padding="8"
+                                                        Background="White"
+                                                        CornerRadius="8"
+                                                        BorderBrush="#D1D5DB"
+                                                        BorderThickness="1">
+                                                    <Border.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Bearbeiten"
+                                                                 Click="EditKanbanTaskMenuItem_Click"/>
+                                                            <MenuItem Header="Als erledigt markieren"
+                                                                Click="CompleteKanbanTaskMenuItem_Click"/>
+                                                            <MenuItem Header="Zurück auf Offen"
+                                                                Click="ReopenKanbanTaskMenuItem_Click"/>
+                                                            <Separator/>
+                                                            <MenuItem Header="Löschen"
+                                                                Click="DeleteKanbanTaskMenuItem_Click"/>
+                                                        </ContextMenu>
+                                                    </Border.ContextMenu>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Title}"
+                                                                   FontWeight="SemiBold"
+                                                                   TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding Subtitle}"
+                                                                   Margin="0,4,0,0"
+                                                                   Foreground="#6B7280"
+                                                                   FontSize="11"
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                        <!-- TaskGrid -->
+                        <DataGrid Grid.Row="8"
                                   x:Name="TasksGrid"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
@@ -266,6 +642,55 @@
                                   IsReadOnly="True"
                                   SelectionMode="Single"
                                   MouseDoubleClick="TasksGrid_MouseDoubleClick">
+
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Setter Property="Foreground" Value="Black"/>
+                                    <Setter Property="FontWeight" Value="Normal"/>
+
+                                    <Style.Triggers>
+                                        <!-- Erledigt -->
+                                        <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                                            <Setter Property="Background" Value="#F3F4F6"/>
+                                            <Setter Property="Foreground" Value="#6B7280"/>
+                                        </DataTrigger>
+
+                                        <!-- Heute fällig -->
+                                        <DataTrigger Binding="{Binding IsDueToday}" Value="True">
+                                            <Setter Property="Background" Value="#FEF3C7"/>
+                                            <Setter Property="Foreground" Value="#92400E"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+
+                                        <!-- Überfällig -->
+                                        <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                            <Setter Property="Background" Value="#FEE2E2"/>
+                                            <Setter Property="Foreground" Value="#7F1D1D"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+
+                                        <!-- Auswahl -->
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Foreground" Value="Black"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Bearbeiten"
+                                            Click="EditTaskMenuItem_Click"/>
+                                    <MenuItem Header="Als erledigt markieren"
+                                            Click="CompleteTaskMenuItem_Click"/>
+                                    <MenuItem Header="Zurück auf Offen"
+                                            Click="ReopenTaskMenuItem_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="Löschen"
+                                            Click="DeleteTaskMenuItem_Click"/>
+                                </ContextMenu>
+                                
+                            </DataGrid.ContextMenu>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="180"/>
                                 <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="180"/>
@@ -284,7 +709,15 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Header="Fällig" Binding="{Binding DueDate}" Width="120"/>
+                                <DataGridTemplateColumn Header="Fällig" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DueDate}"
+                                                       Foreground="{Binding DueDateColor}"
+                                                       FontWeight="SemiBold"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
                                 <DataGridTemplateColumn Header="Status" Width="120">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -306,8 +739,19 @@
                     </Grid>
                 </Border>
 
-                <!-- Hinweise -->
-                <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
+            <!-- Hinweise -->
+            <Border x:Name="NoticesWidget"
+                    Grid.Row="8"
+                    Tag="Notices"
+                    AllowDrop="True"
+                    Background="Transparent"
+                    PreviewMouseLeftButtonDown="Widget_PreviewMouseLeftButtonDown"
+                    MouseMove="Widget_MouseMove"
+                    DragEnter="Widget_DragEnter"
+                    DragOver="Widget_DragOver"
+                    DragLeave="Widget_DragLeave"
+                    Drop="Widget_Drop"
+                    Style="{StaticResource CardBorderStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -361,7 +805,64 @@
                             </StackPanel>
                         </UniformGrid>
 
-                        <DataGrid Grid.Row="6"
+
+                    <ItemsControl Grid.Row="5"
+              Margin="0,10,0,0"
+              x:Name="NoticeCardsList">
+
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="260"
+                    Margin="0,0,10,10"
+                    Padding="10"
+                    CornerRadius="10"
+                    BorderThickness="1"
+                    BorderBrush="#E5E7EB"
+                    Background="White">
+
+                                    <Border.ContextMenu>
+                                        <ContextMenu DataContext="{Binding}">
+                                            <MenuItem Header="Bearbeiten"
+                                  Click="EditNoticeCard_Click"/>
+                                            <MenuItem Header="Deaktivieren"
+                                  Click="DeactivateNoticeCard_Click"/>
+                                            <MenuItem Header="Löschen"
+                                  Click="DeleteNoticeCard_Click"/>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}"
+                               FontWeight="Bold"
+                               TextWrapping="Wrap"/>
+
+                                        <Border Background="{Binding CategoryColor}"
+                            CornerRadius="8"
+                            Padding="6,2"
+                            Margin="0,6,0,0"
+                            HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding Category}"
+                                   Foreground="White"/>
+                                        </Border>
+
+                                        <TextBlock Text="{Binding Content}"
+                               Margin="0,6,0,0"
+                               TextWrapping="Wrap"
+                               Foreground="#374151"/>
+
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <!-- NoticesGrid -->
+                    <DataGrid Grid.Row="6"
                                   x:Name="NoticesGrid"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
@@ -369,7 +870,20 @@
                                   IsReadOnly="True"
                                   SelectionMode="Single"
                                   MouseDoubleClick="NoticesGrid_MouseDoubleClick">
-                            <DataGrid.Columns>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Bearbeiten"
+                                    Click="EditNoticeMenuItem_Click"/>
+                                <MenuItem Header="Deaktivieren"
+                                    Click="DeactivateNoticeMenuItem_Click"/>
+                                <MenuItem Header="Aktivieren"
+                                        Click="ActivateNoticeMenuItem_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Löschen"
+                                    Click="DeleteNoticeMenuItem_Click"/>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                        <DataGrid.Columns>
                                 <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="170"/>
                                 <DataGridTemplateColumn Header="Kategorie" Width="110">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -391,10 +905,20 @@
                         </DataGrid>
                     </Grid>
                 </Border>
-            </Grid>
-
+            
             <!-- Heutige Termine -->
-            <Border Grid.Row="8" Style="{StaticResource CardBorderStyle}">
+            <Border x:Name="AppointmentsWidget"
+                    Grid.Row="10"
+                    Tag="Appointments"
+                    AllowDrop="True"
+                    Background="Transparent"
+                    PreviewMouseLeftButtonDown="Widget_PreviewMouseLeftButtonDown"
+                    MouseMove="Widget_MouseMove"
+                    DragEnter="Widget_DragEnter"
+                    DragOver="Widget_DragOver"
+                    DragLeave="Widget_DragLeave"
+                    Drop="Widget_Drop"
+                    Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
