@@ -186,32 +186,56 @@ namespace Praxis.Infrastructure.Services
 
             if (string.IsNullOrWhiteSpace(appointment.Reason))
                 throw new ArgumentException("Grund darf nicht leer sein.");
+
+            if (string.IsNullOrWhiteSpace(appointment.RoomName))
+                throw new ArgumentException("Raum muss ausgewählt werden.");
+
+            appointment.Reason = appointment.Reason.Trim();
+            appointment.RoomName = appointment.RoomName.Trim();
+            appointment.Status = string.IsNullOrWhiteSpace(appointment.Status)
+                ? "Geplant"
+                : appointment.Status.Trim();
+
+            appointment.TreatmentState = string.IsNullOrWhiteSpace(appointment.TreatmentState)
+                ? "Geplant"
+                : appointment.TreatmentState.Trim();
         }
         /// <summary>
         /// Prüft, ob ein Termin mit bestehenden Terminen kollidiert.
         /// </summary>
         private async Task CheckForConflictAsync(Appointment appointment)
         {
+            var roomName = appointment.RoomName?.Trim();
+
             var isAvailable = await IsTimeSlotAvailableAsync(
                 appointment.StartTime,
                 appointment.DurationMinutes,
+                roomName,
                 appointment.Id == 0 ? null : appointment.Id);
 
             if (!isAvailable)
-                throw new InvalidOperationException("Es existiert bereits ein Termin in diesem Zeitraum.");
+            {
+                if (string.IsNullOrWhiteSpace(roomName))
+                    throw new InvalidOperationException("Es existiert bereits ein Termin in diesem Zeitraum.");
+
+                throw new InvalidOperationException(
+                    $"Der Raum '{roomName}' ist in diesem Zeitraum bereits belegt.");
+            }
         }
         /// <summary>
         /// Gibt verfügbare Zeitfenster für einen Tag zurück.
         /// </summary>
-        public async Task<List<DateTime>> GetAvailableSlotsAsync(DateTime date, int durationMinutes)
+        public async Task<List<DateTime>> GetAvailableSlotsAsync(DateTime date, int durationMinutes, string? roomName = null)
         {
             var availableSlots = new List<DateTime>();
+
             if (date.Date < DateTime.Today)
-                return new List<DateTime>();
+                return availableSlots;
 
             if (durationMinutes <= 0)
                 return availableSlots;
 
+            var normalizedRoomName = roomName?.Trim();
             var workingRanges = GetWorkingTimeRanges(date);
             var now = DateTime.Now;
             var isToday = date.Date == now.Date;
@@ -220,7 +244,6 @@ namespace Praxis.Infrastructure.Services
             {
                 var firstPossibleSlot = range.Start;
 
-                // Falls heute → keine Slots in der Vergangenheit
                 if (isToday)
                 {
                     var nextPossibleTime = RoundUpToNext15Minutes(now);
@@ -233,7 +256,11 @@ namespace Praxis.Infrastructure.Services
 
                 for (var slot = firstPossibleSlot; slot.AddMinutes(durationMinutes) <= range.End; slot = slot.AddMinutes(15))
                 {
-                    var isAvailable = await IsTimeSlotAvailableAsync(slot, durationMinutes);
+                    var isAvailable = await IsTimeSlotAvailableAsync(
+                        slot,
+                        durationMinutes,
+                        normalizedRoomName);
+
                     if (isAvailable)
                     {
                         availableSlots.Add(slot);
@@ -242,6 +269,75 @@ namespace Praxis.Infrastructure.Services
             }
 
             return availableSlots;
+        }
+        public async Task<List<DateTime>> GetAvailableSlotsForEditAsync(
+                                                                    DateTime date,
+                                                                    int durationMinutes,
+                                                                    string? roomName,
+                                                                    int appointmentId)
+        {
+            var availableSlots = new List<DateTime>();
+
+            if (date.Date < DateTime.Today)
+                return availableSlots;
+
+            if (durationMinutes <= 0)
+                return availableSlots;
+
+            var normalizedRoomName = roomName?.Trim();
+            var workingRanges = GetWorkingTimeRanges(date);
+            var now = DateTime.Now;
+            var isToday = date.Date == now.Date;
+
+            foreach (var range in workingRanges)
+            {
+                var firstPossibleSlot = range.Start;
+
+                if (isToday)
+                {
+                    var nextPossibleTime = RoundUpToNext15Minutes(now);
+
+                    if (nextPossibleTime > firstPossibleSlot)
+                    {
+                        firstPossibleSlot = nextPossibleTime;
+                    }
+                }
+
+                for (var slot = firstPossibleSlot; slot.AddMinutes(durationMinutes) <= range.End; slot = slot.AddMinutes(15))
+                {
+                    var isAvailable = await IsTimeSlotAvailableAsync(
+                        slot,
+                        durationMinutes,
+                        normalizedRoomName,
+                        appointmentId);
+
+                    if (isAvailable)
+                    {
+                        availableSlots.Add(slot);
+                    }
+                }
+            }
+
+            var currentAppointment = await _context.Appointments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+            if (currentAppointment != null &&
+                currentAppointment.StartTime.Date == date.Date &&
+                string.Equals(
+                    currentAppointment.RoomName?.Trim(),
+                    normalizedRoomName,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                if (!availableSlots.Contains(currentAppointment.StartTime))
+                {
+                    availableSlots.Add(currentAppointment.StartTime);
+                }
+            }
+
+            return availableSlots
+                .OrderBy(x => x)
+                .ToList();
         }
         /// <summary>
         /// Gibt die Arbeitszeiten je Wochentag zurück.
@@ -297,12 +393,35 @@ namespace Praxis.Infrastructure.Services
         /// <summary>
         /// Prüft, ob ein Zeitfenster frei ist (keine Überschneidung).
         /// </summary>
-        public async Task<bool> IsTimeSlotAvailableAsync(DateTime startTime, int durationMinutes, int? excludeAppointmentId = null)
+        public async Task<bool> IsTimeSlotAvailableAsync(
+                                                         DateTime startTime,
+                                                         int durationMinutes,
+                                                         string? roomName = null,
+                                                         int? excludeAppointmentId = null)
         {
-            var endTime = startTime.AddMinutes(durationMinutes);
+            if (durationMinutes <= 0)
+                return false;
 
-            var conflict = await _context.Appointments.AnyAsync(a =>
-                (!excludeAppointmentId.HasValue || a.Id != excludeAppointmentId.Value) &&
+            var endTime = startTime.AddMinutes(durationMinutes);
+            var normalizedRoomName = roomName?.Trim();
+
+            var query = _context.Appointments.AsQueryable();
+
+            if (excludeAppointmentId.HasValue)
+            {
+                query = query.Where(a => a.Id != excludeAppointmentId.Value);
+            }
+
+            // Abgesagte Termine sollen keinen Raum blockieren
+            query = query.Where(a => a.TreatmentState != "Abgesagt" && a.Status != "Abgesagt");
+
+            // Nur Konflikte im selben Raum prüfen
+            if (!string.IsNullOrWhiteSpace(normalizedRoomName))
+            {
+                query = query.Where(a => a.RoomName == normalizedRoomName);
+            }
+
+            var conflict = await query.AnyAsync(a =>
                 startTime < a.StartTime.AddMinutes(a.DurationMinutes) &&
                 endTime > a.StartTime);
 

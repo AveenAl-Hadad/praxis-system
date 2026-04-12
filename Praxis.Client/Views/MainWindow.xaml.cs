@@ -50,6 +50,8 @@ namespace Praxis.Client.Views
         private readonly LaborPage _laborPage;
         private readonly AbrechnungPage _abrechnungPage;
         private readonly WaitingRoomPage _waitingRoomPage;
+        private readonly RoomsPage _roomsPage;
+        private readonly PatientAppointmentsPage _patientAppointmentsPage;
 
         private readonly ReportsPage _reportsPage = new ReportsPage();
         private readonly MessagesPage _messagesPage = new MessagesPage();
@@ -62,7 +64,6 @@ namespace Praxis.Client.Views
         private readonly EditUserPage _editUserPage = new EditUserPage();
         private readonly PatientDeletePage _patientDeletePage = new PatientDeletePage();
         private readonly PatientDocumentsPage _patientDocumentsPage = new PatientDocumentsPage();
-        private readonly PatientAppointmentsPage _patientAppointmentsPage = new PatientAppointmentsPage();
       
 
         private readonly IPatientService _patientService;
@@ -80,6 +81,7 @@ namespace Praxis.Client.Views
         private readonly IDashboardTaskService _dashboardTaskService;
         private readonly IPracticeNoticeService _practiceNoticeService;
         private readonly IDashboardLayoutService _dashboardLayoutService;
+        private readonly IRoomService _roomService;
 
 
 
@@ -110,7 +112,8 @@ namespace Praxis.Client.Views
                              IAbrechnungService abrechnungService,
                              IDashboardTaskService dashboardTaskService,
                              IPracticeNoticeService practiceNoticeService,
-                             IDashboardLayoutService dashboardLayoutService)
+                             IDashboardLayoutService dashboardLayoutService,
+                             IRoomService roomService)
         {
             InitializeComponent();
 
@@ -129,14 +132,18 @@ namespace Praxis.Client.Views
             _abrechnungService = abrechnungService;
             _dashboardTaskService = dashboardTaskService;
             _practiceNoticeService = practiceNoticeService;
+            _dashboardLayoutService = dashboardLayoutService;
 
+            _roomService = roomService;
 
             _laborPage = new LaborPage(_laborService);
             _abrechnungPage = new AbrechnungPage(_abrechnungService);
             _waitingRoomPage = new WaitingRoomPage(_appointmentService);
+            _roomsPage = new RoomsPage(_roomService);
+            _patientAppointmentsPage = new PatientAppointmentsPage(_appointmentService, _roomService);
 
             StartSessionTimer();
-            _dashboardLayoutService = dashboardLayoutService;
+           
         }
         #endregion
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -347,7 +354,11 @@ namespace Praxis.Client.Views
                         AddSidebarButton("Benutzer", (s, e) => LoadPage(_userManagementPage), true);
                         AddSidebarButton("Arbeitsplätze", DummySidebarClick);
                         AddSidebarButton("TI-Konfiguration", DummySidebarClick);
-                        AddSidebarButton("Räume", DummySidebarClick);
+                        AddSidebarButton("Räume", async (s, e) =>
+                        {
+                            LoadPage(_roomsPage);
+                            await _roomsPage.RefreshAsync();
+                        });
                         AddSidebarButton("Rollen", DummySidebarClick);
                     }
                     else

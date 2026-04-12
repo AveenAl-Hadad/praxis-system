@@ -19,6 +19,7 @@ public class PraxisDbContext : DbContext
     public DbSet<LaborRecord> LaborRecords => Set<LaborRecord>();
     public DbSet<DashboardTask> DashboardTasks => Set<DashboardTask>();
     public DbSet<PracticeNotice> PracticeNotices => Set<PracticeNotice>();
+    public DbSet<Room> Rooms => Set<Room>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,5 +82,16 @@ public class PraxisDbContext : DbContext
         modelBuilder.Entity<PracticeNotice>()
             .Property(n => n.Title)
             .HasMaxLength(200);
+        modelBuilder.Entity<Room>()
+            .HasIndex(r => r.Name)
+            .IsUnique();
+
+        modelBuilder.Entity<Room>()
+            .Property(r => r.Name)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<Room>()
+            .Property(r => r.Beschreibung)
+            .HasMaxLength(300);
     }
 }

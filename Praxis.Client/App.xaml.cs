@@ -68,6 +68,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IDashboardService, DashboardService>();
                 services.AddTransient<IDashboardTaskService, DashboardTaskService>();
                 services.AddTransient<IPracticeNoticeService, PracticeNoticeService>();
+                services.AddTransient<IRoomService, RoomService>();
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
