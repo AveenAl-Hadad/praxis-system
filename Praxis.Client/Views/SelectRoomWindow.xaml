@@ -1,0 +1,37 @@
+﻿<Window x:Class="Praxis.Client.Views.SelectRoomWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Raum auswählen"
+        Height="220"
+        Width="360"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Bitte Zielraum auswählen:"
+                   FontSize="16"
+                   FontWeight="SemiBold"/>
+
+        <ComboBox x:Name="RoomComboBox"
+                  Grid.Row="2"/>
+
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="Abbrechen"
+                    Width="90"
+                    Margin="0,0,8,0"
+                    Click="CancelButton_Click"/>
+            <Button Content="Übernehmen"
+                    Width="100"
+                    Click="OkButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,28 +1,38 @@
 ﻿<UserControl x:Class="Praxis.Client.Views.Pages.Patienten.PatientAppointmentsPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Background="Transparent">  
+             Background="Transparent">
 
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+              HorizontalScrollBarVisibility="Disabled">
         <Grid Margin="12">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>                <!-- Titel -->
                 <RowDefinition Height="16"/>
-                <RowDefinition Height="Auto"/>
+
+                <RowDefinition Height="Auto"/>                <!-- Patientendaten -->
                 <RowDefinition Height="16"/>
-                <RowDefinition Height="Auto"/>
+
+                <RowDefinition Height="Auto"/>                <!-- Terminformular -->
                 <RowDefinition Height="16"/>
-                <RowDefinition Height="220"/>
+
+                <RowDefinition Height="220"/>                <!-- Freie Slots -->
                 <RowDefinition Height="16"/>
-                <RowDefinition Height="260"/>
+
+                <RowDefinition Height="400"/>                <!-- Kalender -->
                 <RowDefinition Height="16"/>
-                <RowDefinition Height="*"/>
+
+                <RowDefinition Height="*"/>                <!-- Terminliste -->
             </Grid.RowDefinitions>
 
-            <TextBlock Text="Patiententermine" Style="{StaticResource SectionTitleStyle}"/>
+            <TextBlock Grid.Row="0"
+                       Text="Patiententermine"
+                       Style="{StaticResource SectionTitleStyle}"/>
 
             <!-- Patientendaten -->
+            <ScrollViewer Grid.Row="2">
             <Border Grid.Row="2"
-                Style="{StaticResource CardBorderStyle}">
+                    Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="180"/>
@@ -40,46 +50,52 @@
 
                     <TextBlock Text="Patient:" VerticalAlignment="Center"/>
                     <TextBox x:Name="PatientNameTextBox"
-                         Grid.Column="1"
-                         Margin="0,4,0,4"
-                         IsReadOnly="True"/>
+                             Grid.Column="1"
+                             Margin="0,4,0,4"
+                             IsReadOnly="True"/>
 
-                    <TextBlock Grid.Row="1" Text="Geburtsdatum:" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1"
+                               Text="Geburtsdatum:"
+                               VerticalAlignment="Center"/>
                     <TextBox x:Name="GeburtsdatumTextBox"
-                         Grid.Row="1"
-                         Grid.Column="1"
-                         Margin="0,4,0,4"
-                         IsReadOnly="True"/>
+                             Grid.Row="1"
+                             Grid.Column="1"
+                             Margin="0,4,0,4"
+                             IsReadOnly="True"/>
 
-                    <TextBlock Grid.Row="2" Text="Telefon:" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="2"
+                               Text="Telefon:"
+                               VerticalAlignment="Center"/>
                     <TextBox x:Name="TelefonTextBox"
-                         Grid.Row="2"
-                         Grid.Column="1"
-                         Margin="0,4,0,4"
-                         IsReadOnly="True"/>
+                             Grid.Row="2"
+                             Grid.Column="1"
+                             Margin="0,4,0,4"
+                             IsReadOnly="True"/>
 
-                    <TextBlock Grid.Column="3" Text="E-Mail:" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="3"
+                               Text="E-Mail:"
+                               VerticalAlignment="Center"/>
                     <TextBox x:Name="EmailTextBox"
-                         Grid.Column="4"
-                         Margin="0,4,0,4"
-                         IsReadOnly="True"/>
+                             Grid.Column="4"
+                             Margin="0,4,0,4"
+                             IsReadOnly="True"/>
 
                     <TextBlock Grid.Row="1"
-                           Grid.Column="3"
-                           Text="Hinweis:"
-                           VerticalAlignment="Center"/>
+                               Grid.Column="3"
+                               Text="Hinweis:"
+                               VerticalAlignment="Center"/>
                     <TextBlock Grid.Row="1"
-                           Grid.Column="4"
-                           Text="Datum, Dauer und Raum wählen – freie Slots werden automatisch berechnet."
-                           VerticalAlignment="Center"
-                           TextWrapping="Wrap"
-                           Foreground="{DynamicResource MutedTextBrush}"/>
+                               Grid.Column="4"
+                               Text="Datum, Dauer und Raum wählen – freie Slots werden automatisch berechnet."
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource MutedTextBrush}"/>
                 </Grid>
             </Border>
-
+            </ScrollViewer>
             <!-- Terminformular -->
             <Border Grid.Row="4"
-                Style="{StaticResource CardBorderStyle}">
+                    Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="180"/>
@@ -98,56 +114,56 @@
 
                     <TextBlock Text="Datum:" VerticalAlignment="Center"/>
                     <DatePicker x:Name="AppointmentDatePicker"
-                            Grid.Column="1"
-                            Margin="0,4,0,4"
-                            SelectedDateChanged="AppointmentCriteria_Changed"/>
+                                Grid.Column="1"
+                                Margin="0,4,0,4"
+                                SelectedDateChanged="AppointmentCriteria_Changed"/>
 
                     <TextBlock Grid.Column="3"
-                           Text="Uhrzeit (HH:mm):"
-                           VerticalAlignment="Center"/>
+                               Text="Uhrzeit (HH:mm):"
+                               VerticalAlignment="Center"/>
                     <TextBox x:Name="AppointmentTimeTextBox"
-                         Grid.Column="4"
-                         Margin="0,4,0,4"
-                         Text="09:00"/>
+                             Grid.Column="4"
+                             Margin="0,4,0,4"
+                             Text="09:00"/>
 
                     <TextBlock Grid.Row="1"
-                           Text="Dauer (Minuten):"
-                           VerticalAlignment="Center"/>
+                               Text="Dauer (Minuten):"
+                               VerticalAlignment="Center"/>
                     <TextBox x:Name="DurationTextBox"
-                         Grid.Row="1"
-                         Grid.Column="1"
-                         Margin="0,4,0,4"
-                         Text="30"
-                         TextChanged="AppointmentCriteria_Changed"/>
+                             Grid.Row="1"
+                             Grid.Column="1"
+                             Margin="0,4,0,4"
+                             Text="30"
+                             TextChanged="AppointmentCriteria_Changed"/>
 
                     <TextBlock Grid.Row="1"
-                           Grid.Column="3"
-                           Text="Raum:"
-                           VerticalAlignment="Center"/>
+                               Grid.Column="3"
+                               Text="Raum:"
+                               VerticalAlignment="Center"/>
                     <ComboBox x:Name="RoomComboBox"
-                          Grid.Row="1"
-                          Grid.Column="4"
-                          Margin="0,4,0,4"
-                          DisplayMemberPath="Name"
-                          SelectedValuePath="Name"
-                          SelectionChanged="AppointmentCriteria_Changed"/>
+                              Grid.Row="1"
+                              Grid.Column="4"
+                              Margin="0,4,0,4"
+                              DisplayMemberPath="Name"
+                              SelectedValuePath="Name"
+                              SelectionChanged="AppointmentCriteria_Changed"/>
 
                     <TextBlock Grid.Row="2"
-                           Text="Grund:"
-                           VerticalAlignment="Center"/>
+                               Text="Grund:"
+                               VerticalAlignment="Center"/>
                     <TextBox x:Name="ReasonTextBox"
-                         Grid.Row="2"
-                         Grid.Column="1"
-                         Margin="0,4,0,4"/>
+                             Grid.Row="2"
+                             Grid.Column="1"
+                             Margin="0,4,0,4"/>
 
                     <TextBlock Grid.Row="2"
-                           Grid.Column="3"
-                           Text="Status:"
-                           VerticalAlignment="Center"/>
+                               Grid.Column="3"
+                               Text="Status:"
+                               VerticalAlignment="Center"/>
                     <ComboBox x:Name="StatusComboBox"
-                          Grid.Row="2"
-                          Grid.Column="4"
-                          Margin="0,4,0,4">
+                              Grid.Row="2"
+                              Grid.Column="4"
+                              Margin="0,4,0,4">
                         <ComboBoxItem Content="Geplant" IsSelected="True"/>
                         <ComboBoxItem Content="Bestätigt"/>
                         <ComboBoxItem Content="Verschoben"/>
@@ -155,40 +171,40 @@
                     </ComboBox>
 
                     <StackPanel Grid.Row="3"
-                            Grid.ColumnSpan="5"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Right">
+                                Grid.ColumnSpan="5"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right">
                         <Button Content="Freie Slots aktualisieren"
-                            Width="150"
-                            Margin="0,0,8,0"
-                            Click="RefreshSlotsButton_Click"/>
+                                Width="150"
+                                Margin="0,0,8,0"
+                                Click="RefreshSlotsButton_Click"/>
 
                         <Button Content="Neu"
-                            Width="90"
-                            Margin="0,0,8,0"
-                            Click="NewAppointmentButton_Click"/>
+                                Width="90"
+                                Margin="0,0,8,0"
+                                Click="NewAppointmentButton_Click"/>
 
                         <Button Content="Speichern"
-                            Width="100"
-                            Margin="0,0,8,0"
-                            Style="{StaticResource SuccessButtonStyle}"
-                            Click="SaveAppointmentButton_Click"/>
+                                Width="100"
+                                Margin="0,0,8,0"
+                                Style="{StaticResource SuccessButtonStyle}"
+                                Click="SaveAppointmentButton_Click"/>
 
                         <Button Content="Löschen"
-                            Width="90"
-                            Margin="0,0,8,0"
-                            Click="DeleteAppointmentButton_Click"/>
+                                Width="90"
+                                Margin="0,0,8,0"
+                                Click="DeleteAppointmentButton_Click"/>
 
                         <Button Content="Zurück zur Suche"
-                            Width="140"
-                            Click="BackButton_Click"/>
+                                Width="140"
+                                Click="BackButton_Click"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Freie Slots -->
             <Border Grid.Row="6"
-                Style="{StaticResource CardBorderStyle}">
+                    Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -197,65 +213,67 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Freie Zeitfenster"
-                           FontSize="18"
-                           FontWeight="SemiBold"/>
+                               FontSize="18"
+                               FontWeight="SemiBold"/>
 
                     <ListBox Grid.Row="2"
-                         x:Name="AvailableSlotsListBox"
-                         SelectionChanged="AvailableSlotsListBox_SelectionChanged">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border Padding="10"
-                                    Margin="0,0,0,6"
-                                    BorderThickness="1"
-                                    CornerRadius="8">
-                             <TextBlock Text="{Binding SlotLabel}"/>                                    
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                             x:Name="AvailableSlotsListBox"
+                             SelectionChanged="AvailableSlotsListBox_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="10"
+                                        Margin="0,0,0,6"
+                                        BorderThickness="1"
+                                        CornerRadius="8">
+                                    <TextBlock Text="{Binding SlotLabel}"/>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </Grid>
             </Border>
 
-        <!-- Raumplaner / Rasteransicht -->
-        <Border Grid.Row="8" Style="{StaticResource CardBorderStyle}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <!-- Raumplaner / Rasteransicht -->
+            <Border Grid.Row="8"
+                    Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Kalender-Raumplaner"
-                       FontSize="18"
-                       FontWeight="SemiBold"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Kalender-Raumplaner"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"/>
 
-                    <TextBlock Text="  (15-Minuten-Raster)"
-                       Margin="8,2,0,0"
-                       VerticalAlignment="Center"
-                       Foreground="{DynamicResource MutedTextBrush}"/>
-                </StackPanel>
+                        <TextBlock Text="  (15-Minuten-Raster)"
+                                   Margin="8,2,0,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource MutedTextBrush}"/>
+                    </StackPanel>
 
-                <ScrollViewer Grid.Row="2"
-                      HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Auto">
-                    <Grid x:Name="RoomPlannerGrid"/>
-                </ScrollViewer>
-            </Grid>
-        </Border>
+                    <ScrollViewer Grid.Row="2"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto">
+                        <Grid x:Name="RoomPlannerGrid"/>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
 
-        <!-- Terminliste -->
+            <!-- Terminliste -->
             <Border Grid.Row="10"
-                Style="{StaticResource CardBorderStyle}">
+                    Style="{StaticResource CardBorderStyle}">
                 <DataGrid x:Name="AppointmentsGrid"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      SelectionChanged="AppointmentsGrid_SelectionChanged">
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          SelectionChanged="AppointmentsGrid_SelectionChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
+                        <DataGridTextColumn Header="Patient" Binding="{Binding Patient.FullName}" Width="180"/>
                         <DataGridTextColumn Header="Beginn" Binding="{Binding StartTime, StringFormat=dd.MM.yyyy HH:mm}" Width="170"/>
                         <DataGridTextColumn Header="Ende" Binding="{Binding EndTime, StringFormat=dd.MM.yyyy HH:mm}" Width="170"/>
                         <DataGridTextColumn Header="Dauer" Binding="{Binding DurationMinutes}" Width="90"/>
@@ -266,4 +284,5 @@
                 </DataGrid>
             </Border>
         </Grid>
-    </UserControl>
+    </ScrollViewer>
+</UserControl>

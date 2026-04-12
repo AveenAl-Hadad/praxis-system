@@ -13,6 +13,8 @@ using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using System.Windows.Media;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
+using System.Windows.Controls.Primitives;
+using Praxis.Client.Views;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
@@ -422,13 +424,263 @@ namespace Praxis.Client.Views.Pages.Patienten
                 Tag = appointment.Id,
                 Background = backgroundBrush,
                 BorderBrush = borderBrush,
-                BorderThickness = new Thickness(2)
+                BorderThickness = new Thickness(2),
+                ContextMenu = BuildPlannerContextMenu(appointment)
             };
 
             button.Click += RoomPlannerAppointmentButton_Click;
 
             return button;
         }
+        private ContextMenu BuildPlannerContextMenu(Appointment appointment)
+        {
+            var menu = new ContextMenu();
+
+            var openItem = new MenuItem
+            {
+                Header = "Termin öffnen",
+                Tag = appointment.Id
+            };
+            openItem.Click += OpenAppointmentMenuItem_Click;
+            menu.Items.Add(openItem);
+
+            menu.Items.Add(new Separator());
+
+            var checkInItem = new MenuItem
+            {
+                Header = "Check-in",
+                Tag = appointment.Id,
+                IsEnabled = !appointment.CheckInTime.HasValue &&
+                            !string.Equals(appointment.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase)
+            };
+            checkInItem.Click += CheckInMenuItem_Click;
+            menu.Items.Add(checkInItem);
+
+            var inTreatmentItem = new MenuItem
+            {
+                Header = "In Behandlung",
+                Tag = appointment.Id,
+                IsEnabled = !string.Equals(appointment.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase) &&
+                            !string.Equals(appointment.TreatmentState, "In Behandlung", StringComparison.OrdinalIgnoreCase)
+            };
+            inTreatmentItem.Click += InTreatmentMenuItem_Click;
+            menu.Items.Add(inTreatmentItem);
+
+            var completeItem = new MenuItem
+            {
+                Header = "Abschließen",
+                Tag = appointment.Id,
+                IsEnabled = !string.Equals(appointment.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase)
+            };
+            completeItem.Click += CompleteMenuItem_Click;
+            menu.Items.Add(completeItem);
+
+            var cancelItem = new MenuItem
+            {
+                Header = "Absagen",
+                Tag = appointment.Id,
+                IsEnabled = !string.Equals(appointment.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase)
+            };
+            cancelItem.Click += CancelMenuItem_Click;
+            menu.Items.Add(cancelItem);
+
+            menu.Items.Add(new Separator());
+
+            var moveRoomItem = new MenuItem
+            {
+                Header = "In anderen Raum verschieben",
+                Tag = appointment.Id,
+                IsEnabled = !string.Equals(appointment.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase)
+            };
+            moveRoomItem.Click += MoveRoomMenuItem_Click;
+            menu.Items.Add(moveRoomItem);
+
+            return menu;
+        }
+        //Termin öffnen
+        private async void OpenAppointmentMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            await OpenAppointmentInFormAsync(appointmentId.Value);
+        }
+        //Check-in
+        private async void CheckInMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            try
+            {
+                await _appointmentService.CheckInAsync(appointmentId.Value);
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await OpenAppointmentInFormAsync(appointmentId.Value);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        //In Behandlung
+        private async void InTreatmentMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            try
+            {
+                var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId.Value);
+                if (appointment == null)
+                    return;
+
+                appointment.TreatmentState = "In Behandlung";
+
+                await _appointmentService.UpdateAppointmentAsync(appointment);
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await OpenAppointmentInFormAsync(appointmentId.Value);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        //Abschließen
+        private async void CompleteMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            try
+            {
+                await _appointmentService.CompleteAppointmentAsync(appointmentId.Value);
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await OpenAppointmentInFormAsync(appointmentId.Value);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        //Absagen
+        private async void CancelMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            var result = MessageBox.Show(
+                "Termin wirklich absagen?",
+                "Bestätigung",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                await _appointmentService.CancelAppointmentAsync(appointmentId.Value, "Abgesagt im Kalender");
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await OpenAppointmentInFormAsync(appointmentId.Value);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        //Raum wechseln
+        private async void MoveRoomMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            try
+            {
+                var rooms = await _roomService.GetActiveAsync();
+                if (rooms.Count == 0)
+                {
+                    MessageBox.Show("Es sind keine aktiven Räume vorhanden.");
+                    return;
+                }
+
+                var dialog = new SelectRoomWindow(rooms.Select(r => r.Name).ToList());
+                dialog.Owner = Window.GetWindow(this);
+
+                var dialogResult = dialog.ShowDialog();
+                if (dialogResult != true || string.IsNullOrWhiteSpace(dialog.SelectedRoomName))
+                    return;
+
+                await _appointmentService.MoveToRoomAsync(appointmentId.Value, dialog.SelectedRoomName);
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await OpenAppointmentInFormAsync(appointmentId.Value);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        //Hilfsmethoden ergänzen
+
+       private int? GetAppointmentIdFromMenuSender(object sender)
+        {
+            if (sender is not MenuItem menuItem)
+                return null;
+
+            if (menuItem.Tag is int appointmentId)
+                return appointmentId;
+
+            return null;
+        }
+
+        private async Task OpenAppointmentInFormAsync(int appointmentId)
+        {
+            var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
+            if (appointment == null)
+                return;
+
+            _isLoadingForm = true;
+
+            _selectedAppointment = appointment;
+
+            AppointmentDatePicker.SelectedDate = appointment.StartTime.Date;
+            AppointmentTimeTextBox.Text = appointment.StartTime.ToString("HH:mm");
+            DurationTextBox.Text = appointment.DurationMinutes.ToString();
+            ReasonTextBox.Text = appointment.Reason;
+
+            SelectStatus(appointment.Status);
+            RoomComboBox.SelectedValue = appointment.RoomName;
+
+            _isLoadingForm = false;
+
+            await RefreshAvailableSlotsAsync();
+        }
+
         private string GetPlannerTitlePrefix(Appointment appointment)
         {
             var status = appointment.Status?.Trim().ToLowerInvariant() ?? string.Empty;
@@ -668,25 +920,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             if (button.Tag is not int appointmentId)
                 return;
 
-            var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
-            if (appointment == null)
-                return;
-
-            _isLoadingForm = true;
-
-            _selectedAppointment = appointment;
-
-            AppointmentDatePicker.SelectedDate = appointment.StartTime.Date;
-            AppointmentTimeTextBox.Text = appointment.StartTime.ToString("HH:mm");
-            DurationTextBox.Text = appointment.DurationMinutes.ToString();
-            ReasonTextBox.Text = appointment.Reason;
-
-            SelectStatus(appointment.Status);
-            RoomComboBox.SelectedValue = appointment.RoomName;
-
-            _isLoadingForm = false;
-
-            await RefreshAvailableSlotsAsync();
+            await OpenAppointmentInFormAsync(appointmentId);
         }
 
         private string BuildPlannerStatusLabel(Appointment appointment)
