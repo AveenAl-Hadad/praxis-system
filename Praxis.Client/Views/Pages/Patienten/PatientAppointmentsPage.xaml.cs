@@ -15,6 +15,10 @@ using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
 using System.Windows.Controls.Primitives;
 using Praxis.Client.Views;
+using Point = System.Windows.Point;
+using DragDropEffects = System.Windows.DragDropEffects;
+using DragEventArgs = System.Windows.DragEventArgs;
+using DataObject = System.Windows.DataObject;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
@@ -27,6 +31,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         private Appointment? _selectedAppointment;
         private bool _isLoadingForm;
         private ListBox? _availableSlotsListBox;
+        private Point? _plannerDragStartPoint;
 
         public PatientAppointmentsPage(
             IAppointmentService appointmentService,
@@ -319,13 +324,34 @@ namespace Praxis.Client.Views.Pages.Patienten
             {
                 BorderThickness = new Thickness(1),
                 Margin = new Thickness(0),
-                Padding = new Thickness(0)
+                Padding = new Thickness(0),
+                AllowDrop = true,
+                Tag = new PlannerDropTarget
+                {
+                    Row = row,
+                    Column = column
+                }
             };
+
+            border.DragEnter += PlannerCell_DragEnter;
+            border.DragOver += PlannerCell_DragOver;
+            border.Drop += PlannerCell_Drop;
 
             Grid.SetRow(border, row);
             Grid.SetColumn(border, column);
 
             RoomPlannerGrid.Children.Add(border);
+        }
+        //Neue Hilfsklassen für Drag-Daten Datei
+        private sealed class PlannerDropTarget
+        {
+            public int Row { get; set; }
+            public int Column { get; set; }
+        }
+
+        private sealed class PlannerDragPayload
+        {
+            public int AppointmentId { get; set; }
         }
         //Termine in Raster eintragen
         private void FillRoomPlannerGridAppointments(List<string> roomNames, List<Appointment> appointments)
@@ -365,6 +391,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         }
         //Termin-Button im Kalender
         // Kalender-Button farbig machen Datei
+       // Drag vom Terminblock starten
         private Button CreatePlannerAppointmentButton(Appointment appointment)
         {
             var patientName = appointment.Patient?.FullName ?? $"Patient #{appointment.PatientId}";
@@ -414,23 +441,178 @@ namespace Praxis.Client.Views.Pages.Patienten
             stack.Children.Add(reason);
             stack.Children.Add(status);
 
-            var button = new Button
+           var button = new Button
             {
                 Margin = new Thickness(2),
                 Padding = new Thickness(6),
-                HorizontalContentAlignment = HorizontalAlignment.Left,
+                HorizontalContentAlignment = System.Windows.HorizontalAlignment.Left,
                 VerticalContentAlignment = VerticalAlignment.Top,
                 Content = stack,
                 Tag = appointment.Id,
                 Background = backgroundBrush,
                 BorderBrush = borderBrush,
                 BorderThickness = new Thickness(2),
-                ContextMenu = BuildPlannerContextMenu(appointment)
+                ContextMenu = BuildPlannerContextMenu(appointment),
+                AllowDrop = false
             };
 
             button.Click += RoomPlannerAppointmentButton_Click;
+            var isCancelled =
+                        string.Equals(appointment.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(appointment.TreatmentState, "Abgesagt", StringComparison.OrdinalIgnoreCase);
+
+            if (!isCancelled)
+            {
+                button.PreviewMouseMove += PlannerAppointmentButton_PreviewMouseMove;
+            }
 
             return button;
+        }
+
+        //Drag-Start-Handler einbauen      
+        private void PlannerAppointmentButton_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is not Button button)
+                return;
+
+            if (e.LeftButton != System.Windows.Input.MouseButtonState.Pressed)
+            {
+                _plannerDragStartPoint = null;
+                return;
+            }
+
+            var currentPosition = e.GetPosition(this);
+
+            if (_plannerDragStartPoint == null)
+            {
+                _plannerDragStartPoint = currentPosition;
+                return;
+            }
+
+            var diff = currentPosition - _plannerDragStartPoint.Value;
+            if (Math.Abs(diff.X) < 8 && Math.Abs(diff.Y) < 8)
+                return;
+
+            if (button.Tag is not int appointmentId)
+                return;
+
+            var payload = new PlannerDragPayload
+            {
+                AppointmentId = appointmentId
+            };
+
+            var data = new DataObject(typeof(PlannerDragPayload), payload);
+            DragDrop.DoDragDrop(button, data, DragDropEffects.Move);
+
+            _plannerDragStartPoint = null;
+        }
+        private void ResetPlannerDragState()
+        {
+            _plannerDragStartPoint = null;
+        }
+        //Drop-Handler einbauen
+       private void PlannerCell_DragEnter(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(typeof(PlannerDragPayload)))
+            {
+                e.Effects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+
+            e.Effects = DragDropEffects.Move;
+            e.Handled = true;
+        }
+        private void PlannerCell_DragOver(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(typeof(PlannerDragPayload)))
+            {
+                e.Effects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+
+            e.Effects = DragDropEffects.Move;
+            e.Handled = true;
+        }
+        private async void PlannerCell_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (!e.Data.GetDataPresent(typeof(PlannerDragPayload)))
+                    return;
+
+                if (sender is not Border border)
+                    return;
+
+                if (border.Tag is not PlannerDropTarget dropTarget)
+                    return;
+
+                var payload = e.Data.GetData(typeof(PlannerDragPayload)) as PlannerDragPayload;
+                if (payload == null)
+                    return;
+
+                await MoveAppointmentByDropAsync(payload.AppointmentId, dropTarget);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                ResetPlannerDragState();
+            }
+        }
+        //Termin anhand von Rasterposition verschieben
+        private async Task MoveAppointmentByDropAsync(int appointmentId, PlannerDropTarget dropTarget)
+        {
+            if (AppointmentDatePicker.SelectedDate == null)
+                return;
+
+            var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
+            if (appointment == null)
+                return;
+
+            var roomNames = (await _roomService.GetActiveAsync())
+                .OrderBy(r => r.Name)
+                .Select(r => r.Name)
+                .ToList();
+
+            if (dropTarget.Column <= 0 || dropTarget.Column > roomNames.Count)
+                return;
+
+            var targetRoomName = roomNames[dropTarget.Column - 1];
+            var targetStartTime = BuildPlannerDateTimeFromRow(
+                AppointmentDatePicker.SelectedDate.Value.Date,
+                dropTarget.Row);
+
+            if (targetStartTime == appointment.StartTime &&
+                string.Equals(targetRoomName, appointment.RoomName, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            appointment.StartTime = targetStartTime;
+            appointment.RoomName = targetRoomName;
+
+            await _appointmentService.UpdateAppointmentAsync(appointment);
+
+            await RefreshAppointmentsAsync();
+            await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
+            await OpenAppointmentInFormAsync(appointmentId);
+        }
+        private DateTime BuildPlannerDateTimeFromRow(DateTime date, int row)
+        {
+            const int plannerStartHour = 8;
+            const int slotMinutes = 15;
+
+            if (row < 1)
+                row = 1;
+
+            var minutesFromStart = (row - 1) * slotMinutes;
+            return date.Date.AddHours(plannerStartHour).AddMinutes(minutesFromStart);
         }
         private ContextMenu BuildPlannerContextMenu(Appointment appointment)
         {
@@ -914,6 +1096,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         // Status-Text aufbereiten
         private async void RoomPlannerAppointmentButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetPlannerDragState();
             if (sender is not Button button)
                 return;
 
