@@ -19,6 +19,9 @@ using Point = System.Windows.Point;
 using DragDropEffects = System.Windows.DragDropEffects;
 using DragEventArgs = System.Windows.DragEventArgs;
 using DataObject = System.Windows.DataObject;
+using System.Windows.Input;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+using Cursors = System.Windows.Input.Cursors;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
@@ -32,6 +35,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         private bool _isLoadingForm;
         private ListBox? _availableSlotsListBox;
         private Point? _plannerDragStartPoint;
+        private PlannerResizeState? _plannerResizeState;
 
         public PatientAppointmentsPage(
             IAppointmentService appointmentService,
@@ -391,7 +395,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         }
         //Termin-Button im Kalender
         // Kalender-Button farbig machen Datei
-       // Drag vom Terminblock starten
+        // Drag vom Terminblock starten
         private Button CreatePlannerAppointmentButton(Appointment appointment)
         {
             var patientName = appointment.Patient?.FullName ?? $"Patient #{appointment.PatientId}";
@@ -435,13 +439,27 @@ namespace Praxis.Client.Views.Pages.Patienten
                 Foreground = foregroundBrush
             };
 
+            var resizeHandle = new Border
+            {
+                Height = 10,
+                Margin = new Thickness(0, 6, 0, 0),
+                Background = borderBrush,
+                Cursor = Cursors.SizeNS,
+                Tag = appointment.Id
+            };
+
+            resizeHandle.PreviewMouseLeftButtonDown += ResizeHandle_PreviewMouseLeftButtonDown;
+            resizeHandle.PreviewMouseMove += ResizeHandle_PreviewMouseMove;
+            resizeHandle.PreviewMouseLeftButtonUp += ResizeHandle_PreviewMouseLeftButtonUp;
+
             var stack = new StackPanel();
             stack.Children.Add(title);
             stack.Children.Add(patient);
             stack.Children.Add(reason);
             stack.Children.Add(status);
+            stack.Children.Add(resizeHandle);
 
-           var button = new Button
+            var button = new Button
             {
                 Margin = new Thickness(2),
                 Padding = new Thickness(6),
@@ -457,9 +475,10 @@ namespace Praxis.Client.Views.Pages.Patienten
             };
 
             button.Click += RoomPlannerAppointmentButton_Click;
+
             var isCancelled =
-                        string.Equals(appointment.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(appointment.TreatmentState, "Abgesagt", StringComparison.OrdinalIgnoreCase);
+                string.Equals(appointment.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(appointment.TreatmentState, "Abgesagt", StringComparison.OrdinalIgnoreCase);
 
             if (!isCancelled)
             {
@@ -468,10 +487,117 @@ namespace Praxis.Client.Views.Pages.Patienten
 
             return button;
         }
+        //Resize starten
+        private void ResizeHandle_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not Border border)
+                return;
 
+            if (border.Tag is not int appointmentId)
+                return;
+
+            var position = e.GetPosition(this);
+
+            var appointmentTask = _appointmentService.GetAppointmentByIdAsync(appointmentId);
+            appointmentTask.Wait();
+
+            var appointment = appointmentTask.Result;
+            if (appointment == null)
+                return;
+
+            _plannerResizeState = new PlannerResizeState
+            {
+                AppointmentId = appointmentId,
+                StartPoint = position,
+                OriginalDurationMinutes = appointment.DurationMinutes
+            };
+
+            border.CaptureMouse();
+            e.Handled = true;
+        }
+        //Resize während Ziehen
+        private void ResizeHandle_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (_plannerResizeState == null)
+                return;
+
+            if (e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            e.Handled = true;
+        }
+        //Resize abschließen
+        private async void ResizeHandle_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                if (_plannerResizeState == null)
+                    return;
+
+                if (sender is not Border border)
+                    return;
+
+                var endPoint = e.GetPosition(this);
+                var verticalDelta = endPoint.Y - _plannerResizeState.StartPoint.Y;
+
+                const double plannerRowHeight = 52.0;
+                const int slotMinutes = 15;
+
+                var slotDelta = (int)Math.Round(verticalDelta / plannerRowHeight);
+                var newDuration = _plannerResizeState.OriginalDurationMinutes + (slotDelta * slotMinutes);
+
+                if (newDuration < 15)
+                    newDuration = 15;
+
+                var appointment = await _appointmentService.GetAppointmentByIdAsync(_plannerResizeState.AppointmentId);
+                if (appointment == null)
+                    return;
+
+                if (newDuration == appointment.DurationMinutes)
+                    return;
+
+                appointment.DurationMinutes = newDuration;
+                var appointmentEnd = appointment.StartTime.AddMinutes(newDuration);
+                var plannerDayEnd = appointment.StartTime.Date.AddHours(18);
+
+                if (appointmentEnd > plannerDayEnd)
+                {
+                    MessageBox.Show("Der Termin darf nicht über das Kalenderende hinausgehen.",
+                        "Hinweis",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                await _appointmentService.UpdateAppointmentAsync(appointment);
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await OpenAppointmentInFormAsync(appointment.Id);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                if (sender is Border border)
+                    border.ReleaseMouseCapture();
+
+                _plannerResizeState = null;
+            }
+        }
+        private bool IsResizeInProgress()
+        {
+            return _plannerResizeState != null;
+        }
         //Drag-Start-Handler einbauen      
         private void PlannerAppointmentButton_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
+            if (IsResizeInProgress())
+                return;
             if (sender is not Button button)
                 return;
 
@@ -511,7 +637,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             _plannerDragStartPoint = null;
         }
         //Drop-Handler einbauen
-       private void PlannerCell_DragEnter(object sender, DragEventArgs e)
+        private void PlannerCell_DragEnter(object sender, DragEventArgs e)
         {
             if (!e.Data.GetDataPresent(typeof(PlannerDragPayload)))
             {
@@ -828,8 +954,13 @@ namespace Praxis.Client.Views.Pages.Patienten
             }
         }
         //Hilfsmethoden ergänzen
-
-       private int? GetAppointmentIdFromMenuSender(object sender)
+        private sealed class PlannerResizeState
+        {
+            public int AppointmentId { get; set; }
+            public Point StartPoint { get; set; }
+            public int OriginalDurationMinutes { get; set; }
+        }
+        private int? GetAppointmentIdFromMenuSender(object sender)
         {
             if (sender is not MenuItem menuItem)
                 return null;
@@ -1097,6 +1228,10 @@ namespace Praxis.Client.Views.Pages.Patienten
         private async void RoomPlannerAppointmentButton_Click(object sender, RoutedEventArgs e)
         {
             ResetPlannerDragState();
+
+            if (IsResizeInProgress())
+                return;
+
             if (sender is not Button button)
                 return;
 
