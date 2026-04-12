@@ -9,6 +9,10 @@ using Praxis.Domain.Entities;
 using Button = System.Windows.Controls.Button;
 using ListBox = System.Windows.Controls.ListBox;
 using MessageBox = System.Windows.MessageBox;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
+using System.Windows.Media;
+using Brush = System.Windows.Media.Brush;
+using Brushes = System.Windows.Media.Brushes;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
@@ -358,38 +362,48 @@ namespace Praxis.Client.Views.Pages.Patienten
             }
         }
         //Termin-Button im Kalender
+        // Kalender-Button farbig machen Datei
         private Button CreatePlannerAppointmentButton(Appointment appointment)
         {
             var patientName = appointment.Patient?.FullName ?? $"Patient #{appointment.PatientId}";
             var endTime = appointment.StartTime.AddMinutes(appointment.DurationMinutes);
 
+            var backgroundBrush = GetPlannerBackgroundBrush(appointment);
+            var borderBrush = GetPlannerBorderBrush(appointment);
+            var foregroundBrush = GetPlannerForegroundBrush(appointment);
+
             var title = new TextBlock
             {
-                Text = $"{appointment.StartTime:HH:mm} - {endTime:HH:mm}",
+                Text = $"{GetPlannerTitlePrefix(appointment)}{appointment.StartTime:HH:mm} - {endTime:HH:mm}",
                 FontWeight = FontWeights.SemiBold,
-                TextWrapping = TextWrapping.Wrap
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = foregroundBrush
             };
 
             var patient = new TextBlock
             {
                 Text = patientName,
                 Margin = new Thickness(0, 4, 0, 0),
-                TextWrapping = TextWrapping.Wrap
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = foregroundBrush
             };
 
             var reason = new TextBlock
             {
-                Text = string.IsNullOrWhiteSpace(appointment.Reason) ? "Ohne Grund" : appointment.Reason,
+                Text = string.IsNullOrWhiteSpace(appointment.Reason) ? "Ohne Grund" : appointment.Reason.Trim(),
                 Margin = new Thickness(0, 2, 0, 0),
-                TextWrapping = TextWrapping.Wrap
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = foregroundBrush
             };
 
             var status = new TextBlock
             {
-                Text = string.IsNullOrWhiteSpace(appointment.Status) ? "Geplant" : appointment.Status,
-                Margin = new Thickness(0, 2, 0, 0),
+                Text = BuildPlannerStatusLabel(appointment),
+                Margin = new Thickness(0, 4, 0, 0),
                 FontStyle = FontStyles.Italic,
-                TextWrapping = TextWrapping.Wrap
+                FontWeight = FontWeights.Medium,
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = foregroundBrush
             };
 
             var stack = new StackPanel();
@@ -402,18 +416,38 @@ namespace Praxis.Client.Views.Pages.Patienten
             {
                 Margin = new Thickness(2),
                 Padding = new Thickness(6),
-                HorizontalContentAlignment = System.Windows.HorizontalAlignment.Left,
+                HorizontalContentAlignment = HorizontalAlignment.Left,
                 VerticalContentAlignment = VerticalAlignment.Top,
                 Content = stack,
-                Tag = appointment.Id
+                Tag = appointment.Id,
+                Background = backgroundBrush,
+                BorderBrush = borderBrush,
+                BorderThickness = new Thickness(2)
             };
 
             button.Click += RoomPlannerAppointmentButton_Click;
 
             return button;
         }
-        //
-       
+        private string GetPlannerTitlePrefix(Appointment appointment)
+        {
+            var status = appointment.Status?.Trim().ToLowerInvariant() ?? string.Empty;
+            var treatmentState = appointment.TreatmentState?.Trim().ToLowerInvariant() ?? string.Empty;
+
+            if (status == "abgesagt" || treatmentState == "abgesagt")
+                return "[ABGESAGT] ";
+
+            if (treatmentState == "in behandlung")
+                return "[BEHANDLUNG] ";
+
+            if (appointment.CheckInTime.HasValue)
+                return "[CHECK-IN] ";
+
+            if (status == "bestätigt")
+                return "[BESTÄTIGT] ";
+
+            return string.Empty;
+        }
         private string BuildSlotLabel(DateTime slotTime, string roomName)
         {
             var isCurrent = _selectedAppointment != null &&
@@ -625,6 +659,7 @@ namespace Praxis.Client.Views.Pages.Patienten
                 await mainWindow.OpenPatientSearchPageAsync();
             }
         }
+        // Status-Text aufbereiten
         private async void RoomPlannerAppointmentButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button)
@@ -654,6 +689,76 @@ namespace Praxis.Client.Views.Pages.Patienten
             await RefreshAvailableSlotsAsync();
         }
 
+        private string BuildPlannerStatusLabel(Appointment appointment)
+        {
+            var parts = new List<string>();
+
+            var status = string.IsNullOrWhiteSpace(appointment.Status)
+                ? "Geplant"
+                : appointment.Status.Trim();
+
+            parts.Add(status);
+
+            if (!string.IsNullOrWhiteSpace(appointment.TreatmentState) &&
+                !string.Equals(appointment.TreatmentState.Trim(), status, StringComparison.OrdinalIgnoreCase))
+            {
+                parts.Add(appointment.TreatmentState.Trim());
+            }
+
+            if (appointment.CheckInTime.HasValue)
+            {
+                parts.Add($"Check-in {appointment.CheckInTime.Value:HH:mm}");
+            }
+
+            return string.Join(" | ", parts);
+        }
+       
+        // Hilfsmethoden
+        private Brush GetPlannerBackgroundBrush(Appointment appointment)
+        {
+            var status = appointment.Status?.Trim().ToLowerInvariant() ?? string.Empty;
+            var treatmentState = appointment.TreatmentState?.Trim().ToLowerInvariant() ?? string.Empty;
+
+            if (status == "abgesagt" || treatmentState == "abgesagt")
+                return Brushes.LightGray;
+
+            if (treatmentState == "in behandlung")
+                return Brushes.Khaki;
+
+            if (status == "bestätigt")
+                return Brushes.LightGreen;
+
+            return Brushes.WhiteSmoke;
+        }
+
+        private Brush GetPlannerBorderBrush(Appointment appointment)
+        {
+            var status = appointment.Status?.Trim().ToLowerInvariant() ?? string.Empty;
+            var treatmentState = appointment.TreatmentState?.Trim().ToLowerInvariant() ?? string.Empty;
+
+            if (status == "abgesagt" || treatmentState == "abgesagt")
+                return Brushes.Gray;
+
+            if (treatmentState == "in behandlung")
+                return Brushes.Goldenrod;
+
+            if (status == "bestätigt")
+                return Brushes.SeaGreen;
+
+            return Brushes.DarkGray;
+        }
+
+        private Brush GetPlannerForegroundBrush(Appointment appointment)
+        {
+            var status = appointment.Status?.Trim().ToLowerInvariant() ?? string.Empty;
+            var treatmentState = appointment.TreatmentState?.Trim().ToLowerInvariant() ?? string.Empty;
+
+            if (status == "abgesagt" || treatmentState == "abgesagt")
+                return Brushes.DimGray;
+
+            return Brushes.Black;
+        }
+        
         private sealed class AvailableSlotItem
         {
             public DateTime SlotTime { get; set; }

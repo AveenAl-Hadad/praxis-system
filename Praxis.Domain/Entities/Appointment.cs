@@ -27,4 +27,7 @@ public class Appointment
     public string TreatmentState { get; set; } = "Geplant";
 
     public DateTime EndTime => StartTime.AddMinutes(DurationMinutes);
+
+    public DateTime? CheckInTime { get; set; }
+
 }
