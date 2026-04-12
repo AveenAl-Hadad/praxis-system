@@ -36,6 +36,8 @@ namespace Praxis.Client.Views.Pages.Patienten
         private ListBox? _availableSlotsListBox;
         private Point? _plannerDragStartPoint;
         private PlannerResizeState? _plannerResizeState;
+        private bool _isWeekMode;
+        private DateTime _plannerSelectedDate = DateTime.Today;
 
         public PatientAppointmentsPage(
             IAppointmentService appointmentService,
@@ -70,6 +72,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             TelefonTextBox.Text = patient.Telefonnummer;
             EmailTextBox.Text = patient.Email;
 
+            _plannerSelectedDate = DateTime.Today;
             await LoadRoomsAsync();
             await RefreshAppointmentsAsync();
             ClearForm();
@@ -100,20 +103,133 @@ namespace Praxis.Client.Views.Pages.Patienten
         }
         private async Task RefreshRoomPlannerAsync()
         {
-            if (RoomPlannerGrid == null || AppointmentDatePicker == null)
+            if (RoomPlannerGrid == null)
                 return;
 
-            if (AppointmentDatePicker.SelectedDate == null)
-                return;
-
-            var selectedDate = AppointmentDatePicker.SelectedDate.Value.Date;
             var rooms = await _roomService.GetActiveAsync();
-            var appointments = await _appointmentService.GetAppointmentsByDateAsync(selectedDate);
+            var roomNames = rooms
+                .OrderBy(r => r.Name)
+                .Select(r => r.Name)
+                .ToList();
 
-            BuildRoomPlannerGridSkeleton(rooms.Select(r => r.Name).ToList());
-            FillRoomPlannerGridAppointments(rooms.Select(r => r.Name).ToList(), appointments);
+            if (_isWeekMode)
+            {
+                var startOfWeek = GetStartOfWeek(_plannerSelectedDate);
+                var appointments = await _appointmentService.GetAppointmentsByWeekAsync(startOfWeek);
+
+                BuildWeekPlannerGridSkeleton(roomNames, startOfWeek);
+                FillWeekPlannerGridAppointments(roomNames, appointments, startOfWeek);
+            }
+            else
+            {
+                var selectedDate = _plannerSelectedDate.Date;
+                var appointments = await _appointmentService.GetAppointmentsByDateAsync(selectedDate);
+
+                BuildRoomPlannerGridSkeleton(roomNames);
+                FillRoomPlannerGridAppointments(roomNames, appointments);
+            }
         }
-       
+        private void BuildWeekPlannerGridSkeleton(List<string> roomNames, DateTime startOfWeek)
+        {
+            RoomPlannerGrid.Children.Clear();
+            RoomPlannerGrid.RowDefinitions.Clear();
+            RoomPlannerGrid.ColumnDefinitions.Clear();
+
+            RoomPlannerGrid.ColumnDefinitions.Add(new ColumnDefinition
+            {
+                Width = new GridLength(90)
+            });
+
+            for (int day = 0; day < 5; day++)
+            {
+                foreach (var _ in roomNames)
+                {
+                    RoomPlannerGrid.ColumnDefinitions.Add(new ColumnDefinition
+                    {
+                        Width = new GridLength(180)
+                    });
+                }
+            }
+
+            RoomPlannerGrid.RowDefinitions.Add(new RowDefinition
+            {
+                Height = GridLength.Auto
+            });
+
+            AddPlannerHeaderCell(0, "Zeit");
+
+            int column = 1;
+            for (int day = 0; day < 5; day++)
+            {
+                var date = startOfWeek.AddDays(day);
+                foreach (var roomName in roomNames)
+                {
+                    AddPlannerHeaderCell(column, $"{date:dd.MM}\n{roomName}");
+                    column++;
+                }
+            }
+
+            var start = TimeSpan.FromHours(8);
+            var end = TimeSpan.FromHours(18);
+            var slotIndex = 0;
+
+            for (var time = start; time < end; time = time.Add(TimeSpan.FromMinutes(15)))
+            {
+                RoomPlannerGrid.RowDefinitions.Add(new RowDefinition
+                {
+                    Height = new GridLength(52)
+                });
+
+                var row = slotIndex + 1;
+                AddPlannerTimeCell(row, $"{time:hh\\:mm}");
+
+                for (int col = 1; col < RoomPlannerGrid.ColumnDefinitions.Count; col++)
+                {
+                    AddPlannerEmptyCell(row, col);
+                }
+
+                slotIndex++;
+            }
+        }
+        private void FillWeekPlannerGridAppointments(List<string> roomNames, List<Appointment> appointments, DateTime startOfWeek)
+        {
+            var dayStart = TimeSpan.FromHours(8);
+            const int slotMinutes = 15;
+
+            foreach (var appointment in appointments)
+            {
+                if (string.IsNullOrWhiteSpace(appointment.RoomName))
+                    continue;
+
+                var dayOffset = (appointment.StartTime.Date - startOfWeek.Date).Days;
+                if (dayOffset < 0 || dayOffset > 4)
+                    continue;
+
+                var roomIndex = roomNames.FindIndex(r =>
+                    string.Equals(r, appointment.RoomName, StringComparison.OrdinalIgnoreCase));
+
+                if (roomIndex < 0)
+                    continue;
+
+                var startTime = appointment.StartTime.TimeOfDay;
+                if (startTime < dayStart)
+                    continue;
+
+                var minutesFromStart = (int)(startTime - dayStart).TotalMinutes;
+                var row = (minutesFromStart / slotMinutes) + 1;
+                var rowSpan = Math.Max(1, (int)Math.Ceiling(appointment.DurationMinutes / 15.0));
+
+                var column = 1 + (dayOffset * roomNames.Count) + roomIndex;
+
+                var button = CreatePlannerAppointmentButton(appointment);
+
+                Grid.SetRow(button, row);
+                Grid.SetColumn(button, column);
+                Grid.SetRowSpan(button, rowSpan);
+
+                RoomPlannerGrid.Children.Add(button);
+            }
+        }
         private async Task RefreshAvailableSlotsAsync()
         {
             if (_isLoadingForm)
@@ -187,7 +303,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             _selectedAppointment = null;
 
             if (AppointmentDatePicker != null)
-                AppointmentDatePicker.SelectedDate = DateTime.Today;
+                AppointmentDatePicker.SelectedDate = _plannerSelectedDate;
 
             if (AppointmentTimeTextBox != null)
                 AppointmentTimeTextBox.Text = "09:00";
@@ -649,6 +765,52 @@ namespace Praxis.Client.Views.Pages.Patienten
             e.Effects = DragDropEffects.Move;
             e.Handled = true;
         }
+        private async void PreviousDayButton_Click(object sender, RoutedEventArgs e)
+        {
+            _plannerSelectedDate = _isWeekMode
+                ? _plannerSelectedDate.AddDays(-7)
+                : _plannerSelectedDate.AddDays(-1);
+
+            AppointmentDatePicker.SelectedDate = _plannerSelectedDate;
+
+            await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
+        }
+        private async void TodayButton_Click(object sender, RoutedEventArgs e)
+        {
+            _plannerSelectedDate = DateTime.Today;
+            AppointmentDatePicker.SelectedDate = _plannerSelectedDate;
+
+            await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
+        }
+        private async void NextDayButton_Click(object sender, RoutedEventArgs e)
+        {
+            _plannerSelectedDate = _isWeekMode
+                ? _plannerSelectedDate.AddDays(7)
+                : _plannerSelectedDate.AddDays(1);
+
+            AppointmentDatePicker.SelectedDate = _plannerSelectedDate;
+
+            await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
+        }
+        private async void WeekModeToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            _isWeekMode = true;
+            await RefreshRoomPlannerAsync();
+        }
+        private async void WeekModeToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _isWeekMode = false;
+            await RefreshRoomPlannerAsync();
+        }
+        private DateTime GetStartOfWeek(DateTime date)
+        {
+            var diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+            return date.Date.AddDays(-diff);
+        }
+
         private void PlannerCell_DragOver(object sender, DragEventArgs e)
         {
             if (!e.Data.GetDataPresent(typeof(PlannerDragPayload)))
@@ -693,9 +855,6 @@ namespace Praxis.Client.Views.Pages.Patienten
         //Termin anhand von Rasterposition verschieben
         private async Task MoveAppointmentByDropAsync(int appointmentId, PlannerDropTarget dropTarget)
         {
-            if (AppointmentDatePicker.SelectedDate == null)
-                return;
-
             var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
             if (appointment == null)
                 return;
@@ -705,13 +864,30 @@ namespace Praxis.Client.Views.Pages.Patienten
                 .Select(r => r.Name)
                 .ToList();
 
-            if (dropTarget.Column <= 0 || dropTarget.Column > roomNames.Count)
-                return;
+            DateTime targetStartTime;
+            string targetRoomName;
 
-            var targetRoomName = roomNames[dropTarget.Column - 1];
-            var targetStartTime = BuildPlannerDateTimeFromRow(
-                AppointmentDatePicker.SelectedDate.Value.Date,
-                dropTarget.Row);
+            if (_isWeekMode)
+            {
+                var startOfWeek = GetStartOfWeek(_plannerSelectedDate);
+                var mapped = MapWeekDropTarget(dropTarget, roomNames, startOfWeek);
+
+                targetStartTime = mapped.TargetStartTime;
+                targetRoomName = mapped.TargetRoomName;
+            }
+            else
+            {
+                if (AppointmentDatePicker.SelectedDate == null)
+                    return;
+
+                if (dropTarget.Column <= 0 || dropTarget.Column > roomNames.Count)
+                    return;
+
+                targetRoomName = roomNames[dropTarget.Column - 1];
+                targetStartTime = BuildPlannerDateTimeFromRow(
+                    AppointmentDatePicker.SelectedDate.Value.Date,
+                    dropTarget.Row);
+            }
 
             if (targetStartTime == appointment.StartTime &&
                 string.Equals(targetRoomName, appointment.RoomName, StringComparison.OrdinalIgnoreCase))
@@ -728,6 +904,35 @@ namespace Praxis.Client.Views.Pages.Patienten
             await RefreshAvailableSlotsAsync();
             await RefreshRoomPlannerAsync();
             await OpenAppointmentInFormAsync(appointmentId);
+        }
+        private sealed class WeekDropMapping
+        {
+            public DateTime TargetStartTime { get; set; }
+            public string TargetRoomName { get; set; } = string.Empty;
+        }
+        private WeekDropMapping MapWeekDropTarget(PlannerDropTarget dropTarget, List<string> roomNames, DateTime startOfWeek)
+        {
+            if (dropTarget.Column <= 0)
+                throw new InvalidOperationException("Ungültige Zielspalte.");
+
+            var zeroBased = dropTarget.Column - 1;
+            var dayIndex = zeroBased / roomNames.Count;
+            var roomIndex = zeroBased % roomNames.Count;
+
+            if (dayIndex < 0 || dayIndex > 4)
+                throw new InvalidOperationException("Ungültiger Wochentag.");
+
+            if (roomIndex < 0 || roomIndex >= roomNames.Count)
+                throw new InvalidOperationException("Ungültiger Zielraum.");
+
+            var targetDate = startOfWeek.AddDays(dayIndex);
+            var targetStartTime = BuildPlannerDateTimeFromRow(targetDate, dropTarget.Row);
+
+            return new WeekDropMapping
+            {
+                TargetStartTime = targetStartTime,
+                TargetRoomName = roomNames[roomIndex]
+            };
         }
         private DateTime BuildPlannerDateTimeFromRow(DateTime date, int row)
         {
@@ -1137,10 +1342,14 @@ namespace Praxis.Client.Views.Pages.Patienten
 
         private async void AppointmentCriteria_Changed(object sender, RoutedEventArgs e)
         {
+            if (AppointmentDatePicker.SelectedDate.HasValue)
+            {
+                _plannerSelectedDate = AppointmentDatePicker.SelectedDate.Value.Date;
+            }
+
             await RefreshAvailableSlotsAsync();
             await RefreshRoomPlannerAsync();
         }
-
         private void AvailableSlotsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (AvailableSlotsListBox.SelectedItem is not AvailableSlotItem item)
