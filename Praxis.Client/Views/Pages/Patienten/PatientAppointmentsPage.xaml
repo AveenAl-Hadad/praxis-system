@@ -13,11 +13,12 @@
                 <RowDefinition Height="16"/>
                 <RowDefinition Height="220"/>
                 <RowDefinition Height="16"/>
+                <RowDefinition Height="260"/>
+                <RowDefinition Height="16"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Text="Patiententermine"
-                   Style="{StaticResource SectionTitleStyle}"/>
+            <TextBlock Text="Patiententermine" Style="{StaticResource SectionTitleStyle}"/>
 
             <!-- Patientendaten -->
             <Border Grid.Row="2"
@@ -215,9 +216,70 @@
                 </ListBox>
                 </Grid>
             </Border>
+            
+            <!-- Raumplaner / Tagesansicht -->
+            <Border Grid.Row="8" Style="{StaticResource CardBorderStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-            <!-- Terminliste -->
-            <Border Grid.Row="8"
+                <TextBlock Text="Tagesansicht nach Räumen"
+                   FontSize="18"
+                   FontWeight="SemiBold"/>
+
+                <ScrollViewer Grid.Row="2"
+                      VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="RoomPlannerItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,12"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="10">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding RoomName}"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,8"/>
+
+                                        <ItemsControl ItemsSource="{Binding Appointments}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Margin="0,0,0,6"
+                                                    Padding="8"
+                                                    HorizontalContentAlignment="Left"
+                                                    Click="RoomPlannerAppointmentButton_Click"
+                                                    Tag="{Binding AppointmentId}">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding TimeLabel}"
+                                                               FontWeight="SemiBold"/>
+                                                            <TextBlock Text="{Binding SummaryLabel}"
+                                                               TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <TextBlock Text="Keine Termine"
+                                           FontStyle="Italic"
+                                           Foreground="{DynamicResource MutedTextBrush}"
+                                           Visibility="Collapsed"
+                                           x:Name="DummyTextBlockForDesignerOnly"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- Terminliste -->
+            <Border Grid.Row="10"
                 Style="{StaticResource CardBorderStyle}">
                 <DataGrid x:Name="AppointmentsGrid"
                       AutoGenerateColumns="False"

@@ -45,12 +45,11 @@ namespace Praxis.Infrastructure.Services
         /// </summary>
         public async Task<List<Appointment>> GetAppointmentsByDateAsync(DateTime date)
         {
-            var startOfDay = date.Date;
-            var endOfDay = startOfDay.AddDays(1);
+            var nextDate = date.Date.AddDays(1);
 
             return await _context.Appointments
                 .Include(a => a.Patient)
-                .Where(a => a.StartTime >= startOfDay && a.StartTime < endOfDay)
+                .Where(a => a.StartTime >= date.Date && a.StartTime < nextDate)
                 .OrderBy(a => a.StartTime)
                 .ToListAsync();
         }

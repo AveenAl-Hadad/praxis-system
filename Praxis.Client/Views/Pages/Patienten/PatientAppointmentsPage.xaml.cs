@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
+using Button = System.Windows.Controls.Button;
 using ListBox = System.Windows.Controls.ListBox;
 using MessageBox = System.Windows.MessageBox;
 
@@ -42,6 +43,7 @@ namespace Praxis.Client.Views.Pages.Patienten
                 AppointmentDatePicker.SelectedDate = DateTime.Today;
 
             await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
         }
 
         public async Task LoadPatientAsync(Patient patient)
@@ -57,6 +59,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             await RefreshAppointmentsAsync();
             ClearForm();
             await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
         }
 
         private async Task LoadRoomsAsync()
@@ -80,43 +83,49 @@ namespace Praxis.Client.Views.Pages.Patienten
                 .OrderBy(a => a.StartTime)
                 .ToList();
         }
-
-        private void ClearForm()
+        private async Task RefreshRoomPlannerAsync()
         {
-            _isLoadingForm = true;
+            if (RoomPlannerItemsControl == null || AppointmentDatePicker == null)
+                return;
 
-            _selectedAppointment = null;
+            if (AppointmentDatePicker.SelectedDate == null)
+                return;
 
-            if (AppointmentDatePicker != null)
-                AppointmentDatePicker.SelectedDate = DateTime.Today;
+            var selectedDate = AppointmentDatePicker.SelectedDate.Value.Date;
 
-            if (AppointmentTimeTextBox != null)
-                AppointmentTimeTextBox.Text = "09:00";
+            var allAppointments = await _appointmentService.GetAppointmentsByDateAsync(selectedDate);
+            var activeRooms = await _roomService.GetActiveAsync();
 
-            if (DurationTextBox != null)
-                DurationTextBox.Text = "30";
+            var plannerGroups = activeRooms
+                .OrderBy(r => r.Name)
+                .Select(room =>
+                {
+                    var roomAppointments = allAppointments
+                        .Where(a => string.Equals(a.RoomName, room.Name, StringComparison.OrdinalIgnoreCase))
+                        .OrderBy(a => a.StartTime)
+                        .Select(a => new RoomPlannerAppointmentItem
+                        {
+                            AppointmentId = a.Id,
+                            StartTime = a.StartTime,
+                            EndTime = a.StartTime.AddMinutes(a.DurationMinutes),
+                            TimeLabel = $"{a.StartTime:HH:mm} - {a.StartTime.AddMinutes(a.DurationMinutes):HH:mm}",
+                            PatientName = a.Patient?.FullName ?? $"Patient #{a.PatientId}",
+                            Reason = a.Reason ?? string.Empty,
+                            Status = a.Status ?? string.Empty,
+                            SummaryLabel = BuildRoomPlannerSummary(a)
+                        })
+                        .ToList();
 
-            if (ReasonTextBox != null)
-                ReasonTextBox.Text = string.Empty;
+                    return new RoomPlannerGroup
+                    {
+                        RoomName = room.Name,
+                        Appointments = roomAppointments
+                    };
+                })
+                .ToList();
 
-            if (StatusComboBox != null && StatusComboBox.Items.Count > 0)
-                StatusComboBox.SelectedIndex = 0;
-
-            if (RoomComboBox != null && RoomComboBox.Items.Count > 0)
-                RoomComboBox.SelectedIndex = 0;
-
-            if (AppointmentsGrid != null)
-                AppointmentsGrid.SelectedItem = null;
-
-            // 🔥 WICHTIG: sichere Variante
-            var listBox = AvailableSlotsListBox ?? FindName("AvailableSlotsListBox") as ListBox;
-
-            if (listBox != null)
-                listBox.SelectedItem = null;
-
-            _isLoadingForm = false;
+            RoomPlannerItemsControl.ItemsSource = plannerGroups;
         }
-
         private async Task RefreshAvailableSlotsAsync()
         {
             if (_isLoadingForm)
@@ -181,6 +190,52 @@ namespace Praxis.Client.Views.Pages.Patienten
                 if (selectedItem != null)
                     _availableSlotsListBox.SelectedItem = selectedItem;
             }
+        }
+              
+        private void ClearForm()
+        {
+            _isLoadingForm = true;
+
+            _selectedAppointment = null;
+
+            if (AppointmentDatePicker != null)
+                AppointmentDatePicker.SelectedDate = DateTime.Today;
+
+            if (AppointmentTimeTextBox != null)
+                AppointmentTimeTextBox.Text = "09:00";
+
+            if (DurationTextBox != null)
+                DurationTextBox.Text = "30";
+
+            if (ReasonTextBox != null)
+                ReasonTextBox.Text = string.Empty;
+
+            if (StatusComboBox != null && StatusComboBox.Items.Count > 0)
+                StatusComboBox.SelectedIndex = 0;
+
+            if (RoomComboBox != null && RoomComboBox.Items.Count > 0)
+                RoomComboBox.SelectedIndex = 0;
+
+            if (AppointmentsGrid != null)
+                AppointmentsGrid.SelectedItem = null;
+
+            // 🔥 WICHTIG: sichere Variante
+            var listBox = AvailableSlotsListBox ?? FindName("AvailableSlotsListBox") as ListBox;
+
+            if (listBox != null)
+                listBox.SelectedItem = null;
+
+            _isLoadingForm = false;
+        }
+
+        // Hilfsmethoden
+        private string BuildRoomPlannerSummary(Appointment appointment)
+        {
+            var patientName = appointment.Patient?.FullName ?? $"Patient #{appointment.PatientId}";
+            var reason = string.IsNullOrWhiteSpace(appointment.Reason) ? "Ohne Grund" : appointment.Reason.Trim();
+            var status = string.IsNullOrWhiteSpace(appointment.Status) ? "Geplant" : appointment.Status.Trim();
+
+            return $"{patientName} | {reason} | {status}";
         }
         private string BuildSlotLabel(DateTime slotTime, string roomName)
         {
@@ -251,6 +306,7 @@ namespace Praxis.Client.Views.Pages.Patienten
                 await RefreshAppointmentsAsync();
                 ClearForm();
                 await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
             }
             catch (Exception ex)
             {
@@ -282,6 +338,7 @@ namespace Praxis.Client.Views.Pages.Patienten
                 await RefreshAppointmentsAsync();
                 ClearForm();
                 await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
             }
             catch (Exception ex)
             {
@@ -294,6 +351,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         {
             ClearForm();
             await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
         }
 
         private async void RefreshSlotsButton_Click(object sender, RoutedEventArgs e)
@@ -304,6 +362,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         private async void AppointmentCriteria_Changed(object sender, RoutedEventArgs e)
         {
             await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
         }
 
         private void AvailableSlotsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -389,6 +448,34 @@ namespace Praxis.Client.Views.Pages.Patienten
                 await mainWindow.OpenPatientSearchPageAsync();
             }
         }
+        private async void RoomPlannerAppointmentButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button)
+                return;
+
+            if (button.Tag is not int appointmentId)
+                return;
+
+            var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
+            if (appointment == null)
+                return;
+
+            _isLoadingForm = true;
+
+            _selectedAppointment = appointment;
+
+            AppointmentDatePicker.SelectedDate = appointment.StartTime.Date;
+            AppointmentTimeTextBox.Text = appointment.StartTime.ToString("HH:mm");
+            DurationTextBox.Text = appointment.DurationMinutes.ToString();
+            ReasonTextBox.Text = appointment.Reason;
+
+            SelectStatus(appointment.Status);
+            RoomComboBox.SelectedValue = appointment.RoomName;
+
+            _isLoadingForm = false;
+
+            await RefreshAvailableSlotsAsync();
+        }
 
         private sealed class AvailableSlotItem
         {
@@ -396,5 +483,24 @@ namespace Praxis.Client.Views.Pages.Patienten
             public string SlotLabel { get; set; } = string.Empty;
             public bool IsCurrentAppointmentSlot { get; set; }
         }
+
+        private sealed class RoomPlannerGroup
+        {
+            public string RoomName { get; set; } = string.Empty;
+            public List<RoomPlannerAppointmentItem> Appointments { get; set; } = new();
+        }
+
+        private sealed class RoomPlannerAppointmentItem
+        {
+            public int AppointmentId { get; set; }
+            public DateTime StartTime { get; set; }
+            public DateTime EndTime { get; set; }
+            public string TimeLabel { get; set; } = string.Empty;
+            public string PatientName { get; set; } = string.Empty;
+            public string Reason { get; set; } = string.Empty;
+            public string Status { get; set; } = string.Empty;
+            public string SummaryLabel { get; set; } = string.Empty;
+        }
     }
+
 }
