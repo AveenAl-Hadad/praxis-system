@@ -216,9 +216,9 @@
                 </ListBox>
                 </Grid>
             </Border>
-            
-            <!-- Raumplaner / Tagesansicht -->
-            <Border Grid.Row="8" Style="{StaticResource CardBorderStyle}">
+
+        <!-- Raumplaner / Rasteransicht -->
+        <Border Grid.Row="8" Style="{StaticResource CardBorderStyle}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -226,54 +226,21 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Tagesansicht nach Räumen"
-                   FontSize="18"
-                   FontWeight="SemiBold"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Kalender-Raumplaner"
+                       FontSize="18"
+                       FontWeight="SemiBold"/>
+
+                    <TextBlock Text="  (15-Minuten-Raster)"
+                       Margin="8,2,0,0"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource MutedTextBrush}"/>
+                </StackPanel>
 
                 <ScrollViewer Grid.Row="2"
+                      HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto">
-                    <ItemsControl x:Name="RoomPlannerItemsControl">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="0,0,0,12"
-                                Padding="10"
-                                BorderThickness="1"
-                                CornerRadius="10">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding RoomName}"
-                                           FontSize="16"
-                                           FontWeight="SemiBold"
-                                           Margin="0,0,0,8"/>
-
-                                        <ItemsControl ItemsSource="{Binding Appointments}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Button Margin="0,0,0,6"
-                                                    Padding="8"
-                                                    HorizontalContentAlignment="Left"
-                                                    Click="RoomPlannerAppointmentButton_Click"
-                                                    Tag="{Binding AppointmentId}">
-                                                        <StackPanel>
-                                                            <TextBlock Text="{Binding TimeLabel}"
-                                                               FontWeight="SemiBold"/>
-                                                            <TextBlock Text="{Binding SummaryLabel}"
-                                                               TextWrapping="Wrap"/>
-                                                        </StackPanel>
-                                                    </Button>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-
-                                        <TextBlock Text="Keine Termine"
-                                           FontStyle="Italic"
-                                           Foreground="{DynamicResource MutedTextBrush}"
-                                           Visibility="Collapsed"
-                                           x:Name="DummyTextBlockForDesignerOnly"/>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <Grid x:Name="RoomPlannerGrid"/>
                 </ScrollViewer>
             </Grid>
         </Border>

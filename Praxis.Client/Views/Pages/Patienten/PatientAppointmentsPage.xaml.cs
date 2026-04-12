@@ -85,47 +85,20 @@ namespace Praxis.Client.Views.Pages.Patienten
         }
         private async Task RefreshRoomPlannerAsync()
         {
-            if (RoomPlannerItemsControl == null || AppointmentDatePicker == null)
+            if (RoomPlannerGrid == null || AppointmentDatePicker == null)
                 return;
 
             if (AppointmentDatePicker.SelectedDate == null)
                 return;
 
             var selectedDate = AppointmentDatePicker.SelectedDate.Value.Date;
+            var rooms = await _roomService.GetActiveAsync();
+            var appointments = await _appointmentService.GetAppointmentsByDateAsync(selectedDate);
 
-            var allAppointments = await _appointmentService.GetAppointmentsByDateAsync(selectedDate);
-            var activeRooms = await _roomService.GetActiveAsync();
-
-            var plannerGroups = activeRooms
-                .OrderBy(r => r.Name)
-                .Select(room =>
-                {
-                    var roomAppointments = allAppointments
-                        .Where(a => string.Equals(a.RoomName, room.Name, StringComparison.OrdinalIgnoreCase))
-                        .OrderBy(a => a.StartTime)
-                        .Select(a => new RoomPlannerAppointmentItem
-                        {
-                            AppointmentId = a.Id,
-                            StartTime = a.StartTime,
-                            EndTime = a.StartTime.AddMinutes(a.DurationMinutes),
-                            TimeLabel = $"{a.StartTime:HH:mm} - {a.StartTime.AddMinutes(a.DurationMinutes):HH:mm}",
-                            PatientName = a.Patient?.FullName ?? $"Patient #{a.PatientId}",
-                            Reason = a.Reason ?? string.Empty,
-                            Status = a.Status ?? string.Empty,
-                            SummaryLabel = BuildRoomPlannerSummary(a)
-                        })
-                        .ToList();
-
-                    return new RoomPlannerGroup
-                    {
-                        RoomName = room.Name,
-                        Appointments = roomAppointments
-                    };
-                })
-                .ToList();
-
-            RoomPlannerItemsControl.ItemsSource = plannerGroups;
+            BuildRoomPlannerGridSkeleton(rooms.Select(r => r.Name).ToList());
+            FillRoomPlannerGridAppointments(rooms.Select(r => r.Name).ToList(), appointments);
         }
+       
         private async Task RefreshAvailableSlotsAsync()
         {
             if (_isLoadingForm)
@@ -229,14 +202,218 @@ namespace Praxis.Client.Views.Pages.Patienten
         }
 
         // Hilfsmethoden
-        private string BuildRoomPlannerSummary(Appointment appointment)
+        //Raster-Grundgerüst aufbauen
+        private void BuildRoomPlannerGridSkeleton(List<string> roomNames)
+        {
+            RoomPlannerGrid.Children.Clear();
+            RoomPlannerGrid.RowDefinitions.Clear();
+            RoomPlannerGrid.ColumnDefinitions.Clear();
+
+            // Spalte 0 = Zeit
+            RoomPlannerGrid.ColumnDefinitions.Add(new ColumnDefinition
+            {
+                Width = new GridLength(110)
+            });
+
+            foreach (var _ in roomNames)
+            {
+                RoomPlannerGrid.ColumnDefinitions.Add(new ColumnDefinition
+                {
+                    Width = new GridLength(220)
+                });
+            }
+
+            // Kopfzeile
+            RoomPlannerGrid.RowDefinitions.Add(new RowDefinition
+            {
+                Height = GridLength.Auto
+            });
+
+            AddPlannerHeaderCell(0, "Zeit");
+
+            for (int i = 0; i < roomNames.Count; i++)
+            {
+                AddPlannerHeaderCell(i + 1, roomNames[i]);
+            }
+
+            var start = TimeSpan.FromHours(8);
+            var end = TimeSpan.FromHours(18);
+            var slotIndex = 0;
+
+            for (var time = start; time < end; time = time.Add(TimeSpan.FromMinutes(15)))
+            {
+                RoomPlannerGrid.RowDefinitions.Add(new RowDefinition
+                {
+                    Height = new GridLength(52)
+                });
+
+                var row = slotIndex + 1;
+                AddPlannerTimeCell(row, $"{time:hh\\:mm}");
+
+                for (int roomCol = 0; roomCol < roomNames.Count; roomCol++)
+                {
+                    AddPlannerEmptyCell(row, roomCol + 1);
+                }
+
+                slotIndex++;
+            }
+        }
+        //Kopfzellen
+        private void AddPlannerHeaderCell(int column, string text)
+        {
+            var border = new Border
+            {
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(8)
+            };
+
+            var textBlock = new TextBlock
+            {
+                Text = text,
+                FontWeight = FontWeights.SemiBold,
+                TextAlignment = TextAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            border.Child = textBlock;
+
+            Grid.SetRow(border, 0);
+            Grid.SetColumn(border, column);
+
+            RoomPlannerGrid.Children.Add(border);
+        }
+        //Zeitspalte
+        private void AddPlannerTimeCell(int row, string text)
+        {
+            var border = new Border
+            {
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(6)
+            };
+
+            var textBlock = new TextBlock
+            {
+                Text = text,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                FontWeight = FontWeights.Medium
+            };
+
+            border.Child = textBlock;
+
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, 0);
+
+            RoomPlannerGrid.Children.Add(border);
+        }
+        //Leere Rasterzellen
+        private void AddPlannerEmptyCell(int row, int column)
+        {
+            var border = new Border
+            {
+                BorderThickness = new Thickness(1),
+                Margin = new Thickness(0),
+                Padding = new Thickness(0)
+            };
+
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, column);
+
+            RoomPlannerGrid.Children.Add(border);
+        }
+        //Termine in Raster eintragen
+        private void FillRoomPlannerGridAppointments(List<string> roomNames, List<Appointment> appointments)
+        {
+            var dayStart = TimeSpan.FromHours(8);
+            var slotMinutes = 15;
+
+            foreach (var appointment in appointments)
+            {
+                if (string.IsNullOrWhiteSpace(appointment.RoomName))
+                    continue;
+
+                var roomIndex = roomNames.FindIndex(r =>
+                    string.Equals(r, appointment.RoomName, StringComparison.OrdinalIgnoreCase));
+
+                if (roomIndex < 0)
+                    continue;
+
+                var startTime = appointment.StartTime.TimeOfDay;
+                if (startTime < dayStart)
+                    continue;
+
+                var minutesFromStart = (int)(startTime - dayStart).TotalMinutes;
+                var row = (minutesFromStart / slotMinutes) + 1;
+
+                var rowSpan = Math.Max(1, (int)Math.Ceiling(appointment.DurationMinutes / 15.0));
+                var column = roomIndex + 1;
+
+                var button = CreatePlannerAppointmentButton(appointment);
+
+                Grid.SetRow(button, row);
+                Grid.SetColumn(button, column);
+                Grid.SetRowSpan(button, rowSpan);
+
+                RoomPlannerGrid.Children.Add(button);
+            }
+        }
+        //Termin-Button im Kalender
+        private Button CreatePlannerAppointmentButton(Appointment appointment)
         {
             var patientName = appointment.Patient?.FullName ?? $"Patient #{appointment.PatientId}";
-            var reason = string.IsNullOrWhiteSpace(appointment.Reason) ? "Ohne Grund" : appointment.Reason.Trim();
-            var status = string.IsNullOrWhiteSpace(appointment.Status) ? "Geplant" : appointment.Status.Trim();
+            var endTime = appointment.StartTime.AddMinutes(appointment.DurationMinutes);
 
-            return $"{patientName} | {reason} | {status}";
+            var title = new TextBlock
+            {
+                Text = $"{appointment.StartTime:HH:mm} - {endTime:HH:mm}",
+                FontWeight = FontWeights.SemiBold,
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            var patient = new TextBlock
+            {
+                Text = patientName,
+                Margin = new Thickness(0, 4, 0, 0),
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            var reason = new TextBlock
+            {
+                Text = string.IsNullOrWhiteSpace(appointment.Reason) ? "Ohne Grund" : appointment.Reason,
+                Margin = new Thickness(0, 2, 0, 0),
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            var status = new TextBlock
+            {
+                Text = string.IsNullOrWhiteSpace(appointment.Status) ? "Geplant" : appointment.Status,
+                Margin = new Thickness(0, 2, 0, 0),
+                FontStyle = FontStyles.Italic,
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            var stack = new StackPanel();
+            stack.Children.Add(title);
+            stack.Children.Add(patient);
+            stack.Children.Add(reason);
+            stack.Children.Add(status);
+
+            var button = new Button
+            {
+                Margin = new Thickness(2),
+                Padding = new Thickness(6),
+                HorizontalContentAlignment = System.Windows.HorizontalAlignment.Left,
+                VerticalContentAlignment = VerticalAlignment.Top,
+                Content = stack,
+                Tag = appointment.Id
+            };
+
+            button.Click += RoomPlannerAppointmentButton_Click;
+
+            return button;
         }
+        //
+       
         private string BuildSlotLabel(DateTime slotTime, string roomName)
         {
             var isCurrent = _selectedAppointment != null &&
@@ -484,23 +661,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             public bool IsCurrentAppointmentSlot { get; set; }
         }
 
-        private sealed class RoomPlannerGroup
-        {
-            public string RoomName { get; set; } = string.Empty;
-            public List<RoomPlannerAppointmentItem> Appointments { get; set; } = new();
-        }
-
-        private sealed class RoomPlannerAppointmentItem
-        {
-            public int AppointmentId { get; set; }
-            public DateTime StartTime { get; set; }
-            public DateTime EndTime { get; set; }
-            public string TimeLabel { get; set; } = string.Empty;
-            public string PatientName { get; set; } = string.Empty;
-            public string Reason { get; set; } = string.Empty;
-            public string Status { get; set; } = string.Empty;
-            public string SummaryLabel { get; set; } = string.Empty;
-        }
+    
     }
 
 }
