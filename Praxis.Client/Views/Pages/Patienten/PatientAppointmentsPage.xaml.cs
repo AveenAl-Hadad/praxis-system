@@ -22,6 +22,8 @@ using DataObject = System.Windows.DataObject;
 using System.Windows.Input;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Cursors = System.Windows.Input.Cursors;
+using Microsoft.Extensions.Logging;
+using Praxis.Infrastructure.Services;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
@@ -29,6 +31,7 @@ namespace Praxis.Client.Views.Pages.Patienten
     {
         private readonly IAppointmentService _appointmentService;
         private readonly IRoomService _roomService;
+        private readonly IPatientService _patientService;
 
         private Patient? _currentPatient;
         private Appointment? _selectedAppointment;
@@ -41,7 +44,8 @@ namespace Praxis.Client.Views.Pages.Patienten
 
         public PatientAppointmentsPage(
             IAppointmentService appointmentService,
-            IRoomService roomService)
+            IRoomService roomService,
+            IPatientService patientService)
         {
             InitializeComponent();
 
@@ -50,7 +54,7 @@ namespace Praxis.Client.Views.Pages.Patienten
 
             AppointmentDatePicker.SelectedDate = DateTime.Today;
             Loaded += PatientAppointmentsPage_Loaded;
-
+            _patientService = patientService;
         }
         private async void PatientAppointmentsPage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -74,6 +78,7 @@ namespace Praxis.Client.Views.Pages.Patienten
 
             _plannerSelectedDate = DateTime.Today;
             await LoadRoomsAsync();
+            await InitializePlannerFiltersAsync();
             await RefreshAppointmentsAsync();
             ClearForm();
             await RefreshAvailableSlotsAsync();
@@ -112,19 +117,24 @@ namespace Praxis.Client.Views.Pages.Patienten
                 .Select(r => r.Name)
                 .ToList();
 
+            // Raumplaner mit Filtern verbinden
             if (_isWeekMode)
             {
                 var startOfWeek = GetStartOfWeek(_plannerSelectedDate);
-                var appointments = await _appointmentService.GetAppointmentsByWeekAsync(startOfWeek);
 
+                //Raumplaner mit Filtern verbinden Wochenmodus
+                var appointments = await _appointmentService.GetAppointmentsByWeekAsync(startOfWeek);
+                appointments = ApplyPlannerFilters(appointments);
                 BuildWeekPlannerGridSkeleton(roomNames, startOfWeek);
                 FillWeekPlannerGridAppointments(roomNames, appointments, startOfWeek);
             }
             else
             {
                 var selectedDate = _plannerSelectedDate.Date;
-                var appointments = await _appointmentService.GetAppointmentsByDateAsync(selectedDate);
 
+                //Raumplaner mit Filtern verbinden Tagesmodus
+                var appointments = await _appointmentService.GetAppointmentsByDateAsync(selectedDate);
+                appointments = ApplyPlannerFilters(appointments);
                 BuildRoomPlannerGridSkeleton(roomNames);
                 FillRoomPlannerGridAppointments(roomNames, appointments);
             }
@@ -1473,7 +1483,148 @@ namespace Praxis.Client.Views.Pages.Patienten
 
             return string.Join(" | ", parts);
         }
-       
+        private async Task InitializePlannerFiltersAsync()
+        {
+            var rooms = await _roomService.GetActiveAsync();
+            var patients = await _patientService.GetAllPatientsAsync();
+
+            var roomItems = new List<string> { "Alle Räume" };
+            roomItems.AddRange(rooms.OrderBy(r => r.Name).Select(r => r.Name));
+
+            PlannerRoomFilterComboBox.ItemsSource = roomItems;
+            PlannerRoomFilterComboBox.SelectedIndex = 0;
+
+            PlannerStatusFilterComboBox.ItemsSource = new List<string>
+            {
+                "Alle Status",
+                "Geplant",
+                "Bestätigt",
+                "Abgesagt",
+                "In Behandlung",
+                "Abgeschlossen"
+            };
+            PlannerStatusFilterComboBox.SelectedIndex = 0;
+
+            var patientItems = new List<PatientFilterItem>
+    {
+        new PatientFilterItem { Id = 0, FullName = "Alle Patienten" }
+    };
+
+            patientItems.AddRange(
+                patients
+                    .OrderBy(p => p.FullName)
+                    .Select(p => new PatientFilterItem
+                    {
+                        Id = p.Id,
+                        FullName = p.FullName
+                    }));
+
+            PlannerPatientFilterComboBox.ItemsSource = patientItems;
+            PlannerPatientFilterComboBox.SelectedIndex = 0;
+
+            PlannerCheckedInOnlyCheckBox.IsChecked = false;
+            PlannerActiveOnlyCheckBox.IsChecked = true;
+        }
+        // Filtermethoden einbauen
+        private List<Appointment> ApplyPlannerFilters(IEnumerable<Appointment> appointments)
+        {
+            var filtered = appointments.ToList();
+
+            var selectedRoom = PlannerRoomFilterComboBox?.SelectedItem?.ToString();
+            if (!string.IsNullOrWhiteSpace(selectedRoom) && selectedRoom != "Alle Räume")
+            {
+                filtered = filtered
+                    .Where(a => string.Equals(a.RoomName, selectedRoom, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            var selectedStatus = PlannerStatusFilterComboBox?.SelectedItem?.ToString();
+            if (!string.IsNullOrWhiteSpace(selectedStatus) && selectedStatus != "Alle Status")
+            {
+                if (string.Equals(selectedStatus, "In Behandlung", StringComparison.OrdinalIgnoreCase))
+                {
+                    filtered = filtered
+                        .Where(a => string.Equals(a.TreatmentState, "In Behandlung", StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                else
+                {
+                    filtered = filtered
+                        .Where(a => string.Equals(a.Status, selectedStatus, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+            }
+
+            if (PlannerPatientFilterComboBox?.SelectedItem is PatientFilterItem patientItem && patientItem.Id > 0)
+            {
+                filtered = filtered
+                    .Where(a => a.PatientId == patientItem.Id)
+                    .ToList();
+            }
+            else if (!string.IsNullOrWhiteSpace(PlannerPatientFilterComboBox?.Text) &&
+                     !string.Equals(PlannerPatientFilterComboBox.Text.Trim(), "Alle Patienten", StringComparison.OrdinalIgnoreCase))
+            {
+                var patientSearch = PlannerPatientFilterComboBox.Text.Trim();
+
+                filtered = filtered
+                    .Where(a => a.Patient?.FullName?.Contains(patientSearch, StringComparison.OrdinalIgnoreCase) ?? false)
+                    .ToList();
+            }
+
+            if (PlannerCheckedInOnlyCheckBox?.IsChecked == true)
+            {
+                filtered = filtered
+                    .Where(a => a.CheckInTime.HasValue)
+                    .ToList();
+            }
+
+            if (PlannerActiveOnlyCheckBox?.IsChecked == true)
+            {
+                filtered = filtered
+                    .Where(a =>
+                        !string.Equals(a.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(a.Status, "Abgeschlossen", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            return filtered;
+        }
+
+        // Filter-Events einbauen
+        private async void PlannerFilter_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_isLoadingForm)
+                return;
+
+            await RefreshRoomPlannerAsync();
+        }
+
+        // Für TextChanged von TextBox brauchst du noch die Überladung:
+        private async void PlannerFilter_Changed(object sender, TextChangedEventArgs e)
+        {
+            if (_isLoadingForm)
+                return;
+
+            await RefreshRoomPlannerAsync();
+        }
+        
+        //Filter zurücksetzen
+        private async void ResetPlannerFiltersButton_Click(object sender, RoutedEventArgs e)
+        {
+            _isLoadingForm = true;
+
+            PlannerRoomFilterComboBox.SelectedIndex = 0;
+            PlannerStatusFilterComboBox.SelectedIndex = 0;
+            PlannerPatientFilterComboBox.SelectedIndex = 0;
+            PlannerPatientFilterComboBox.Text = "Alle Patienten";
+            PlannerCheckedInOnlyCheckBox.IsChecked = false;
+            PlannerActiveOnlyCheckBox.IsChecked = true;
+
+            _isLoadingForm = false;
+
+            await RefreshRoomPlannerAsync();
+        }
+
         // Hilfsmethoden
         private Brush GetPlannerBackgroundBrush(Appointment appointment)
         {
@@ -1527,7 +1678,12 @@ namespace Praxis.Client.Views.Pages.Patienten
             public bool IsCurrentAppointmentSlot { get; set; }
         }
 
-    
+        private sealed class PatientFilterItem
+        {
+            public int Id { get; set; }
+            public string FullName { get; set; } = string.Empty;
+        }
+
     }
 
 }

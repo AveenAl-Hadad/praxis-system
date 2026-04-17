@@ -140,8 +140,7 @@ namespace Praxis.Client.Views
             _abrechnungPage = new AbrechnungPage(_abrechnungService);
             _waitingRoomPage = new WaitingRoomPage(_appointmentService);
             _roomsPage = new RoomsPage(_roomService);
-            _patientAppointmentsPage = new PatientAppointmentsPage(_appointmentService, _roomService);
-
+            _patientAppointmentsPage = new PatientAppointmentsPage(_appointmentService, _roomService, _patientService);
             StartSessionTimer();
            
         }
