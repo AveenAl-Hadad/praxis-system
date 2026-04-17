@@ -117,27 +117,28 @@ namespace Praxis.Client.Views.Pages.Patienten
                 .Select(r => r.Name)
                 .ToList();
 
-            // Raumplaner mit Filtern verbinden
+            List<Appointment> filteredAppointments;
+
             if (_isWeekMode)
             {
                 var startOfWeek = GetStartOfWeek(_plannerSelectedDate);
-
-                //Raumplaner mit Filtern verbinden Wochenmodus
                 var appointments = await _appointmentService.GetAppointmentsByWeekAsync(startOfWeek);
-                appointments = ApplyPlannerFilters(appointments);
+                filteredAppointments = ApplyPlannerFilters(appointments);
+
                 BuildWeekPlannerGridSkeleton(roomNames, startOfWeek);
-                FillWeekPlannerGridAppointments(roomNames, appointments, startOfWeek);
+                FillWeekPlannerGridAppointments(roomNames, filteredAppointments, startOfWeek);
             }
             else
             {
                 var selectedDate = _plannerSelectedDate.Date;
-
-                //Raumplaner mit Filtern verbinden Tagesmodus
                 var appointments = await _appointmentService.GetAppointmentsByDateAsync(selectedDate);
-                appointments = ApplyPlannerFilters(appointments);
+                filteredAppointments = ApplyPlannerFilters(appointments);
+
                 BuildRoomPlannerGridSkeleton(roomNames);
-                FillRoomPlannerGridAppointments(roomNames, appointments);
+                FillRoomPlannerGridAppointments(roomNames, filteredAppointments);
             }
+
+            await RefreshPlannerStatisticsAsync(filteredAppointments);
         }
         private void BuildWeekPlannerGridSkeleton(List<string> roomNames, DateTime startOfWeek)
         {
@@ -1625,6 +1626,83 @@ namespace Praxis.Client.Views.Pages.Patienten
             await RefreshRoomPlannerAsync();
         }
 
+        //Kennzahlen berechnen
+        private async Task<PlannerStatistics> BuildPlannerStatisticsAsync(List<Appointment> filteredAppointments)
+        {
+            var stats = new PlannerStatistics
+            {
+                VisibleCount = filteredAppointments.Count,
+                ConfirmedCount = filteredAppointments.Count(a =>
+                    string.Equals(a.Status, "Bestätigt", StringComparison.OrdinalIgnoreCase)),
+                CheckedInCount = filteredAppointments.Count(a => a.CheckInTime.HasValue),
+                InTreatmentCount = filteredAppointments.Count(a =>
+                    string.Equals(a.TreatmentState, "In Behandlung", StringComparison.OrdinalIgnoreCase)),
+                CancelledCount = filteredAppointments.Count(a =>
+                    string.Equals(a.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(a.TreatmentState, "Abgesagt", StringComparison.OrdinalIgnoreCase))
+            };
+
+            stats.FreeSlotsCount = await CalculateVisibleFreeSlotsAsync();
+
+            return stats;
+        }
+        // Frei Sloit zählen
+        private async Task<int> CalculateVisibleFreeSlotsAsync()
+        {
+            if (AppointmentDatePicker.SelectedDate == null)
+                return 0;
+
+            if (!int.TryParse(DurationTextBox.Text, out var duration) || duration <= 0)
+                duration = 30;
+
+            var activeRooms = await _roomService.GetActiveAsync();
+            if (activeRooms.Count == 0)
+                return 0;
+
+            var selectedRoom = PlannerRoomFilterComboBox?.SelectedItem?.ToString();
+
+            var roomsToCheck = activeRooms.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(selectedRoom) && selectedRoom != "Alle Räume")
+            {
+                roomsToCheck = roomsToCheck.Where(r =>
+                    string.Equals(r.Name, selectedRoom, StringComparison.OrdinalIgnoreCase));
+            }
+
+            int total = 0;
+            var selectedDate = AppointmentDatePicker.SelectedDate.Value.Date;
+
+            foreach (var room in roomsToCheck)
+            {
+                var slots = await _appointmentService.GetAvailableSlotsAsync(selectedDate, duration, room.Name);
+                total += slots.Count;
+            }
+
+            return total;
+        }
+        // Kennzahlen in UI schreiben
+        private async Task RefreshPlannerStatisticsAsync(List<Appointment> filteredAppointments)
+        {
+            if (PlannerVisibleCountTextBlock == null ||
+                PlannerConfirmedCountTextBlock == null ||
+                PlannerCheckedInCountTextBlock == null ||
+                PlannerInTreatmentCountTextBlock == null ||
+                PlannerCancelledCountTextBlock == null ||
+                PlannerFreeSlotsCountTextBlock == null)
+            {
+                return;
+            }
+
+            var stats = await BuildPlannerStatisticsAsync(filteredAppointments);
+
+            PlannerVisibleCountTextBlock.Text = stats.VisibleCount.ToString();
+            PlannerConfirmedCountTextBlock.Text = stats.ConfirmedCount.ToString();
+            PlannerCheckedInCountTextBlock.Text = stats.CheckedInCount.ToString();
+            PlannerInTreatmentCountTextBlock.Text = stats.InTreatmentCount.ToString();
+            PlannerCancelledCountTextBlock.Text = stats.CancelledCount.ToString();
+            PlannerFreeSlotsCountTextBlock.Text = stats.FreeSlotsCount.ToString();
+        }
+
         // Hilfsmethoden
         private Brush GetPlannerBackgroundBrush(Appointment appointment)
         {
@@ -1682,6 +1760,15 @@ namespace Praxis.Client.Views.Pages.Patienten
         {
             public int Id { get; set; }
             public string FullName { get; set; } = string.Empty;
+        }
+        private sealed class PlannerStatistics
+        {
+            public int VisibleCount { get; set; }
+            public int ConfirmedCount { get; set; }
+            public int CheckedInCount { get; set; }
+            public int InTreatmentCount { get; set; }
+            public int CancelledCount { get; set; }
+            public int FreeSlotsCount { get; set; }
         }
 
     }

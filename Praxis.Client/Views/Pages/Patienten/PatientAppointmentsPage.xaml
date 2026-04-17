@@ -232,12 +232,14 @@
                 </Grid>
             </Border>
 
-            <!-- Raumplaner / Rasteransicht -->
+            <!-- Kalender Block -->
             <Border Grid.Row="8"
                     Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>    <!-- Kopfzeile -->
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>   <!-- Kennzahlen -->
                         <RowDefinition Height="12"/>
                         <RowDefinition Height="Auto"/>   <!-- Filterleiste -->
                         <RowDefinition Height="12"/>
@@ -288,8 +290,93 @@
                                           Unchecked="WeekModeToggleButton_Unchecked"/>
                         </StackPanel>
                     </Grid>
+                    <!-- Kennzahlen  -->
+                    <UniformGrid Grid.Row="2" Columns="6" Margin="0,0,0,0">
+                        <Border Margin="0,0,8,0"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <StackPanel>
+                                <TextBlock Text="Sichtbar gesamt" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="PlannerVisibleCountTextBlock"
+                                           Text="0"
+                                           FontSize="22"
+                                           FontWeight="Bold"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,0,8,0"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                 Background="LightGreen"
+                                 BorderBrush="SeaGreen" >
+                            <StackPanel>
+                                <TextBlock Text="Bestätigt"  FontWeight="SemiBold"/>
+                                <TextBlock x:Name="PlannerConfirmedCountTextBlock"
+                                           Text="0"
+                                           FontSize="22"
+                                           FontWeight="Bold"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,0,8,0"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <StackPanel>
+                                <TextBlock Text="Check-in" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="PlannerCheckedInCountTextBlock"
+                                           Text="0"
+                                           FontSize="22"
+                                           FontWeight="Bold"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,0,8,0"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                 Background="Khaki"
+                                 BorderBrush="Goldenrod">
+                            <StackPanel>
+                                <TextBlock Text="In Behandlung" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="PlannerInTreatmentCountTextBlock"
+                                           Text="0"
+                                           FontSize="22"
+                                           FontWeight="Bold"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,0,8,0"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                 Background="LightGray"
+                                 BorderBrush="Gray">
+                            <StackPanel>
+                                <TextBlock Text="Abgesagt" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="PlannerCancelledCountTextBlock"
+                                           Text="0"
+                                           FontSize="22"
+                                           FontWeight="Bold"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <StackPanel>
+                                <TextBlock Text="Freie Slots" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="PlannerFreeSlotsCountTextBlock"
+                                           Text="0"
+                                           FontSize="22"
+                                           FontWeight="Bold"/>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
                     <!-- Filterleiste -->
-                    <Border Grid.Row="2"
+                    <Border Grid.Row="4"
                             Padding="10"
                             BorderThickness="1"
                             CornerRadius="8">
@@ -356,7 +443,7 @@
                         </Grid>
                     </Border>
                     <!-- Legende -->
-                    <StackPanel Grid.Row="4" Orientation="Horizontal">
+                    <StackPanel Grid.Row="6" Orientation="Horizontal">
                         <Border Width="18" Height="18" Background="WhiteSmoke" BorderBrush="DarkGray" BorderThickness="1" Margin="0,0,6,0"/>
                         <TextBlock Text="Geplant" VerticalAlignment="Center" Margin="0,0,16,0"/>
 
@@ -370,7 +457,7 @@
                         <TextBlock Text="Abgesagt" VerticalAlignment="Center" Margin="0,0,16,0"/>
                     </StackPanel>
                     <!-- Kalender-ScrollViewer -->
-                    <ScrollViewer Grid.Row="6"
+                    <ScrollViewer Grid.Row="8"
                                   HorizontalScrollBarVisibility="Auto"
                                   VerticalScrollBarVisibility="Auto">
                         <Grid x:Name="RoomPlannerGrid"/>
