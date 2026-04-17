@@ -23,6 +23,9 @@
                 <RowDefinition Height="400"/>                <!-- Kalender -->
                 <RowDefinition Height="16"/>
 
+                <RowDefinition Height="320"/>                <!-- Patientenfluss -->
+                <RowDefinition Height="16"/>
+
                 <RowDefinition Height="*"/>                <!-- Terminliste -->
             </Grid.RowDefinitions>
 
@@ -465,8 +468,224 @@
                 </Grid>
             </Border>
 
+            <!-- Patientenfluss / Warteliste -->
+            <Border Grid.Row="10" Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Patientenfluss / Warteliste"
+                               FontSize="18"
+                               FontWeight="SemiBold"/>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>        <!-- Eingecheckt -->
+                            <ColumnDefinition Width="12"/>
+
+                            <ColumnDefinition Width="*"/>        <!-- Wartet -->
+                            <ColumnDefinition Width="12"/>
+
+                            <ColumnDefinition Width="*"/>         <!-- In Behandlung -->
+                            <ColumnDefinition Width="12"/>
+
+                            <ColumnDefinition Width="*"/>         <!-- Abgeschlossen -->
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Eingecheckt -->
+                        <Border Grid.Column="0"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Eingecheckt"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"/>
+
+                                <ListBox Grid.Row="2"  x:Name="CheckedInPatientsListBox">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,8"
+                                                    Padding="8"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Title}"
+                                                                FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding Subtitle}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,2,0,0"/>
+                                                    <StackPanel Orientation="Horizontal"
+                                                                Margin="0,6,0,0">
+                                                        <Button Content="Öffnen"
+                                                                Margin="0,0,6,0"
+                                                                Tag="{Binding AppointmentId}"
+                                                                Click="FlowOpenButton_Click"/>
+                                                        <Button Content="→ Wartet"
+                                                                Tag="{Binding AppointmentId}"
+                                                                Click="MoveToWaitingButton_Click"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </Border>
+
+                        <!-- Wartet -->
+                        <Border Grid.Column="2"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Wartet"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"/>
+
+                                <ListBox Grid.Row="2"
+                                         x:Name="WaitingPatientsListBox">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,8"
+                                                    Padding="8"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Title}"
+                                                                 FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding Subtitle}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,2,0,0"/>
+                                                    <StackPanel Orientation="Horizontal"
+                                                                Margin="0,6,0,0">
+                                                        <Button Content="Öffnen"
+                                                                Margin="0,0,6,0"
+                                                                Tag="{Binding AppointmentId}"
+                                                                Click="FlowOpenButton_Click"/>
+                                                        <Button Content="→ In Behandlung"
+                                                                Tag="{Binding AppointmentId}"
+                                                                Click="MoveToInTreatmentButton_Click"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </Border>
+
+                        <!-- In Behandlung -->
+                        <Border Grid.Column="4"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="In Behandlung"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"/>
+
+                                <ListBox Grid.Row="2"
+                                        x:Name="InTreatmentPatientsListBox">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,8"
+                                                    Padding="8"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Title}"
+                                                                FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding Subtitle}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,2,0,0"/>
+                                                    <StackPanel Orientation="Horizontal"
+                                                                Margin="0,6,0,0">
+                                                        <Button Content="Öffnen"
+                                                                Margin="0,0,6,0"
+                                                                Tag="{Binding AppointmentId}"
+                                                                Click="FlowOpenButton_Click"/>
+                                                        <Button Content="→ Abschließen"
+                                                                Tag="{Binding AppointmentId}"
+                                                                Click="MoveToCompletedButton_Click"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </Border>
+
+                        <!-- Abgeschlossen -->
+                        <Border Grid.Column="6"
+                                Padding="10"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Abgeschlossen"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"/>
+
+                                <ListBox Grid.Row="2"
+                                        x:Name="CompletedPatientsListBox">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,8"
+                                                    Padding="8"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Title}"
+                                                                FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding Subtitle}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,2,0,0"/>
+                                                    <Button Content="Öffnen"
+                                                            Margin="0,6,0,0"
+                                                            HorizontalAlignment="Left"
+                                                            Tag="{Binding AppointmentId}"
+                                                            Click="FlowOpenButton_Click"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+
             <!-- Terminliste -->
-            <Border Grid.Row="10"
+            <Border Grid.Row="12"
                     Style="{StaticResource CardBorderStyle}">
                 <DataGrid x:Name="AppointmentsGrid"
                           AutoGenerateColumns="False"

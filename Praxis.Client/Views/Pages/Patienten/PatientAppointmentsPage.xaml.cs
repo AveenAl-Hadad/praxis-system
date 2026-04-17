@@ -83,6 +83,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             ClearForm();
             await RefreshAvailableSlotsAsync();
             await RefreshRoomPlannerAsync();
+            await RefreshPatientFlowAsync();
         }
 
         private async Task LoadRoomsAsync()
@@ -1280,6 +1281,7 @@ namespace Praxis.Client.Views.Pages.Patienten
 
                     MessageBox.Show("Termin wurde angelegt.", "Erfolg",
                         MessageBoxButton.OK, MessageBoxImage.Information);
+                    
                 }
                 else
                 {
@@ -1299,6 +1301,7 @@ namespace Praxis.Client.Views.Pages.Patienten
                 ClearForm();
                 await RefreshAvailableSlotsAsync();
                 await RefreshRoomPlannerAsync();
+                await RefreshPatientFlowAsync();
             }
             catch (Exception ex)
             {
@@ -1331,6 +1334,7 @@ namespace Praxis.Client.Views.Pages.Patienten
                 ClearForm();
                 await RefreshAvailableSlotsAsync();
                 await RefreshRoomPlannerAsync();
+                await RefreshPatientFlowAsync();
             }
             catch (Exception ex)
             {
@@ -1360,6 +1364,7 @@ namespace Praxis.Client.Views.Pages.Patienten
 
             await RefreshAvailableSlotsAsync();
             await RefreshRoomPlannerAsync();
+            await RefreshPatientFlowAsync();
         }
         private void AvailableSlotsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -1703,6 +1708,162 @@ namespace Praxis.Client.Views.Pages.Patienten
             PlannerFreeSlotsCountTextBlock.Text = stats.FreeSlotsCount.ToString();
         }
 
+        // Patientenfluss
+        //Flow-Daten laden
+        private async Task RefreshPatientFlowAsync()
+        {
+            if (AppointmentDatePicker.SelectedDate == null)
+                return;
+
+            var selectedDate = AppointmentDatePicker.SelectedDate.Value.Date;
+            var appointments = await _appointmentService.GetAppointmentsByDateAsync(selectedDate);
+
+            var filteredAppointments = appointments
+                .Where(a => !string.Equals(a.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(a => a.StartTime)
+                .ToList();
+
+            CheckedInPatientsListBox.ItemsSource = filteredAppointments
+                .Where(IsCheckedInFlowState)
+                .Select(BuildFlowAppointmentItem)
+                .ToList();
+
+            WaitingPatientsListBox.ItemsSource = filteredAppointments
+                .Where(IsWaitingFlowState)
+                .Select(BuildFlowAppointmentItem)
+                .ToList();
+
+            InTreatmentPatientsListBox.ItemsSource = filteredAppointments
+                .Where(IsInTreatmentFlowState)
+                .Select(BuildFlowAppointmentItem)
+                .ToList();
+
+            CompletedPatientsListBox.ItemsSource = filteredAppointments
+                .Where(IsCompletedFlowState)
+                .Select(BuildFlowAppointmentItem)
+                .ToList();
+        }
+        //Statuslogik für die vier Spalten
+        private bool IsCheckedInFlowState(Appointment appointment)
+        {
+            return appointment.CheckInTime.HasValue &&
+                   !string.Equals(appointment.TreatmentState, "Wartet", StringComparison.OrdinalIgnoreCase) &&
+                   !string.Equals(appointment.TreatmentState, "In Behandlung", StringComparison.OrdinalIgnoreCase) &&
+                   !string.Equals(appointment.TreatmentState, "Abgeschlossen", StringComparison.OrdinalIgnoreCase);
+        }
+        private bool IsWaitingFlowState(Appointment appointment)
+        {
+            return string.Equals(appointment.TreatmentState, "Wartet", StringComparison.OrdinalIgnoreCase);
+        }
+        private bool IsInTreatmentFlowState(Appointment appointment)
+        {
+            return string.Equals(appointment.TreatmentState, "In Behandlung", StringComparison.OrdinalIgnoreCase);
+        }
+        private bool IsCompletedFlowState(Appointment appointment)
+        {
+            return string.Equals(appointment.TreatmentState, "Abgeschlossen", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(appointment.Status, "Abgeschlossen", StringComparison.OrdinalIgnoreCase);
+        }
+
+        //Anzeige pro Eintrag bauen
+        private FlowAppointmentItem BuildFlowAppointmentItem(Appointment appointment)
+        {
+            var patientName = appointment.Patient?.FullName ?? $"Patient #{appointment.PatientId}";
+            var room = string.IsNullOrWhiteSpace(appointment.RoomName) ? "Kein Raum" : appointment.RoomName;
+            var reason = string.IsNullOrWhiteSpace(appointment.Reason) ? "Ohne Grund" : appointment.Reason.Trim();
+
+            return new FlowAppointmentItem
+            {
+                AppointmentId = appointment.Id,
+                Title = $"{appointment.StartTime:HH:mm} | {patientName}",
+                Subtitle = $"{room} | {reason}"
+            };
+        }
+
+        //Buttons für Statuswechsel  Jetzt kommen die Aktionen.
+        // 1) Öffnen
+        private async void FlowOpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag is not int appointmentId)
+                return;
+
+            await OpenAppointmentInFormAsync(appointmentId);
+        }
+        // 2) Nach Wartet
+        private async void MoveToWaitingButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag is not int appointmentId)
+                return;
+
+            await UpdateFlowStateAsync(appointmentId, "Wartet");
+        }
+        // 3) Nach In Behandlung
+        private async void MoveToInTreatmentButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag is not int appointmentId)
+                return;
+
+            await UpdateFlowStateAsync(appointmentId, "In Behandlung");
+        }
+        // 4) Nach Abgeschlossen
+        private async void MoveToCompletedButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag is not int appointmentId)
+                return;
+
+            await CompleteFlowAppointmentAsync(appointmentId);
+        }
+        // Gemeinsame Statusänderung
+        private async Task UpdateFlowStateAsync(int appointmentId, string treatmentState)
+        {
+            try
+            {
+                var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
+                if (appointment == null)
+                    return;
+
+                appointment.TreatmentState = treatmentState;
+
+                if (!appointment.CheckInTime.HasValue)
+                {
+                    appointment.CheckInTime = DateTime.Now;
+                }
+
+                await _appointmentService.UpdateAppointmentAsync(appointment);
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await RefreshPatientFlowAsync();
+                await OpenAppointmentInFormAsync(appointmentId);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        
+        // Abschließen sauber behandeln
+        private async Task CompleteFlowAppointmentAsync(int appointmentId)
+        {
+            try
+            {
+                await _appointmentService.CompleteAppointmentAsync(appointmentId);
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await RefreshPatientFlowAsync();
+                await OpenAppointmentInFormAsync(appointmentId);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // Hilfsmethoden
         private Brush GetPlannerBackgroundBrush(Appointment appointment)
         {
@@ -1769,6 +1930,12 @@ namespace Praxis.Client.Views.Pages.Patienten
             public int InTreatmentCount { get; set; }
             public int CancelledCount { get; set; }
             public int FreeSlotsCount { get; set; }
+        }
+        private sealed class FlowAppointmentItem
+        {
+            public int AppointmentId { get; set; }
+            public string Title { get; set; } = string.Empty;
+            public string Subtitle { get; set; } = string.Empty;
         }
 
     }
