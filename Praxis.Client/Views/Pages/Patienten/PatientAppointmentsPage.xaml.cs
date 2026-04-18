@@ -67,6 +67,7 @@ namespace Praxis.Client.Views.Pages.Patienten
 
             await RefreshAvailableSlotsAsync();
             await RefreshRoomPlannerAsync();
+            await RefreshPatientFlowAsync();
         }
 
         public async Task LoadPatientAsync(Patient patient)
@@ -1194,7 +1195,10 @@ namespace Praxis.Client.Views.Pages.Patienten
         {
             var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
             if (appointment == null)
+            {
+                MessageBox.Show("Termin NICHT gefunden!");
                 return;
+            }
 
             _isLoadingForm = true;
 
@@ -1211,6 +1215,10 @@ namespace Praxis.Client.Views.Pages.Patienten
             _isLoadingForm = false;
 
             await RefreshAvailableSlotsAsync();
+
+            // Neu:
+            MainPageScrollViewer?.ScrollToTop();
+            AppointmentDatePicker?.Focus();
         }
 
         private string GetPlannerTitlePrefix(Appointment appointment)
@@ -1725,33 +1733,42 @@ namespace Praxis.Client.Views.Pages.Patienten
                 .OrderBy(a => a.StartTime)
                 .ToList();
 
-            CheckedInPatientsListBox.ItemsSource = filteredAppointments
+            var checkedInItems = filteredAppointments
                 .Where(IsCheckedInFlowState)
-                .Select(BuildFlowAppointmentItem)
+                .Select(a => BuildFlowAppointmentItem(a, "CheckedIn"))
                 .ToList();
 
-            WaitingPatientsListBox.ItemsSource = filteredAppointments
+            var waitingItems = filteredAppointments
                 .Where(IsWaitingFlowState)
-                .Select(BuildFlowAppointmentItem)
+                .Select(a => BuildFlowAppointmentItem(a, "Waiting"))
                 .ToList();
 
-            InTreatmentPatientsListBox.ItemsSource = filteredAppointments
+            var inTreatmentItems = filteredAppointments
                 .Where(IsInTreatmentFlowState)
-                .Select(BuildFlowAppointmentItem)
+                .Select(a => BuildFlowAppointmentItem(a, "InTreatment"))
                 .ToList();
 
-            CompletedPatientsListBox.ItemsSource = filteredAppointments
+            var completedItems = filteredAppointments
                 .Where(IsCompletedFlowState)
-                .Select(BuildFlowAppointmentItem)
+                .Select(a => BuildFlowAppointmentItem(a, "Completed"))
                 .ToList();
+
+            CheckedInPatientsListBox.ItemsSource = checkedInItems;
+            WaitingPatientsListBox.ItemsSource = waitingItems;
+            InTreatmentPatientsListBox.ItemsSource = inTreatmentItems;
+            CompletedPatientsListBox.ItemsSource = completedItems;
         }
         //Statuslogik für die vier Spalten
         private bool IsCheckedInFlowState(Appointment appointment)
         {
+            var state = appointment.TreatmentState?.Trim() ?? "";
+            var status = appointment.Status?.Trim() ?? "";
+
             return appointment.CheckInTime.HasValue &&
-                   !string.Equals(appointment.TreatmentState, "Wartet", StringComparison.OrdinalIgnoreCase) &&
-                   !string.Equals(appointment.TreatmentState, "In Behandlung", StringComparison.OrdinalIgnoreCase) &&
-                   !string.Equals(appointment.TreatmentState, "Abgeschlossen", StringComparison.OrdinalIgnoreCase);
+                   !string.Equals(state, "Wartet", StringComparison.OrdinalIgnoreCase) &&
+                   !string.Equals(state, "In Behandlung", StringComparison.OrdinalIgnoreCase) &&
+                   !string.Equals(state, "Abgeschlossen", StringComparison.OrdinalIgnoreCase) &&
+                   !string.Equals(status, "Abgeschlossen", StringComparison.OrdinalIgnoreCase);
         }
         private bool IsWaitingFlowState(Appointment appointment)
         {
@@ -1768,7 +1785,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         }
 
         //Anzeige pro Eintrag bauen
-        private FlowAppointmentItem BuildFlowAppointmentItem(Appointment appointment)
+        private FlowAppointmentItem BuildFlowAppointmentItem(Appointment appointment, string currentColumn)
         {
             var patientName = appointment.Patient?.FullName ?? $"Patient #{appointment.PatientId}";
             var room = string.IsNullOrWhiteSpace(appointment.RoomName) ? "Kein Raum" : appointment.RoomName;
@@ -1778,7 +1795,8 @@ namespace Praxis.Client.Views.Pages.Patienten
             {
                 AppointmentId = appointment.Id,
                 Title = $"{appointment.StartTime:HH:mm} | {patientName}",
-                Subtitle = $"{room} | {reason}"
+                Subtitle = $"{room} | {reason}",
+                CurrentColumn = currentColumn
             };
         }
 
@@ -1786,6 +1804,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         // 1) Öffnen
         private async void FlowOpenButton_Click(object sender, RoutedEventArgs e)
         {
+           // MessageBox.Show("Button geklickt");
             if (sender is not Button button || button.Tag is not int appointmentId)
                 return;
 
@@ -2175,6 +2194,235 @@ namespace Praxis.Client.Views.Pages.Patienten
             return Brushes.Black;
         }
         
+        // Kontextmenü dynamisch bauen Datei
+        private ContextMenu BuildFlowContextMenu(FlowAppointmentItem item)
+        {
+            var menu = new ContextMenu();
+
+            var openItem = new MenuItem
+            {
+                Header = "Termin öffnen",
+                Tag = item.AppointmentId
+            };
+            openItem.Click += FlowOpenMenuItem_Click;
+            menu.Items.Add(openItem);
+
+            menu.Items.Add(new Separator());
+
+            var checkInItem = new MenuItem
+            {
+                Header = "Check-in",
+                Tag = item.AppointmentId,
+                IsEnabled = item.CurrentColumn != "Completed"
+            };
+            checkInItem.Click += FlowCheckInMenuItem_Click;
+            menu.Items.Add(checkInItem);
+
+            var waitingItem = new MenuItem
+            {
+                Header = "Auf Wartet setzen",
+                Tag = item.AppointmentId,
+                IsEnabled = item.CurrentColumn != "Waiting" && item.CurrentColumn != "Completed"
+            };
+            waitingItem.Click += FlowMoveToWaitingMenuItem_Click;
+            menu.Items.Add(waitingItem);
+
+            var inTreatmentItem = new MenuItem
+            {
+                Header = "In Behandlung",
+                Tag = item.AppointmentId,
+                IsEnabled = item.CurrentColumn != "InTreatment" && item.CurrentColumn != "Completed"
+            };
+            inTreatmentItem.Click += FlowMoveToInTreatmentMenuItem_Click;
+            menu.Items.Add(inTreatmentItem);
+
+            var completeItem = new MenuItem
+            {
+                Header = "Abschließen",
+                Tag = item.AppointmentId,
+                IsEnabled = item.CurrentColumn != "Completed"
+            };
+            completeItem.Click += FlowCompleteMenuItem_Click;
+            menu.Items.Add(completeItem);
+
+            var cancelItem = new MenuItem
+            {
+                Header = "Absagen",
+                Tag = item.AppointmentId,
+                IsEnabled = item.CurrentColumn != "Completed"
+            };
+            cancelItem.Click += FlowCancelMenuItem_Click;
+            menu.Items.Add(cancelItem);
+
+            menu.Items.Add(new Separator());
+
+            var moveRoomItem = new MenuItem
+            {
+                Header = "In anderen Raum verschieben",
+                Tag = item.AppointmentId,
+                IsEnabled = item.CurrentColumn != "Completed"
+            };
+            moveRoomItem.Click += FlowMoveRoomMenuItem_Click;
+            menu.Items.Add(moveRoomItem);
+
+            return menu;
+        }
+        //Rechtsklick auf Eintrag öffnet Kontexmenü
+        private void FlowItemBorder_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not Border border)
+                return;
+
+            if (border.Tag is not FlowAppointmentItem item)
+                return;
+
+            var menu = BuildFlowContextMenu(item);
+            menu.PlacementTarget = border;
+            menu.IsOpen = true;
+
+            e.Handled = true;
+        }
+
+        // Hilfamethode für Menü-AppointmentId
+        private int? GetAppointmentIdFromFlowMenuSender(object sender)
+        {
+            if (sender is not MenuItem menuItem)
+                return null;
+
+            if (menuItem.Tag is int appointmentId)
+                return appointmentId;
+
+            return null;
+        }
+        //Kontextmenü-Aktion einbauen
+        // Termin öffnen
+        private async void FlowOpenMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromFlowMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            await OpenAppointmentInFormAsync(appointmentId.Value);
+        }
+        // Check-in
+        private async void FlowCheckInMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromFlowMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            try
+            {
+                await _appointmentService.CheckInAsync(appointmentId.Value);
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await RefreshPatientFlowAsync();
+                await OpenAppointmentInFormAsync(appointmentId.Value);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        // Auf Wartet setzen
+        private async void FlowMoveToWaitingMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromFlowMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            await UpdateFlowStateAsync(appointmentId.Value, "Wartet");
+        }
+        // In Behandlung
+        private async void FlowMoveToInTreatmentMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromFlowMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            await UpdateFlowStateAsync(appointmentId.Value, "In Behandlung");
+        }
+        // Abschließen
+        private async void FlowCompleteMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromFlowMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            await CompleteFlowAppointmentAsync(appointmentId.Value);
+        }
+        //Absagen
+        private async void FlowCancelMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromFlowMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            var result = MessageBox.Show(
+                "Termin wirklich absagen?",
+                "Bestätigung",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                await _appointmentService.CancelAppointmentAsync(appointmentId.Value, "Abgesagt aus Warteliste");
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await RefreshPatientFlowAsync();
+                await OpenAppointmentInFormAsync(appointmentId.Value);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        // Raum wechslen
+        private async void FlowMoveRoomMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentId = GetAppointmentIdFromFlowMenuSender(sender);
+            if (appointmentId == null)
+                return;
+
+            try
+            {
+                var rooms = await _roomService.GetActiveAsync();
+                if (rooms.Count == 0)
+                {
+                    MessageBox.Show("Es sind keine aktiven Räume vorhanden.");
+                    return;
+                }
+
+                var dialog = new SelectRoomWindow(rooms.Select(r => r.Name).ToList());
+                dialog.Owner = Window.GetWindow(this);
+
+                var dialogResult = dialog.ShowDialog();
+                if (dialogResult != true || string.IsNullOrWhiteSpace(dialog.SelectedRoomName))
+                    return;
+
+                await _appointmentService.MoveToRoomAsync(appointmentId.Value, dialog.SelectedRoomName);
+
+                await RefreshAppointmentsAsync();
+                await RefreshAvailableSlotsAsync();
+                await RefreshRoomPlannerAsync();
+                await RefreshPatientFlowAsync();
+                await OpenAppointmentInFormAsync(appointmentId.Value);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
         private sealed class AvailableSlotItem
         {
             public DateTime SlotTime { get; set; }
@@ -2201,6 +2449,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             public int AppointmentId { get; set; }
             public string Title { get; set; } = string.Empty;
             public string Subtitle { get; set; } = string.Empty;
+            public string CurrentColumn { get; set; } = string.Empty;
         }
         private sealed class FlowDragPayload
         {

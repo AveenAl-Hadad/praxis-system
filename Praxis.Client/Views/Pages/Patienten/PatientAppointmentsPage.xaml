@@ -4,8 +4,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"             
              Background="Transparent">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-              HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer  x:Name="MainPageScrollViewer"
+                   VerticalScrollBarVisibility="Auto"
+                   HorizontalScrollBarVisibility="Disabled">
         <Grid Margin="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>                <!-- Titel -->
@@ -528,7 +529,9 @@
                                             <Border Margin="0,0,0,8"
                                                     Padding="8"
                                                     BorderThickness="1"
-                                                    CornerRadius="8">
+                                                    CornerRadius="8"
+                                                    Tag="{Binding}"
+                                                    MouseRightButtonUp="FlowItemBorder_MouseRightButtonUp">
                                                 <StackPanel>
                                                     <TextBlock Text="{Binding Title}"
                                                                 FontWeight="SemiBold"/>
@@ -586,7 +589,9 @@
                                             <Border Margin="0,0,0,8"
                                                     Padding="8"
                                                     BorderThickness="1"
-                                                    CornerRadius="8">
+                                                    CornerRadius="8"
+                                                    Tag="{Binding}"
+                                                    MouseRightButtonUp="FlowItemBorder_MouseRightButtonUp">
                                                 <StackPanel>
                                                     <TextBlock Text="{Binding Title}"
                                                                  FontWeight="SemiBold"/>
@@ -644,7 +649,9 @@
                                             <Border Margin="0,0,0,8"
                                                     Padding="8"
                                                     BorderThickness="1"
-                                                    CornerRadius="8">
+                                                    CornerRadius="8"
+                                                    Tag="{Binding}"
+                                                    MouseRightButtonUp="FlowItemBorder_MouseRightButtonUp">
                                                 <StackPanel>
                                                     <TextBlock Text="{Binding Title}"
                                                                 FontWeight="SemiBold"/>
@@ -702,7 +709,9 @@
                                             <Border Margin="0,0,0,8"
                                                     Padding="8"
                                                     BorderThickness="1"
-                                                    CornerRadius="8">
+                                                    CornerRadius="8"
+                                                    Tag="{Binding}"
+                                                    MouseRightButtonUp="FlowItemBorder_MouseRightButtonUp">
                                                 <StackPanel>
                                                     <TextBlock Text="{Binding Title}"
                                                                 FontWeight="SemiBold"/>

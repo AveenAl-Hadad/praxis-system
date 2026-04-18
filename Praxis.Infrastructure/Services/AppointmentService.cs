@@ -470,8 +470,8 @@ namespace Praxis.Infrastructure.Services
             if (appointment == null)
                 throw new InvalidOperationException("Termin wurde nicht gefunden.");
 
-            appointment.TreatmentState = "Erledigt";
-            appointment.Status = "Erledigt";
+            appointment.TreatmentState = "Abgeschlossen";
+            appointment.Status = "Abgeschlossen";
 
             await _context.SaveChangesAsync();
         }
