@@ -24,6 +24,7 @@ using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Cursors = System.Windows.Input.Cursors;
 using Microsoft.Extensions.Logging;
 using Praxis.Infrastructure.Services;
+using Microsoft.VisualBasic.Logging;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
@@ -41,6 +42,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         private PlannerResizeState? _plannerResizeState;
         private bool _isWeekMode;
         private DateTime _plannerSelectedDate = DateTime.Today;
+        private Point? _flowDragStartPoint;
 
         public PatientAppointmentsPage(
             IAppointmentService appointmentService,
@@ -1864,6 +1866,269 @@ namespace Praxis.Client.Views.Pages.Patienten
             }
         }
 
+        // Drag aus den Flow-Listen starten
+        private void FlowListBox_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (sender is not ListBox listBox)
+                return;
+
+            if (e.LeftButton != MouseButtonState.Pressed)
+            {
+                _flowDragStartPoint = null;
+                return;
+            }
+
+            var currentPosition = e.GetPosition(listBox);
+
+            if (_flowDragStartPoint == null)
+            {
+                _flowDragStartPoint = currentPosition;
+                return;
+            }
+
+            var diff = currentPosition - _flowDragStartPoint.Value;
+            if (Math.Abs(diff.X) < 8 && Math.Abs(diff.Y) < 8)
+                return;
+
+            if (listBox.SelectedItem is not FlowAppointmentItem item)
+                return;
+
+            var sourceColumn = listBox.Tag?.ToString() ?? string.Empty;
+            if (string.Equals(sourceColumn, "Completed", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var payload = new FlowDragPayload
+            {
+                AppointmentId = item.AppointmentId,
+                SourceColumn = listBox.Tag?.ToString() ?? string.Empty
+            };
+
+            var data = new DataObject(typeof(FlowDragPayload), payload);
+            DragDrop.DoDragDrop(listBox, data, DragDropEffects.Move);
+
+            _flowDragStartPoint = null;
+        }
+
+        //Drop-Handler für die vier Spalten
+        private void FlowListBox_DragEnter(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(typeof(FlowDragPayload)))
+            {
+                e.Effects = DragDropEffects.None;
+                ResetFlowDropHighlights();
+                e.Handled = true;
+                return;
+            }
+
+            if (sender is not ListBox targetListBox)
+            {
+                e.Effects = DragDropEffects.None;
+                ResetFlowDropHighlights();
+                e.Handled = true;
+                return;
+            }
+
+            var payload = e.Data.GetData(typeof(FlowDragPayload)) as FlowDragPayload;
+            var targetColumn = targetListBox.Tag?.ToString() ?? string.Empty;
+            var isValid = payload != null && IsValidFlowDropTarget(payload.SourceColumn, targetColumn);
+
+            HighlightFlowDropTarget(targetColumn, isValid);
+            e.Effects = isValid ? DragDropEffects.Move : DragDropEffects.None;
+            e.Handled = true;
+        }
+        private void FlowListBox_DragOver(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(typeof(FlowDragPayload)))
+            {
+                e.Effects = DragDropEffects.None;
+                ResetFlowDropHighlights();
+                e.Handled = true;
+                return;
+            }
+
+            if (sender is not ListBox targetListBox)
+            {
+                e.Effects = DragDropEffects.None;
+                ResetFlowDropHighlights();
+                e.Handled = true;
+                return;
+            }
+
+            var payload = e.Data.GetData(typeof(FlowDragPayload)) as FlowDragPayload;
+            var targetColumn = targetListBox.Tag?.ToString() ?? string.Empty;
+            var isValid = payload != null && IsValidFlowDropTarget(payload.SourceColumn, targetColumn);
+
+            HighlightFlowDropTarget(targetColumn, isValid);
+            e.Effects = isValid ? DragDropEffects.Move : DragDropEffects.None;
+            e.Handled = true;
+        }
+        private async void FlowListBox_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (!e.Data.GetDataPresent(typeof(FlowDragPayload)))
+                    return;
+
+                if (sender is not ListBox targetListBox)
+                    return;
+
+                var payload = e.Data.GetData(typeof(FlowDragPayload)) as FlowDragPayload;
+                if (payload == null)
+                    return;
+
+                var targetColumn = targetListBox.Tag?.ToString() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(targetColumn))
+                    return;
+
+                if (!IsValidFlowDropTarget(payload.SourceColumn, targetColumn))
+                    return;
+
+                await MoveFlowAppointmentByDropAsync(payload.AppointmentId, targetColumn);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Fehler",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                _flowDragStartPoint = null;
+                ResetFlowDropHighlights();
+            }
+        }
+        private void FlowListBox_DragLeave(object sender, DragEventArgs e)
+        {
+            ResetFlowDropHighlights();
+        }
+
+        //  Statuswechsel per Drop Jetzt kommt die eigentliche Logik.
+        private async Task MoveFlowAppointmentByDropAsync(int appointmentId, string targetColumn)
+        {
+            var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
+            if (appointment == null)
+                return;
+
+            switch (targetColumn)
+            {
+                case "CheckedIn":
+                    if (!appointment.CheckInTime.HasValue)
+                        appointment.CheckInTime = DateTime.Now;
+
+                    appointment.TreatmentState = "Geplant";
+                    break;
+
+                case "Waiting":
+                    if (!appointment.CheckInTime.HasValue)
+                        appointment.CheckInTime = DateTime.Now;
+
+                    appointment.TreatmentState = "Wartet";
+                    break;
+
+                case "InTreatment":
+                    if (!appointment.CheckInTime.HasValue)
+                        appointment.CheckInTime = DateTime.Now;
+
+                    appointment.TreatmentState = "In Behandlung";
+                    break;
+
+                case "Completed":
+                    await _appointmentService.CompleteAppointmentAsync(appointmentId);
+
+                    await RefreshAppointmentsAsync();
+                    await RefreshAvailableSlotsAsync();
+                    await RefreshRoomPlannerAsync();
+                    await RefreshPatientFlowAsync();
+                    await OpenAppointmentInFormAsync(appointmentId);
+                    return;
+
+                default:
+                    return;
+            }
+
+            await _appointmentService.UpdateAppointmentAsync(appointment);
+
+            await RefreshAppointmentsAsync();
+            await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
+            await RefreshPatientFlowAsync();
+            await OpenAppointmentInFormAsync(appointmentId);
+        }
+        //Highlight-Hilfsmethoden einbauen Datei
+        private void ResetFlowDropHighlights()
+        {
+            ApplyFlowBorderStyle(CheckedInFlowBorder, false, false);
+            ApplyFlowBorderStyle(WaitingFlowBorder, false, false);
+            ApplyFlowBorderStyle(InTreatmentFlowBorder, false, false);
+            ApplyFlowBorderStyle(CompletedFlowBorder, false, false);
+        }
+        private void HighlightFlowDropTarget(string targetColumn, bool isValid)
+        {
+            ResetFlowDropHighlights();
+
+            switch (targetColumn)
+            {
+                case "CheckedIn":
+                    ApplyFlowBorderStyle(CheckedInFlowBorder, true, isValid);
+                    break;
+
+                case "Waiting":
+                    ApplyFlowBorderStyle(WaitingFlowBorder, true, isValid);
+                    break;
+
+                case "InTreatment":
+                    ApplyFlowBorderStyle(InTreatmentFlowBorder, true, isValid);
+                    break;
+
+                case "Completed":
+                    ApplyFlowBorderStyle(CompletedFlowBorder, true, isValid);
+                    break;
+            }
+        }
+        private void ApplyFlowBorderStyle(Border? border, bool isHighlighted, bool isValid)
+        {
+            if (border == null)
+                return;
+
+            if (!isHighlighted)
+            {
+                border.Background = Brushes.WhiteSmoke;
+                border.BorderBrush = Brushes.DarkGray;
+                border.BorderThickness = new Thickness(1);
+                return;
+            }
+
+            if (isValid)
+            {
+                border.Background = Brushes.Honeydew;
+                border.BorderBrush = Brushes.SeaGreen;
+                border.BorderThickness = new Thickness(3);
+            }
+            else
+            {
+                border.Background = Brushes.MistyRose;
+                border.BorderBrush = Brushes.IndianRed;
+                border.BorderThickness = new Thickness(3);
+            }
+        }
+        //Prüfen, ob ein Drop fachlich erlaubt ist
+        private bool IsValidFlowDropTarget(string sourceColumn, string targetColumn)
+        {
+            if (string.IsNullOrWhiteSpace(sourceColumn) || string.IsNullOrWhiteSpace(targetColumn))
+                return false;
+
+            if (string.Equals(sourceColumn, targetColumn, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            return sourceColumn switch
+            {
+                "CheckedIn" => targetColumn is "Waiting" or "InTreatment" or "Completed",
+                "Waiting" => targetColumn is "CheckedIn" or "InTreatment" or "Completed",
+                "InTreatment" => targetColumn is "Waiting" or "Completed",
+                "Completed" => false,
+                _ => false
+            };
+        }
+
         // Hilfsmethoden
         private Brush GetPlannerBackgroundBrush(Appointment appointment)
         {
@@ -1936,6 +2201,11 @@ namespace Praxis.Client.Views.Pages.Patienten
             public int AppointmentId { get; set; }
             public string Title { get; set; } = string.Empty;
             public string Subtitle { get; set; } = string.Empty;
+        }
+        private sealed class FlowDragPayload
+        {
+            public int AppointmentId { get; set; }
+            public string SourceColumn { get; set; } = string.Empty;
         }
 
     }

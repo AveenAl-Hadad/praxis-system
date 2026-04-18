@@ -496,10 +496,13 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Eingecheckt -->
-                        <Border Grid.Column="0"
+                        <Border x:Name="CheckedInFlowBorder"
+                                Grid.Column="0"
                                 Padding="10"
                                 BorderThickness="1"
-                                CornerRadius="8">
+                                CornerRadius="8"
+                                Background="WhiteSmoke"
+                                BorderBrush="DarkGray">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -511,7 +514,15 @@
                                            FontSize="16"
                                            FontWeight="SemiBold"/>
 
-                                <ListBox Grid.Row="2"  x:Name="CheckedInPatientsListBox">
+                                <ListBox Grid.Row="2"
+                                         x:Name="CheckedInPatientsListBox"
+                                         PreviewMouseMove="FlowListBox_PreviewMouseMove"
+                                         AllowDrop="True"
+                                         Tag="CheckedIn"
+                                         DragEnter="FlowListBox_DragEnter"
+                                         DragOver="FlowListBox_DragOver"
+                                         DragLeave="FlowListBox_DragLeave"
+                                         Drop="FlowListBox_Drop">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Border Margin="0,0,0,8"
@@ -543,10 +554,13 @@
                         </Border>
 
                         <!-- Wartet -->
-                        <Border Grid.Column="2"
+                        <Border x:Name="WaitingFlowBorder"
+                                Grid.Column="2"
                                 Padding="10"
                                 BorderThickness="1"
-                                CornerRadius="8">
+                                CornerRadius="8"
+                                Background="WhiteSmoke"
+                                BorderBrush="DarkGray">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -559,7 +573,14 @@
                                            FontWeight="SemiBold"/>
 
                                 <ListBox Grid.Row="2"
-                                         x:Name="WaitingPatientsListBox">
+                                         x:Name="WaitingPatientsListBox"
+                                         PreviewMouseMove="FlowListBox_PreviewMouseMove"
+                                         AllowDrop="True"
+                                         Tag="Waiting"
+                                         DragEnter="FlowListBox_DragEnter"
+                                         DragOver="FlowListBox_DragOver"
+                                         DragLeave="FlowListBox_DragLeave"
+                                         Drop="FlowListBox_Drop">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Border Margin="0,0,0,8"
@@ -591,10 +612,13 @@
                         </Border>
 
                         <!-- In Behandlung -->
-                        <Border Grid.Column="4"
+                        <Border x:Name="InTreatmentFlowBorder"
+                                Grid.Column="4"
                                 Padding="10"
                                 BorderThickness="1"
-                                CornerRadius="8">
+                                CornerRadius="8"
+                                Background="WhiteSmoke"
+                                BorderBrush="DarkGray">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -607,7 +631,14 @@
                                            FontWeight="SemiBold"/>
 
                                 <ListBox Grid.Row="2"
-                                        x:Name="InTreatmentPatientsListBox">
+                                         x:Name="InTreatmentPatientsListBox"
+                                         PreviewMouseMove="FlowListBox_PreviewMouseMove"
+                                         AllowDrop="True"
+                                         Tag="InTreatment"
+                                         DragEnter="FlowListBox_DragEnter"
+                                         DragOver="FlowListBox_DragOver"
+                                         DragLeave="FlowListBox_DragLeave"
+                                         Drop="FlowListBox_Drop">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Border Margin="0,0,0,8"
@@ -639,10 +670,13 @@
                         </Border>
 
                         <!-- Abgeschlossen -->
-                        <Border Grid.Column="6"
+                        <Border x:Name="CompletedFlowBorder"
+                                Grid.Column="6"
                                 Padding="10"
                                 BorderThickness="1"
-                                CornerRadius="8">
+                                CornerRadius="8"
+                                Background="WhiteSmoke"
+                                BorderBrush="DarkGray">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -655,7 +689,14 @@
                                            FontWeight="SemiBold"/>
 
                                 <ListBox Grid.Row="2"
-                                        x:Name="CompletedPatientsListBox">
+                                         x:Name="CompletedPatientsListBox"
+                                         PreviewMouseMove="FlowListBox_PreviewMouseMove"
+                                         AllowDrop="True"
+                                         Tag="Completed"
+                                         DragEnter="FlowListBox_DragEnter"
+                                         DragOver="FlowListBox_DragOver"
+                                         DragLeave="FlowListBox_DragLeave"
+                                         Drop="FlowListBox_Drop">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Border Margin="0,0,0,8"
