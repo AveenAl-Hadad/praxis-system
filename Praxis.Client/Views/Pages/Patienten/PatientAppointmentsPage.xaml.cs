@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,6 +26,7 @@ using Cursors = System.Windows.Input.Cursors;
 using Microsoft.Extensions.Logging;
 using Praxis.Infrastructure.Services;
 using Microsoft.VisualBasic.Logging;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
@@ -43,6 +45,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         private bool _isWeekMode;
         private DateTime _plannerSelectedDate = DateTime.Today;
         private Point? _flowDragStartPoint;
+        private readonly DispatcherTimer _flowRefreshTimer = new DispatcherTimer();
 
         public PatientAppointmentsPage(
             IAppointmentService appointmentService,
@@ -57,6 +60,16 @@ namespace Praxis.Client.Views.Pages.Patienten
             AppointmentDatePicker.SelectedDate = DateTime.Today;
             Loaded += PatientAppointmentsPage_Loaded;
             _patientService = patientService;
+            _flowRefreshTimer.Interval = TimeSpan.FromMinutes(1);
+            _flowRefreshTimer.Tick += FlowRefreshTimer_Tick;
+            _flowRefreshTimer.Start();
+        }
+        private async void FlowRefreshTimer_Tick(object? sender, EventArgs e)
+        {
+            if (!IsLoaded)
+                return;
+
+            await RefreshPatientFlowAsync();
         }
         private async void PatientAppointmentsPage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -1365,13 +1378,25 @@ namespace Praxis.Client.Views.Pages.Patienten
             await RefreshAvailableSlotsAsync();
         }
 
-        private async void AppointmentCriteria_Changed(object sender, RoutedEventArgs e)
+        private async void AppointmentCriteria_Changed(object sender, SelectionChangedEventArgs e)
         {
             if (AppointmentDatePicker.SelectedDate.HasValue)
             {
                 _plannerSelectedDate = AppointmentDatePicker.SelectedDate.Value.Date;
             }
 
+            await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
+            await RefreshPatientFlowAsync();
+        }
+        private async void AppointmentDurationTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            await RefreshAvailableSlotsAsync();
+            await RefreshRoomPlannerAsync();
+            await RefreshPatientFlowAsync();
+        }
+        private async void RoomComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
             await RefreshAvailableSlotsAsync();
             await RefreshRoomPlannerAsync();
             await RefreshPatientFlowAsync();
@@ -1761,14 +1786,17 @@ namespace Praxis.Client.Views.Pages.Patienten
         //Statuslogik für die vier Spalten
         private bool IsCheckedInFlowState(Appointment appointment)
         {
-            var state = appointment.TreatmentState?.Trim() ?? "";
-            var status = appointment.Status?.Trim() ?? "";
+            // 🔥 auch geplante anzeigen
+            if (!appointment.CheckInTime.HasValue &&
+                string.IsNullOrWhiteSpace(appointment.TreatmentState))
+            {
+                return true;
+            }
 
             return appointment.CheckInTime.HasValue &&
-                   !string.Equals(state, "Wartet", StringComparison.OrdinalIgnoreCase) &&
-                   !string.Equals(state, "In Behandlung", StringComparison.OrdinalIgnoreCase) &&
-                   !string.Equals(state, "Abgeschlossen", StringComparison.OrdinalIgnoreCase) &&
-                   !string.Equals(status, "Abgeschlossen", StringComparison.OrdinalIgnoreCase);
+                   !string.Equals(appointment.TreatmentState, "Wartet", StringComparison.OrdinalIgnoreCase) &&
+                   !string.Equals(appointment.TreatmentState, "In Behandlung", StringComparison.OrdinalIgnoreCase) &&
+                   !string.Equals(appointment.TreatmentState, "Abgeschlossen", StringComparison.OrdinalIgnoreCase);
         }
         private bool IsWaitingFlowState(Appointment appointment)
         {
@@ -1796,7 +1824,9 @@ namespace Praxis.Client.Views.Pages.Patienten
                 AppointmentId = appointment.Id,
                 Title = $"{appointment.StartTime:HH:mm} | {patientName}",
                 Subtitle = $"{room} | {reason}",
-                CurrentColumn = currentColumn
+                CurrentColumn = currentColumn,
+                StatusIcon = GetFlowStatusIcon(currentColumn),
+                WaitingTimeText = BuildWaitingTimeText(appointment, currentColumn)
             };
         }
 
@@ -2193,6 +2223,7 @@ namespace Praxis.Client.Views.Pages.Patienten
 
             return Brushes.Black;
         }
+
         
         // Kontextmenü dynamisch bauen Datei
         private ContextMenu BuildFlowContextMenu(FlowAppointmentItem item)
@@ -2443,13 +2474,56 @@ namespace Praxis.Client.Views.Pages.Patienten
                 menu.Items.Add(entry);
             }
         }
+
+        //Hilfsmethoden für Icon und Timer einbauen Datei
+        private string GetFlowStatusIcon(string currentColumn)
+        {
+            return currentColumn switch
+            {
+                "CheckedIn" => "🔵",
+                "Waiting" => "🟢",
+                "InTreatment" => "🟡",
+                "Completed" => "⚫",
+                _ => "⚪"
+            };
+        }
+        private string BuildWaitingTimeText(Appointment appointment, string currentColumn)
+        {
+            DateTime referenceTime;
+
+            if (appointment.CheckInTime.HasValue)
+            {
+                referenceTime = appointment.CheckInTime.Value;
+            }
+            else
+            {
+                referenceTime = appointment.StartTime;
+            }
+
+            var diff = DateTime.Now - referenceTime;
+
+            if (diff.TotalMinutes < 0)
+                diff = TimeSpan.Zero;
+
+            var minutes = (int)Math.Floor(diff.TotalMinutes);
+
+            return currentColumn switch
+            {
+                "CheckedIn" => $"eingecheckt seit {minutes} min",
+                "Waiting" => $"wartet seit {minutes} min",
+                "InTreatment" => $"in Behandlung seit {minutes} min",
+                "Completed" => $"abgeschlossen",
+                _ => string.Empty
+            };
+        }
+
+//==================Sealed Klasse =====================
         private sealed class AvailableSlotItem
         {
             public DateTime SlotTime { get; set; }
             public string SlotLabel { get; set; } = string.Empty;
             public bool IsCurrentAppointmentSlot { get; set; }
         }
-
         private sealed class PatientFilterItem
         {
             public int Id { get; set; }
@@ -2470,6 +2544,8 @@ namespace Praxis.Client.Views.Pages.Patienten
             public string Title { get; set; } = string.Empty;
             public string Subtitle { get; set; } = string.Empty;
             public string CurrentColumn { get; set; } = string.Empty;
+            public string StatusIcon {  get; set; } = string.Empty;
+            public string WaitingTimeText {  get; set; } = string.Empty;
         }
         private sealed class FlowDragPayload
         {

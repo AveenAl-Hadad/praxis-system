@@ -120,6 +120,7 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Datum:" VerticalAlignment="Center"/>
+                    
                     <DatePicker x:Name="AppointmentDatePicker"
                                 Grid.Column="1"
                                 Margin="0,4,0,4"
@@ -141,7 +142,7 @@
                              Grid.Column="1"
                              Margin="0,4,0,4"
                              Text="30"
-                             TextChanged="AppointmentCriteria_Changed"/>
+                             TextChanged="AppointmentDurationTextBox_TextChanged"/>
 
                     <TextBlock Grid.Row="1"
                                Grid.Column="3"
@@ -153,7 +154,7 @@
                               Margin="0,4,0,4"
                               DisplayMemberPath="Name"
                               SelectedValuePath="Name"
-                              SelectionChanged="AppointmentCriteria_Changed"/>
+                              SelectionChanged="RoomComboBox_SelectionChanged"/>
 
                     <TextBlock Grid.Row="2"
                                Text="Grund:"
@@ -542,17 +543,25 @@
                                                 <Border.ContextMenu>
                                                     <ContextMenu Opened="FlowContextMenu_Opened"/>
                                                 </Border.ContextMenu>
-                                                <StackPanel>
-                                                    
-                                                    <!-- Titel -->
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding StatusIcon}"
+                                                             FontSize="16"
+                                                             Margin="0,0,6,0"
+                                                             VerticalAlignment="Center"/>
+
                                                     <TextBlock Text="{Binding Title}"
-                                                                FontWeight="SemiBold"/>
+                                                                 FontWeight="SemiBold"
+                                                                VerticalAlignment="Center"/>
                                                     
-                                                    <!-- Zusatz -->
                                                     <TextBlock Text="{Binding Subtitle}"
-                                                               TextWrapping="Wrap"
-                                                               Margin="0,2,0,0"/>
-                                                    
+                                                             TextWrapping="Wrap"
+                                                             Margin="0,2,0,0"/>
+
+                                                    <TextBlock Text="{Binding WaitingTimeText}"
+                                                                 Margin="0,4,0,0"
+                                                                 FontStyle="Italic"
+                                                                 Foreground="DimGray"/>
+
                                                     <!-- Aktion -->
                                                     <StackPanel Orientation="Horizontal"
                                                                 Margin="0,6,0,0">
@@ -613,12 +622,25 @@
                                                 <Border.ContextMenu>
                                                     <ContextMenu Opened="FlowContextMenu_Opened"/>
                                                 </Border.ContextMenu>
-                                                <StackPanel>
+                                                
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding StatusIcon}"
+                                                               FontSize="16"
+                                                               Margin="0,0,6,0"
+                                                               VerticalAlignment="Center"/>
+
                                                     <TextBlock Text="{Binding Title}"
-                                                                 FontWeight="SemiBold"/>
+                                                                FontWeight="SemiBold"
+                                                                VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding Subtitle}"
                                                                TextWrapping="Wrap"
                                                                Margin="0,2,0,0"/>
+
+                                                    <TextBlock Text="{Binding WaitingTimeText}"
+                                                               Margin="0,4,0,0"
+                                                               FontStyle="Italic"
+                                                               Foreground="DimGray"/>
+                                                    
                                                     <StackPanel Orientation="Horizontal"
                                                                 Margin="0,6,0,0">
                                                         <Button Content="Öffnen"
@@ -675,12 +697,24 @@
                                                 <Border.ContextMenu>
                                                     <ContextMenu Opened="FlowContextMenu_Opened"/>
                                                 </Border.ContextMenu>
-                                                <StackPanel>
+
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding StatusIcon}"
+                                                                 FontSize="16"
+                                                                 Margin="0,0,6,0"
+                                                                 VerticalAlignment="Center"/>
+
                                                     <TextBlock Text="{Binding Title}"
-                                                                FontWeight="SemiBold"/>
+                                                                FontWeight="SemiBold"
+                                                                VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding Subtitle}"
-                                                               TextWrapping="Wrap"
-                                                               Margin="0,2,0,0"/>
+                                                                 TextWrapping="Wrap"
+                                                                 Margin="0,2,0,0"/>
+
+                                                    <TextBlock Text="{Binding WaitingTimeText}"
+                                                                 Margin="0,4,0,0"
+                                                                 FontStyle="Italic"
+                                                                 Foreground="DimGray"/>
                                                     <StackPanel Orientation="Horizontal"
                                                                 Margin="0,6,0,0">
                                                         <Button Content="Öffnen"
@@ -737,12 +771,23 @@
                                                 <Border.ContextMenu>
                                                     <ContextMenu Opened="FlowContextMenu_Opened"/>
                                                 </Border.ContextMenu>
-                                                <StackPanel>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding StatusIcon}"
+                                                                 FontSize="16"
+                                                                 Margin="0,0,6,0"
+                                                                 VerticalAlignment="Center"/>
+
                                                     <TextBlock Text="{Binding Title}"
-                                                                FontWeight="SemiBold"/>
+                                                                FontWeight="SemiBold"
+                                                                VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding Subtitle}"
-                                                               TextWrapping="Wrap"
-                                                               Margin="0,2,0,0"/>
+                                                             TextWrapping="Wrap"
+                                                             Margin="0,2,0,0"/>
+
+                                                    <TextBlock Text="{Binding WaitingTimeText}"
+                                                                 Margin="0,4,0,0"
+                                                                 FontStyle="Italic"
+                                                                 Foreground="DimGray"/>
                                                     <Button Content="Öffnen"
                                                             Margin="0,6,0,0"
                                                             HorizontalAlignment="Left"
