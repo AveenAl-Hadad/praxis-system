@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using Praxis.Application.Interfaces;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Persistence;

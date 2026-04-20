@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Persistence;
 using Praxis.Infrastructure.Services;

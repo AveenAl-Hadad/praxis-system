@@ -1,8 +1,12 @@
 ﻿<UserControl x:Class="Praxis.Client.Views.Pages.Patienten.PatientAppointmentsPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"             
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+             xmlns:conv="clr-namespace:Praxis.Client.Converters"            
              Background="Transparent">
+    <UserControl.Resources>
+        <conv:FlowStatusToBrushConverter x:Key="FlowStatusBrush"/>
+    </UserControl.Resources>
 
     <ScrollViewer  x:Name="MainPageScrollViewer"
                    VerticalScrollBarVisibility="Auto"
@@ -526,18 +530,30 @@
                                          Drop="FlowListBox_Drop">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
+
+                                            <!-- Eintrag -->
                                             <Border Margin="0,0,0,8"
                                                     Padding="8"
                                                     BorderThickness="1"
                                                     CornerRadius="8"
-                                                    Tag="{Binding}"
-                                                    MouseRightButtonUp="FlowItemBorder_MouseRightButtonUp">
+                                                    Tag="{Binding}">
+                                                
+                                                <!-- Kontextmenü dirkt dran -->
+                                                <Border.ContextMenu>
+                                                    <ContextMenu Opened="FlowContextMenu_Opened"/>
+                                                </Border.ContextMenu>
                                                 <StackPanel>
+                                                    
+                                                    <!-- Titel -->
                                                     <TextBlock Text="{Binding Title}"
                                                                 FontWeight="SemiBold"/>
+                                                    
+                                                    <!-- Zusatz -->
                                                     <TextBlock Text="{Binding Subtitle}"
                                                                TextWrapping="Wrap"
                                                                Margin="0,2,0,0"/>
+                                                    
+                                                    <!-- Aktion -->
                                                     <StackPanel Orientation="Horizontal"
                                                                 Margin="0,6,0,0">
                                                         <Button Content="Öffnen"
@@ -586,12 +602,17 @@
                                          Drop="FlowListBox_Drop">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
+                                            <!-- Hier ist die Karte -->
                                             <Border Margin="0,0,0,8"
                                                     Padding="8"
                                                     BorderThickness="1"
                                                     CornerRadius="8"
                                                     Tag="{Binding}"
-                                                    MouseRightButtonUp="FlowItemBorder_MouseRightButtonUp">
+                                                    Background="{Binding CurrentColumn, Converter={StaticResource FlowStatusBrush}}">
+
+                                                <Border.ContextMenu>
+                                                    <ContextMenu Opened="FlowContextMenu_Opened"/>
+                                                </Border.ContextMenu>
                                                 <StackPanel>
                                                     <TextBlock Text="{Binding Title}"
                                                                  FontWeight="SemiBold"/>
@@ -650,8 +671,10 @@
                                                     Padding="8"
                                                     BorderThickness="1"
                                                     CornerRadius="8"
-                                                    Tag="{Binding}"
-                                                    MouseRightButtonUp="FlowItemBorder_MouseRightButtonUp">
+                                                    Tag="{Binding}">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu Opened="FlowContextMenu_Opened"/>
+                                                </Border.ContextMenu>
                                                 <StackPanel>
                                                     <TextBlock Text="{Binding Title}"
                                                                 FontWeight="SemiBold"/>
@@ -710,8 +733,10 @@
                                                     Padding="8"
                                                     BorderThickness="1"
                                                     CornerRadius="8"
-                                                    Tag="{Binding}"
-                                                    MouseRightButtonUp="FlowItemBorder_MouseRightButtonUp">
+                                                    Tag="{Binding}">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu Opened="FlowContextMenu_Opened"/>
+                                                </Border.ContextMenu>
                                                 <StackPanel>
                                                     <TextBlock Text="{Binding Title}"
                                                                 FontWeight="SemiBold"/>

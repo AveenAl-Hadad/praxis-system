@@ -1191,7 +1191,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             return null;
         }
 
-        private async Task OpenAppointmentInFormAsync(int appointmentId)
+       private async Task OpenAppointmentInFormAsync(int appointmentId)
         {
             var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
             if (appointment == null)
@@ -1804,7 +1804,7 @@ namespace Praxis.Client.Views.Pages.Patienten
         // 1) Öffnen
         private async void FlowOpenButton_Click(object sender, RoutedEventArgs e)
         {
-           // MessageBox.Show("Button geklickt");
+            MessageBox.Show("Button geklickt");
             if (sender is not Button button || button.Tag is not int appointmentId)
                 return;
 
@@ -2268,20 +2268,20 @@ namespace Praxis.Client.Views.Pages.Patienten
             return menu;
         }
         //Rechtsklick auf Eintrag öffnet Kontexmenü
-        private void FlowItemBorder_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is not Border border)
-                return;
+        //private void FlowItemBorder_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        //{
+        //    if (sender is not Border border)
+        //        return;
 
-            if (border.Tag is not FlowAppointmentItem item)
-                return;
+        //    if (border.Tag is not FlowAppointmentItem item)
+        //        return;
 
-            var menu = BuildFlowContextMenu(item);
-            menu.PlacementTarget = border;
-            menu.IsOpen = true;
+        //    var menu = BuildFlowContextMenu(item);
+        //    menu.PlacementTarget = border;
+        //    menu.IsOpen = true;
 
-            e.Handled = true;
-        }
+        //    e.Handled = true;
+        //}
 
         // Hilfamethode für Menü-AppointmentId
         private int? GetAppointmentIdFromFlowMenuSender(object sender)
@@ -2421,6 +2421,26 @@ namespace Praxis.Client.Views.Pages.Patienten
             {
                 MessageBox.Show(ex.Message, "Fehler",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void FlowContextMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ContextMenu menu)
+                return;
+
+            if (menu.PlacementTarget is not Border border)
+                return;
+
+            if (border.Tag is not FlowAppointmentItem item)
+                return;
+
+            var builtMenu = BuildFlowContextMenu(item);
+
+            menu.Items.Clear();
+            foreach (var entry in builtMenu.Items)
+            {
+                menu.Items.Add(entry);
             }
         }
         private sealed class AvailableSlotItem
