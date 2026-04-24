@@ -198,6 +198,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
                                 <Grid.ColumnDefinitions>
@@ -216,6 +217,9 @@
 
                                 <TextBlock Text="Abgesagt" Grid.Row="3" Grid.Column="0"/>
                                 <TextBlock x:Name="CancelledAppointmentsText" Grid.Row="3" Grid.Column="1" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="Online gebucht" Grid.Row="4" Grid.Column="0" Margin="0,8,0,0"/>
+                                <TextBlock x:Name="OnlineAppointmentsText" Grid.Row="4" Grid.Column="1" Margin="0,8,0,0" FontWeight="SemiBold"/>
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -907,41 +911,45 @@
                 </Border>
             
             <!-- Heutige Termine -->
+            <!-- Heutige Termine -->
             <Border x:Name="AppointmentsWidget"
-                    Grid.Row="10"
-                    Tag="Appointments"
-                    AllowDrop="True"
-                    Background="Transparent"
-                    PreviewMouseLeftButtonDown="Widget_PreviewMouseLeftButtonDown"
-                    MouseMove="Widget_MouseMove"
-                    DragEnter="Widget_DragEnter"
-                    DragOver="Widget_DragOver"
-                    DragLeave="Widget_DragLeave"
-                    Drop="Widget_Drop"
-                    Style="{StaticResource CardBorderStyle}">
+        Grid.Row="10"
+        Tag="Appointments"
+        AllowDrop="True"
+        Background="Transparent"
+        PreviewMouseLeftButtonDown="Widget_PreviewMouseLeftButtonDown"
+        MouseMove="Widget_MouseMove"
+        DragEnter="Widget_DragEnter"
+        DragOver="Widget_DragOver"
+        DragLeave="Widget_DragLeave"
+        Drop="Widget_Drop"
+        Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="12"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <StackPanel>
+                    <StackPanel Grid.Row="0">
                         <TextBlock Text="Heutige Termine"
-                                   FontWeight="Bold"
-                                   FontSize="15"/>
+                       FontWeight="Bold"
+                       FontSize="15"/>
                         <TextBlock x:Name="TodayDateText"
-                                   Margin="0,2,0,0"
-                                   Foreground="{DynamicResource MutedTextBrush}"/>
+                       Margin="0,2,0,0"
+                       Foreground="{DynamicResource MutedTextBrush}"/>
                     </StackPanel>
 
                     <DataGrid Grid.Row="2"
-                              x:Name="TodayAppointmentsGrid"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False"
-                              CanUserDeleteRows="False"
-                              IsReadOnly="True"
-                              SelectionMode="Single">
+                  x:Name="TodayAppointmentsGrid"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  MinHeight="180">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Uhrzeit" Binding="{Binding Time}" Width="110"/>
                             <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="220"/>
@@ -950,6 +958,38 @@
                             <DataGridTextColumn Header="Dauer (Min.)" Binding="{Binding DurationMinutes}" Width="110"/>
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <Border Grid.Row="4"
+                BorderBrush="#E5E7EB"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="12"
+                Background="White">
+                        <StackPanel>
+                            <TextBlock Text="Online-Buchungen heute"
+                           FontWeight="Bold"
+                           FontSize="15"/>
+                            <TextBlock Text="Termine aus der Online-Buchung"
+                           Margin="0,2,0,12"
+                           Foreground="{DynamicResource MutedTextBrush}"/>
+
+                            <DataGrid x:Name="OnlineAppointmentsGrid"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          MinHeight="160">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Zeit" Binding="{Binding Time}" Width="110"/>
+                                    <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="220"/>
+                                    <DataGridTextColumn Header="Grund" Binding="{Binding Reason}" Width="260"/>
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140"/>
+                                    <DataGridTextColumn Header="Dauer (Min.)" Binding="{Binding DurationMinutes}" Width="110"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>

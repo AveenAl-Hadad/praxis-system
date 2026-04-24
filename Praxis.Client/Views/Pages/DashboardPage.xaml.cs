@@ -118,6 +118,9 @@ namespace Praxis.Client.Views.Pages
                 var todayAppointments = (await mainWindow.GetAppointmentsByDateAsync(DateTime.Today))
                     .OrderBy(a => a.StartTime)
                     .ToList();
+                var todayOnlineAppointments = todayAppointments
+                        .Where(a => a.IsOnlineBooking)
+                        .ToList();
 
                 var allTasks = (await mainWindow.GetAllDashboardTasksAsync())
                     .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
@@ -178,6 +181,8 @@ namespace Praxis.Client.Views.Pages
                 CancelledAppointmentsText.Text = todayAppointments.Count(a =>
                     string.Equals(a.Status, "Abgesagt", StringComparison.OrdinalIgnoreCase)).ToString();
 
+                OnlineAppointmentsText.Text = todayOnlineAppointments.Count.ToString();
+
                 TodayDateText.Text = $"Stand: {DateTime.Now:dd.MM.yyyy HH:mm}";
                 // Aufgaben-Kennzahlen
                 OpenTasksText.Text = plainOpenTasks.Count.ToString();
@@ -220,6 +225,15 @@ namespace Praxis.Client.Views.Pages
                 PinnedNoticesText.Text = activeNotices.Count(n => n.IsPinned).ToString();
 
                 TodayAppointmentsGrid.ItemsSource = todayAppointments.Select(a => new DashboardAppointmentRow
+                {
+                    Time = a.StartTime.ToString("HH:mm"),
+                    PatientName = a.Patient?.FullName ?? $"Patient #{a.PatientId}",
+                    Reason = string.IsNullOrWhiteSpace(a.Reason) ? "-" : a.Reason,
+                    Status = string.IsNullOrWhiteSpace(a.Status) ? "Geplant" : a.Status,
+                    DurationMinutes = a.DurationMinutes
+                }).ToList();
+
+                OnlineAppointmentsGrid.ItemsSource = todayOnlineAppointments.Select(a => new DashboardAppointmentRow
                 {
                     Time = a.StartTime.ToString("HH:mm"),
                     PatientName = a.Patient?.FullName ?? $"Patient #{a.PatientId}",

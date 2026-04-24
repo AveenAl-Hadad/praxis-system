@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Praxis.Infrastructure.Persistence;
 
@@ -10,9 +11,11 @@ using Praxis.Infrastructure.Persistence;
 namespace Praxis.Infrastructure.Migrations
 {
     [DbContext(typeof(PraxisDbContext))]
-    partial class PraxisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260420120125_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.26");
@@ -56,17 +59,11 @@ namespace Praxis.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("AppointmentTypeId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTime?>("CheckInTime")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("CheckedInAt")
                         .HasColumnType("TEXT");
-
-                    b.Property<int?>("DoctorId")
-                        .HasColumnType("INTEGER");
 
                     b.Property<int>("DurationMinutes")
                         .HasColumnType("INTEGER");
@@ -74,9 +71,6 @@ namespace Praxis.Infrastructure.Migrations
                     b.Property<string>("InternalNote")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsOnlineBooking")
-                        .HasColumnType("INTEGER");
 
                     b.Property<int>("PatientId")
                         .HasColumnType("INTEGER");
@@ -105,49 +99,9 @@ namespace Praxis.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppointmentTypeId");
-
-                    b.HasIndex("DoctorId");
-
                     b.HasIndex("PatientId");
 
                     b.ToTable("Appointments");
-                });
-
-            modelBuilder.Entity("Praxis.Domain.Entities.AppointmentType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("AllowOnlineBooking")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("DurationMinutes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MaxAdvanceDays")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MinLeadHours")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AppointmentTypes");
                 });
 
             modelBuilder.Entity("Praxis.Domain.Entities.AuditLog", b =>
@@ -221,133 +175,6 @@ namespace Praxis.Infrastructure.Migrations
                     b.HasIndex("PatientId");
 
                     b.ToTable("DashboardTasks");
-                });
-
-            modelBuilder.Entity("Praxis.Domain.Entities.Doctor", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("AllowOnlineBooking")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("DefaultRoomName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Specialty")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Doctors");
-                });
-
-            modelBuilder.Entity("Praxis.Domain.Entities.DoctorAppointmentType", b =>
-                {
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("AppointmentTypeId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsPreferred")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("DoctorId", "AppointmentTypeId");
-
-                    b.HasIndex("AppointmentTypeId");
-
-                    b.ToTable("DoctorAppointmentTypes");
-                });
-
-            modelBuilder.Entity("Praxis.Domain.Entities.DoctorBlockTime", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsAllDay")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DoctorId", "StartTime", "EndTime");
-
-                    b.ToTable("DoctorBlockTimes");
-                });
-
-            modelBuilder.Entity("Praxis.Domain.Entities.DoctorSchedule", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<TimeSpan?>("BreakEnd")
-                        .HasColumnType("TEXT");
-
-                    b.Property<TimeSpan?>("BreakStart")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<TimeSpan>("StartTime")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DoctorId", "DayOfWeek", "StartTime", "EndTime");
-
-                    b.ToTable("DoctorSchedules");
                 });
 
             modelBuilder.Entity("Praxis.Domain.Entities.Invoice", b =>
@@ -666,25 +493,11 @@ namespace Praxis.Infrastructure.Migrations
 
             modelBuilder.Entity("Praxis.Domain.Entities.Appointment", b =>
                 {
-                    b.HasOne("Praxis.Domain.Entities.AppointmentType", "AppointmentType")
-                        .WithMany("Appointments")
-                        .HasForeignKey("AppointmentTypeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Praxis.Domain.Entities.Doctor", "Doctor")
-                        .WithMany("Appointments")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Praxis.Domain.Entities.Patient", "Patient")
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("AppointmentType");
-
-                    b.Navigation("Doctor");
 
                     b.Navigation("Patient");
                 });
@@ -697,47 +510,6 @@ namespace Praxis.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Patient");
-                });
-
-            modelBuilder.Entity("Praxis.Domain.Entities.DoctorAppointmentType", b =>
-                {
-                    b.HasOne("Praxis.Domain.Entities.AppointmentType", "AppointmentType")
-                        .WithMany("DoctorAppointmentTypes")
-                        .HasForeignKey("AppointmentTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Praxis.Domain.Entities.Doctor", "Doctor")
-                        .WithMany("DoctorAppointmentTypes")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppointmentType");
-
-                    b.Navigation("Doctor");
-                });
-
-            modelBuilder.Entity("Praxis.Domain.Entities.DoctorBlockTime", b =>
-                {
-                    b.HasOne("Praxis.Domain.Entities.Doctor", "Doctor")
-                        .WithMany("BlockTimes")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Doctor");
-                });
-
-            modelBuilder.Entity("Praxis.Domain.Entities.DoctorSchedule", b =>
-                {
-                    b.HasOne("Praxis.Domain.Entities.Doctor", "Doctor")
-                        .WithMany("Schedules")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Doctor");
                 });
 
             modelBuilder.Entity("Praxis.Domain.Entities.Invoice", b =>
@@ -782,24 +554,6 @@ namespace Praxis.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Patient");
-                });
-
-            modelBuilder.Entity("Praxis.Domain.Entities.AppointmentType", b =>
-                {
-                    b.Navigation("Appointments");
-
-                    b.Navigation("DoctorAppointmentTypes");
-                });
-
-            modelBuilder.Entity("Praxis.Domain.Entities.Doctor", b =>
-                {
-                    b.Navigation("Appointments");
-
-                    b.Navigation("BlockTimes");
-
-                    b.Navigation("DoctorAppointmentTypes");
-
-                    b.Navigation("Schedules");
                 });
 
             modelBuilder.Entity("Praxis.Domain.Entities.Invoice", b =>

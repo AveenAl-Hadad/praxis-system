@@ -52,6 +52,8 @@ namespace Praxis.Client.Views
         private readonly WaitingRoomPage _waitingRoomPage;
         private readonly RoomsPage _roomsPage;
         private readonly PatientAppointmentsPage _patientAppointmentsPage;
+        private readonly DoctorsPage _doctorsPage;
+    
 
         private readonly ReportsPage _reportsPage = new ReportsPage();
         private readonly MessagesPage _messagesPage = new MessagesPage();
@@ -82,6 +84,8 @@ namespace Praxis.Client.Views
         private readonly IPracticeNoticeService _practiceNoticeService;
         private readonly IDashboardLayoutService _dashboardLayoutService;
         private readonly IRoomService _roomService;
+        private readonly IAppointmentTypeService _appointmentTypeService;
+        private readonly IDoctorService _doctorService;
 
 
 
@@ -113,7 +117,9 @@ namespace Praxis.Client.Views
                              IDashboardTaskService dashboardTaskService,
                              IPracticeNoticeService practiceNoticeService,
                              IDashboardLayoutService dashboardLayoutService,
-                             IRoomService roomService)
+                             IRoomService roomService,
+                             IDoctorService doctorService,
+                             IAppointmentTypeService appointmentTypeService)
         {
             InitializeComponent();
 
@@ -140,8 +146,9 @@ namespace Praxis.Client.Views
             _abrechnungPage = new AbrechnungPage(_abrechnungService);
             _waitingRoomPage = new WaitingRoomPage(_appointmentService);
             _roomsPage = new RoomsPage(_roomService);
+            _doctorsPage = new DoctorsPage(doctorService, _roomService, appointmentTypeService);
             _patientAppointmentsPage = new PatientAppointmentsPage(_appointmentService, _roomService, _patientService);
-            StartSessionTimer();
+             StartSessionTimer();
            
         }
         #endregion
@@ -308,6 +315,7 @@ namespace Praxis.Client.Views
                     AddSidebarButton("Dokumente", async (s, e) => await OpenSelectedPatientDocumentsPageAsync());
                     AddSidebarButton("Termine", async (s, e) => await OpenSelectedPatientAppointmentsPageAsync());
                     AddSidebarButton("Wartezimmer", async (s, e) => {LoadPage(_waitingRoomPage); await _waitingRoomPage.RefreshAsync();});
+                    AddSidebarButton("Online-Buchung", OpenOnlineBooking_Click);
                     break;
 
                 case BottomModule.Labor:
@@ -353,6 +361,12 @@ namespace Praxis.Client.Views
                         AddSidebarButton("Benutzer", (s, e) => LoadPage(_userManagementPage), true);
                         AddSidebarButton("Arbeitsplätze", DummySidebarClick);
                         AddSidebarButton("TI-Konfiguration", DummySidebarClick);
+                        AddSidebarButton("Behandler", async (s, e) =>
+                        {
+                            LoadPage(_doctorsPage);
+                            await _doctorsPage.RefreshAsync();
+                        });
+
                         AddSidebarButton("Räume", async (s, e) =>
                         {
                             LoadPage(_roomsPage);
@@ -364,6 +378,7 @@ namespace Praxis.Client.Views
                     {
                         AddSidebarButton("Keine Berechtigung", DummySidebarClick, true);
                     }
+                  
                     break;
 
                 case BottomModule.Einstellungen:
@@ -374,7 +389,26 @@ namespace Praxis.Client.Views
                     break;
             }
         }
+        private void OpenOnlineBooking_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dialog = _serviceProvider.GetRequiredService<OnlineBookingWindow>();
+                dialog.Owner = this;
+                dialog.ShowDialog();
 
+                _ = _dashboardPage.RefreshAsync();
+                _ = _waitingRoomPage.RefreshAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Online-Buchung konnte nicht geöffnet werden:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
         private void AddSidebarButton(string text, RoutedEventHandler clickHandler, bool setActive = false)
         {
             var btn = new Button

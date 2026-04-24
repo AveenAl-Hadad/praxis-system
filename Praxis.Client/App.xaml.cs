@@ -2,10 +2,14 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Praxis.Application.Interfaces;
 using Praxis.Client.Logic.UI;
 using Praxis.Client.Views;
 using Praxis.Domain.Constants;
@@ -14,8 +18,8 @@ using Praxis.Infrastructure;
 using Praxis.Infrastructure.Persistence;
 using Praxis.Infrastructure.Services;
 
-using Praxis.Application.Interfaces;
 using MessageBox = System.Windows.MessageBox;
+
 namespace Praxis.Client;
 
 public partial class App : System.Windows.Application
@@ -26,7 +30,6 @@ public partial class App : System.Windows.Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         var culture = new CultureInfo("de-DE");
-
         Thread.CurrentThread.CurrentCulture = culture;
         Thread.CurrentThread.CurrentUICulture = culture;
 
@@ -56,7 +59,6 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IPrescriptionPdfService, PrescriptionPdfService>();
                 services.AddTransient<IDocumentService, DocumentService>();
                 services.AddSingleton<IDashboardLayoutService, DashboardLayoutService>();
-                ;
                 services.AddTransient<IEmailService, EmailService>();
                 services.AddTransient<IReminderService, ReminderService>();
                 services.AddTransient<IAuditService, AuditService>();
@@ -64,11 +66,13 @@ public partial class App : System.Windows.Application
                 services.AddSingleton<IThemeService, ThemeService>();
                 services.AddTransient<ILaborService, LaborService>();
                 services.AddTransient<IAbrechnungService, AbrechnungService>();
-
                 services.AddTransient<IDashboardService, DashboardService>();
                 services.AddTransient<IDashboardTaskService, DashboardTaskService>();
                 services.AddTransient<IPracticeNoticeService, PracticeNoticeService>();
                 services.AddTransient<IRoomService, RoomService>();
+                services.AddTransient<IDoctorService, DoctorService>();
+                services.AddTransient<IAppointmentTypeService, AppointmentTypeService>();
+                services.AddTransient<IDoctorBlockTimeService, DoctorBlockTimeService>();
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
@@ -77,8 +81,6 @@ public partial class App : System.Windows.Application
                 services.AddTransient<OnlineBookingWindow>();
                 services.AddTransient<TaskEditWindow>();
                 services.AddTransient<NoticeEditWindow>();
-
-
             })
             .Build();
 
@@ -89,28 +91,11 @@ public partial class App : System.Windows.Application
             var db = initScope.ServiceProvider.GetRequiredService<PraxisDbContext>();
             var authService = initScope.ServiceProvider.GetRequiredService<IAuthService>();
 
-            await db.Database.EnsureCreatedAsync();
+            await db.Database.MigrateAsync();
 
-            if (!db.Patients.Any())
-            {
-                db.Patients.Add(new Patient
-                {
-                    Vorname = "Max",
-                    Nachname = "Mustermann",
-                    Geburtsdatum = new DateTime(1980, 1, 1),
-                    Email = "max@test.de",
-                    Telefonnummer = "12456987",
-                    IsActive = true
-                });
-
-                await db.SaveChangesAsync();
-            }
-
-            if (!db.Users.Any())
-            {
-                await authService.RegisterUserAsync("admin", "admin123", Roles.Administrator);
-            }
+            await SeedBaseDataAsync(db, authService);
         }
+
         await SeedDashboardDataAsync(_host.Services);
 
         try
@@ -143,6 +128,67 @@ public partial class App : System.Windows.Application
         base.OnExit(e);
     }
 
+    private static async Task SeedBaseDataAsync(PraxisDbContext db, IAuthService authService)
+    {
+        if (!db.Patients.Any())
+        {
+            db.Patients.Add(new Patient
+            {
+                Vorname = "Max",
+                Nachname = "Mustermann",
+                Geburtsdatum = new DateTime(1980, 1, 1),
+                Email = "max@test.de",
+                Telefonnummer = "12456987",
+                IsActive = true
+            });
+
+            await db.SaveChangesAsync();
+        }
+
+       
+        //if (!db.AppointmentTypes.Any())
+        //{
+        //    db.AppointmentTypes.AddRange(
+        //        new AppointmentType
+        //        {
+        //            Name = "Sprechstunde",
+        //            Description = "Regulärer Arzttermin",
+        //            DurationMinutes = 15,
+        //            AllowOnlineBooking = true,
+        //            IsActive = true,
+        //            MinLeadHours = 2,
+        //            MaxAdvanceDays = 60
+        //        },
+        //        new AppointmentType
+        //        {
+        //            Name = "Check-up",
+        //            Description = "Vorsorge / längerer Termin",
+        //            DurationMinutes = 30,
+        //            AllowOnlineBooking = true,
+        //            IsActive = true,
+        //            MinLeadHours = 24,
+        //            MaxAdvanceDays = 90
+        //        },
+        //        new AppointmentType
+        //        {
+        //            Name = "Akuttermin",
+        //            Description = "Kurzfristige Vorstellung",
+        //            DurationMinutes = 15,
+        //            AllowOnlineBooking = true,
+        //            IsActive = true,
+        //            MinLeadHours = 1,
+        //            MaxAdvanceDays = 7
+        //        });
+
+        //    await db.SaveChangesAsync();
+       // }
+
+        if (!db.Users.Any())
+        {
+            await authService.RegisterUserAsync("admin", "admin123", Roles.Administrator);
+        }
+    }
+
     private async Task SeedDashboardDataAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
@@ -150,7 +196,6 @@ public partial class App : System.Windows.Application
         var taskService = scope.ServiceProvider.GetRequiredService<IDashboardTaskService>();
         var noticeService = scope.ServiceProvider.GetRequiredService<IPracticeNoticeService>();
 
-        // Prüfen ob schon Daten existieren
         var existingTasks = await taskService.GetOpenTasksAsync();
         var existingNotices = await noticeService.GetActiveNoticesAsync();
 

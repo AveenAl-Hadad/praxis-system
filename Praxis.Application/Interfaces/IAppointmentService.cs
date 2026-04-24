@@ -25,5 +25,12 @@ namespace Praxis.Application.Interfaces
         Task CompleteAppointmentAsync(int appointmentId);
         Task CancelAppointmentAsync(int appointmentId, string? note = null);
 
+        Task<List<DateTime>> GetAvailableOnlineSlotsAsync(DateTime date, int appointmentTypeId, int doctorId);
+        Task AddOnlineAppointmentAsync(int patientId, int appointmentTypeId, int doctorId, DateTime startTime);
+
+
+        Task<List<Appointment>> GetTodayOnlineAppointmentsAsync();
+        Task<int> GetTodayOnlineAppointmentCountAsync();
+
     }
 }

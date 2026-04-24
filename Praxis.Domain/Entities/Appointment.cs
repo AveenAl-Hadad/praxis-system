@@ -1,4 +1,6 @@
-﻿namespace Praxis.Domain.Entities;
+﻿using Praxis.Domain.Constants;
+
+namespace Praxis.Domain.Entities;
 
 public class Appointment
 {
@@ -6,6 +8,14 @@ public class Appointment
 
     public int PatientId { get; set; }
     public Patient? Patient { get; set; }
+
+    public int? DoctorId { get; set; }
+    public Doctor? Doctor { get; set; }
+
+    public int? AppointmentTypeId { get; set; }
+    public AppointmentType? AppointmentType { get; set; }
+
+    public bool IsOnlineBooking { get; set; }
 
     public DateTime StartTime { get; set; }
 
@@ -24,10 +34,12 @@ public class Appointment
     /// <summary>
     /// Geplant | Angemeldet | ImWartezimmer | ImBehandlungsraum | Erledigt | Abgesagt
     /// </summary>
-    public string TreatmentState { get; set; } = "Geplant";
+    public string TreatmentState { get; set; } = AppointmentStates.Geplant;
 
     public DateTime EndTime => StartTime.AddMinutes(DurationMinutes);
 
     public DateTime? CheckInTime { get; set; }
+
+
 
 }

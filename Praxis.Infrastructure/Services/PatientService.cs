@@ -41,6 +41,11 @@ public class PatientService : IPatientService
     /// </summary>
     public async Task AddPatientAsync(Patient patient, string userName)
     {
+        patient.Email = patient.Email?.Trim() ?? string.Empty;
+        patient.Telefonnummer = patient.Telefonnummer?.Trim() ?? string.Empty;
+        patient.Vorname = patient.Vorname?.Trim() ?? string.Empty;
+        patient.Nachname = patient.Nachname?.Trim() ?? string.Empty;
+
         await EnsureNoDuplicatesAsync(patient);
 
         _context.Patients.Add(patient);
@@ -109,6 +114,11 @@ public class PatientService : IPatientService
 
         if (existing == null)
             return;
+
+        patient.Email = patient.Email?.Trim() ?? string.Empty;
+        patient.Telefonnummer = patient.Telefonnummer?.Trim() ?? string.Empty;
+        patient.Vorname = patient.Vorname?.Trim() ?? string.Empty;
+        patient.Nachname = patient.Nachname?.Trim() ?? string.Empty;
 
         // Felder aktualisieren
         existing.Vorname = patient.Vorname;

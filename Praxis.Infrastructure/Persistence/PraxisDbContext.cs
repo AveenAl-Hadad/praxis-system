@@ -20,18 +20,25 @@ public class PraxisDbContext : DbContext
     public DbSet<DashboardTask> DashboardTasks => Set<DashboardTask>();
     public DbSet<PracticeNotice> PracticeNotices => Set<PracticeNotice>();
     public DbSet<Room> Rooms => Set<Room>();
+    public DbSet<Doctor> Doctors => Set<Doctor>();
+    public DbSet<DoctorSchedule> DoctorSchedules => Set<DoctorSchedule>();
+    public DbSet<AppointmentType> AppointmentTypes => Set<AppointmentType>();
 
+    public DbSet<DoctorAppointmentType> DoctorAppointmentTypes => Set<DoctorAppointmentType>();
+    public DbSet<DoctorBlockTime> DoctorBlockTimes => Set<DoctorBlockTime>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Patient>()
             .HasIndex(p => p.Email)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("Email IS NOT NULL AND TRIM(Email) <> ''");
 
         modelBuilder.Entity<Patient>()
             .HasIndex(p => p.Telefonnummer)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("Telefonnummer IS NOT NULL AND TRIM(Telefonnummer) <> ''");
 
         modelBuilder.Entity<Appointment>()
             .HasOne(a => a.Patient)
@@ -93,5 +100,82 @@ public class PraxisDbContext : DbContext
         modelBuilder.Entity<Room>()
             .Property(r => r.Beschreibung)
             .HasMaxLength(300);
+
+        modelBuilder.Entity<Doctor>()
+    .Property(d => d.Title)
+    .HasMaxLength(50);
+
+        modelBuilder.Entity<Doctor>()
+            .Property(d => d.FirstName)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<Doctor>()
+            .Property(d => d.LastName)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<Doctor>()
+            .Property(d => d.Specialty)
+            .HasMaxLength(150);
+
+        modelBuilder.Entity<Doctor>()
+            .Property(d => d.DefaultRoomName)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<AppointmentType>()
+            .Property(t => t.Name)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<AppointmentType>()
+            .Property(t => t.Description)
+            .HasMaxLength(300);
+
+        modelBuilder.Entity<DoctorSchedule>()
+            .HasOne(s => s.Doctor)
+            .WithMany(d => d.Schedules)
+            .HasForeignKey(s => s.DoctorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Appointment>()
+            .HasOne(a => a.Doctor)
+            .WithMany(d => d.Appointments)
+            .HasForeignKey(a => a.DoctorId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Appointment>()
+            .HasOne(a => a.AppointmentType)
+            .WithMany(t => t.Appointments)
+            .HasForeignKey(a => a.AppointmentTypeId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<DoctorSchedule>()
+            .HasIndex(s => new { s.DoctorId, s.DayOfWeek, s.StartTime, s.EndTime });
+
+        modelBuilder.Entity<DoctorAppointmentType>()
+    .HasKey(x => new { x.DoctorId, x.AppointmentTypeId });
+
+        modelBuilder.Entity<DoctorAppointmentType>()
+            .HasOne(x => x.Doctor)
+            .WithMany(d => d.DoctorAppointmentTypes)
+            .HasForeignKey(x => x.DoctorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DoctorAppointmentType>()
+            .HasOne(x => x.AppointmentType)
+            .WithMany(t => t.DoctorAppointmentTypes)
+            .HasForeignKey(x => x.AppointmentTypeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DoctorBlockTime>()
+            .HasOne(x => x.Doctor)
+            .WithMany(d => d.BlockTimes)
+            .HasForeignKey(x => x.DoctorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DoctorBlockTime>()
+            .Property(x => x.Reason)
+            .HasMaxLength(150);
+
+        modelBuilder.Entity<DoctorBlockTime>()
+            .HasIndex(x => new { x.DoctorId, x.StartTime, x.EndTime });
     }
 }

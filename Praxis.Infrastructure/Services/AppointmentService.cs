@@ -2,6 +2,7 @@
 using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Persistence;
+using Praxis.Domain.Constants;
 
 namespace Praxis.Infrastructure.Services
 {
@@ -37,6 +38,8 @@ namespace Praxis.Infrastructure.Services
         {
             return await _context.Appointments
                 .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Include(a => a.AppointmentType)
                 .OrderBy(a => a.StartTime)
                 .ToListAsync();
         }
@@ -49,6 +52,8 @@ namespace Praxis.Infrastructure.Services
 
             return await _context.Appointments
                 .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Include(a => a.AppointmentType)
                 .Where(a => a.StartTime >= date.Date && a.StartTime < nextDate)
                 .OrderBy(a => a.StartTime)
                 .ToListAsync();
@@ -63,6 +68,8 @@ namespace Praxis.Infrastructure.Services
 
             return await _context.Appointments
                 .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Include(a => a.AppointmentType)
                 .Where(a => a.StartTime >= start && a.StartTime < end)
                 .OrderBy(a => a.StartTime)
                 .ToListAsync();
@@ -77,6 +84,8 @@ namespace Praxis.Infrastructure.Services
 
             var query = _context.Appointments
                 .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Include(a => a.AppointmentType)
                 .Where(a => a.StartTime >= start && a.StartTime < end);
 
             if (patientId.HasValue)
@@ -107,8 +116,11 @@ namespace Praxis.Infrastructure.Services
 
             return await _context.Appointments
                 .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Include(a => a.AppointmentType)
                 .Where(a => a.StartTime >= startOfDay && a.StartTime < endOfDay)
-                .Where(a => a.TreatmentState != "Abgesagt" && a.TreatmentState != "Erledigt")
+                .Where(a => a.TreatmentState != AppointmentStates.Abgesagt
+                            && a.TreatmentState != AppointmentStates.Abgeschlossen)
                 .OrderBy(a => a.CheckedInAt ?? a.StartTime)
                 .ToListAsync();
         }
@@ -191,13 +203,14 @@ namespace Praxis.Infrastructure.Services
 
             appointment.Reason = appointment.Reason.Trim();
             appointment.RoomName = appointment.RoomName.Trim();
+
             appointment.Status = string.IsNullOrWhiteSpace(appointment.Status)
-                ? "Geplant"
-                : appointment.Status.Trim();
+                                    ? AppointmentStates.Geplant
+                                    : appointment.Status.Trim();
 
             appointment.TreatmentState = string.IsNullOrWhiteSpace(appointment.TreatmentState)
-                ? "Geplant"
-                : appointment.TreatmentState.Trim();
+                                        ? AppointmentStates.Geplant
+                                        : appointment.TreatmentState.Trim();
         }
         /// <summary>
         /// Prüft, ob ein Termin mit bestehenden Terminen kollidiert.
@@ -435,7 +448,8 @@ namespace Praxis.Infrastructure.Services
                 throw new InvalidOperationException("Termin wurde nicht gefunden.");
 
             appointment.CheckedInAt = DateTime.Now;
-            appointment.TreatmentState = "ImWartezimmer";
+            appointment.CheckInTime = DateTime.Now;
+            appointment.TreatmentState = AppointmentStates.Wartet;
             appointment.Status = "Angemeldet";
 
             if (!string.IsNullOrWhiteSpace(note))
@@ -456,9 +470,8 @@ namespace Praxis.Infrastructure.Services
                 throw new InvalidOperationException("Termin wurde nicht gefunden.");
 
             appointment.RoomName = roomName.Trim();
-            appointment.TreatmentState = "ImBehandlungsraum";
+            appointment.TreatmentState = AppointmentStates.InBehandlung;
             appointment.Status = "In Behandlung";
-
             await _context.SaveChangesAsync();
         }
 
@@ -470,9 +483,8 @@ namespace Praxis.Infrastructure.Services
             if (appointment == null)
                 throw new InvalidOperationException("Termin wurde nicht gefunden.");
 
-            appointment.TreatmentState = "Abgeschlossen";
-            appointment.Status = "Abgeschlossen";
-
+            appointment.TreatmentState = AppointmentStates.Abgeschlossen;
+            appointment.Status = AppointmentStates.Abgeschlossen;
             await _context.SaveChangesAsync();
         }
 
@@ -484,8 +496,8 @@ namespace Praxis.Infrastructure.Services
             if (appointment == null)
                 throw new InvalidOperationException("Termin wurde nicht gefunden.");
 
-            appointment.TreatmentState = "Abgesagt";
-            appointment.Status = "Abgesagt";
+            appointment.TreatmentState = AppointmentStates.Abgesagt;
+            appointment.Status = AppointmentStates.Abgesagt;
 
             if (!string.IsNullOrWhiteSpace(note))
                 appointment.InternalNote = note.Trim();
@@ -493,5 +505,232 @@ namespace Praxis.Infrastructure.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task<List<DateTime>> GetAvailableOnlineSlotsAsync(DateTime date, int appointmentTypeId, int doctorId)
+        {
+            var result = new List<DateTime>();
+
+            if (date.Date < DateTime.Today)
+                return result;
+
+            var appointmentType = await _context.AppointmentTypes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == appointmentTypeId);
+
+            if (appointmentType == null)
+                return result;
+
+            if (!appointmentType.IsActive || !appointmentType.AllowOnlineBooking)
+                return result;
+
+            var doctor = await _context.Doctors
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == doctorId);
+
+            if (doctor == null)
+                return result;
+
+            if (!doctor.IsActive || !doctor.AllowOnlineBooking)
+                return result;
+
+            var doctorAllowed = await _context.DoctorAppointmentTypes
+                .AnyAsync(x => x.DoctorId == doctorId && x.AppointmentTypeId == appointmentTypeId);
+
+            if (!doctorAllowed)
+                return result;
+
+            var now = DateTime.Now;
+            var earliestAllowed = now.AddHours(appointmentType.MinLeadHours);
+            var latestAllowed = now.Date.AddDays(appointmentType.MaxAdvanceDays + 1).AddTicks(-1);
+
+            if (date.Date < earliestAllowed.Date || date.Date > latestAllowed.Date)
+                return result;
+
+            var schedules = (await _context.DoctorSchedules
+                .AsNoTracking()
+                .Where(s => s.DoctorId == doctorId &&
+                            s.IsActive &&
+                            s.DayOfWeek == date.DayOfWeek)
+                .ToListAsync())
+                .OrderBy(s => s.StartTime)
+                .ToList();
+
+            if (schedules.Count == 0)
+                return result;
+
+            var dayStart = date.Date;
+            var dayEnd = date.Date.AddDays(1);
+
+            var blockTimes = await _context.DoctorBlockTimes
+                .AsNoTracking()
+                .Where(x => x.DoctorId == doctorId && x.IsActive)
+                .Where(x => x.StartTime < dayEnd && x.EndTime > dayStart)
+                .ToListAsync();
+
+            var appointments = (await _context.Appointments
+                  .AsNoTracking()
+                  .Where(a => a.DoctorId == doctorId)
+                  .Where(a => a.TreatmentState != "Abgesagt")
+                  .Where(a => a.StartTime < dayEnd)
+                  .ToListAsync())
+                  .Where(a => a.StartTime.AddMinutes(a.DurationMinutes) > dayStart)
+                  .ToList();
+
+            foreach (var schedule in schedules)
+            {
+                var rangeStart = date.Date.Add(schedule.StartTime);
+                var rangeEnd = date.Date.Add(schedule.EndTime);
+
+                var slot = rangeStart;
+
+                if (date.Date == now.Date)
+                {
+                    var roundedNow = RoundUpToNext15Minutes(now);
+                    if (roundedNow > slot)
+                        slot = roundedNow;
+                }
+
+                while (slot.AddMinutes(appointmentType.DurationMinutes) <= rangeEnd)
+                {
+                    var slotEnd = slot.AddMinutes(appointmentType.DurationMinutes);
+
+                    if (slot < earliestAllowed)
+                    {
+                        slot = slot.AddMinutes(15);
+                        continue;
+                    }
+
+                    var overlapsBreak =
+                        schedule.BreakStart.HasValue &&
+                        schedule.BreakEnd.HasValue &&
+                        slot < date.Date.Add(schedule.BreakEnd.Value) &&
+                        slotEnd > date.Date.Add(schedule.BreakStart.Value);
+
+                    if (overlapsBreak)
+                    {
+                        slot = slot.AddMinutes(15);
+                        continue;
+                    }
+
+                    var overlapsBlock = blockTimes.Any(x =>
+                        x.StartTime < slotEnd &&
+                        x.EndTime > slot);
+
+                    if (overlapsBlock)
+                    {
+                        slot = slot.AddMinutes(15);
+                        continue;
+                    }
+
+                    var overlapsAppointment = appointments.Any(a =>
+                        a.StartTime < slotEnd &&
+                        a.EndTime > slot);
+
+                    if (!overlapsAppointment)
+                    {
+                        result.Add(slot);
+                    }
+
+                    slot = slot.AddMinutes(15);
+                }
+            }
+
+            return result;
+        }
+        public async Task AddOnlineAppointmentAsync(int patientId, int appointmentTypeId, int doctorId, DateTime startTime)
+        {
+            var patientExists = await _context.Patients.AnyAsync(p => p.Id == patientId);
+            if (!patientExists)
+                throw new InvalidOperationException("Patient wurde nicht gefunden.");
+
+            var appointmentType = await _context.AppointmentTypes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == appointmentTypeId);
+
+            if (appointmentType == null)
+                throw new InvalidOperationException("Terminart wurde nicht gefunden.");
+
+            if (!appointmentType.IsActive || !appointmentType.AllowOnlineBooking)
+                throw new InvalidOperationException("Diese Terminart ist nicht online buchbar.");
+
+            var doctor = await _context.Doctors
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == doctorId);
+
+            if (doctor == null)
+                throw new InvalidOperationException("Behandler wurde nicht gefunden.");
+
+            if (!doctor.IsActive || !doctor.AllowOnlineBooking)
+                throw new InvalidOperationException("Dieser Behandler ist nicht online buchbar.");
+
+            var doctorAllowed = await _context.DoctorAppointmentTypes
+                .AnyAsync(x => x.DoctorId == doctorId && x.AppointmentTypeId == appointmentTypeId);
+
+            if (!doctorAllowed)
+                throw new InvalidOperationException("Dieser Behandler darf diese Terminart nicht durchführen.");
+
+            var availableSlots = await GetAvailableOnlineSlotsAsync(startTime.Date, appointmentTypeId, doctorId);
+            if (!availableSlots.Contains(startTime))
+                throw new InvalidOperationException("Der gewählte Termin ist nicht mehr verfügbar.");
+
+            var appointment = new Appointment
+            {
+                PatientId = patientId,
+                DoctorId = doctorId,
+                AppointmentTypeId = appointmentTypeId,
+                StartTime = startTime,
+                DurationMinutes = appointmentType.DurationMinutes,
+                Reason = appointmentType.Name,
+                Status = "Bestätigt",
+                TreatmentState = "Geplant",
+                RoomName = doctor.DefaultRoomName,
+                IsOnlineBooking = true
+            };
+
+            await AddAppointmentAsync(appointment);
+        }
+
+        private async Task<bool> IsDoctorAllowedForAppointmentTypeAsync(int doctorId, int appointmentTypeId)
+        {
+            return await _context.DoctorAppointmentTypes
+                .AnyAsync(x => x.DoctorId == doctorId && x.AppointmentTypeId == appointmentTypeId);
+        }
+
+        private async Task<bool> HasDoctorBlockingConflictAsync(int doctorId, DateTime startTime, DateTime endTime)
+        {
+            return await _context.DoctorBlockTimes
+                .Where(x => x.DoctorId == doctorId && x.IsActive)
+                .Where(x => x.StartTime < endTime && x.EndTime > startTime)
+                .AnyAsync();
+        }
+
+
+        public async Task<List<Appointment>> GetTodayOnlineAppointmentsAsync()
+        {
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+
+            return await _context.Appointments
+                .AsNoTracking()
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Include(a => a.AppointmentType)
+                .Where(a => a.IsOnlineBooking)
+                .Where(a => a.StartTime >= today && a.StartTime < tomorrow)
+                .OrderBy(a => a.StartTime)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetTodayOnlineAppointmentCountAsync()
+        {
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+
+            return await _context.Appointments
+                .Where(a => a.IsOnlineBooking)
+                .Where(a => a.StartTime >= today && a.StartTime < tomorrow)
+                .CountAsync();
+        }
+
     }
+
 }
