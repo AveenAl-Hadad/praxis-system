@@ -21,9 +21,9 @@ public partial class PrescriptionPreviewWindow : Window
     private readonly IPracticeSettingsService _practiceSettingsService;
     private PracticeSettings? _practiceSettings;
     public PrescriptionPreviewWindow(
-    Patient patient,
-    IEnumerable<PatientMedication> medications,
-    IPracticeSettingsService practiceSettingsService)
+                                        Patient patient,
+                                        IEnumerable<PatientMedication> medications,
+                                        IPracticeSettingsService practiceSettingsService)
     {
         InitializeComponent();
 
@@ -134,6 +134,21 @@ public partial class PrescriptionPreviewWindow : Window
             });
         }
         PrescriptionDocument.Blocks.Clear();
+        if (_practiceSettings != null)
+        {
+            PrescriptionDocument.Blocks.Add(new Paragraph(new Run(
+                $"{_practiceSettings.PracticeName}\n" +
+                $"{_practiceSettings.DoctorName}\n" +
+                $"{_practiceSettings.Street}\n" +
+                $"{_practiceSettings.ZipCity}\n" +
+                $"Tel: {_practiceSettings.Phone}\n" +
+                $"E-Mail: {_practiceSettings.Email}"
+            ))
+            {
+                FontSize = 11,
+                Margin = new Thickness(0, 0, 0, 25)
+            });
+        }
 
         PrescriptionDocument.Blocks.Add(new Paragraph(new Run("Rezept / Medikamentenverordnung"))
         {
