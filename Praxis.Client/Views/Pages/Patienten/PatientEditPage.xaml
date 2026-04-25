@@ -11,6 +11,8 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="16"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="16"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <TextBlock Text="Patient bearbeiten"
@@ -125,7 +127,79 @@
                 </Grid>
             </Border>
 
-            <StackPanel Grid.Row="4"
+            <Border Grid.Row="4" Style="{StaticResource CardBorderStyle}">
+                <StackPanel>
+                    <TextBlock Text="Diagnosen"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Margin="0,0,0,10"/>
+
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="260"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="120"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBox x:Name="DiagnosisSearchBox"
+                                     Height="32"
+                                     Padding="8,0,8,0"
+                                     VerticalContentAlignment="Center"
+                                     TextChanged="DiagnosisSearchBox_TextChanged"
+                                     KeyDown="DiagnosisSearchBox_KeyDown"/>
+
+                            <ListBox x:Name="DiagnosisSuggestionList"
+                                     MaxHeight="160"
+                                     Visibility="Collapsed"
+                                     DisplayMemberPath="DisplayText"
+                                     MouseDoubleClick="DiagnosisSuggestionList_MouseDoubleClick"/>
+                        </StackPanel>
+
+                        <TextBox x:Name="DiagnosisNotesBox"
+                                 Grid.Column="1"
+                                 Height="32"
+                                 Margin="10,0,10,0"
+                                 VerticalContentAlignment="Center"
+                                 ToolTip="Notiz zur Diagnose"/>
+
+                        <Button Content="Hinzufügen"
+                                Grid.Column="2"
+                                Height="32"
+                                Click="AddDiagnosis_Click"/>
+                    </Grid>
+
+                    <DataGrid x:Name="DiagnosesGrid"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              Height="180"
+                              SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Datum"
+                                    Binding="{Binding DiagnosedAt, StringFormat=dd.MM.yyyy}"
+                                    Width="100"/>
+                            <DataGridTextColumn Header="ICD"
+                                    Binding="{Binding CatalogItem.Code}"
+                                    Width="100"/>
+                            <DataGridTextColumn Header="Diagnose"
+                                    Binding="{Binding CatalogItem.Name}"
+                                    Width="*"/>
+                            <DataGridTextColumn Header="Notiz"
+                                    Binding="{Binding Notes}"
+                                    Width="220"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Button Content="Ausgewählte Diagnose löschen"
+                            Width="220"
+                            Height="32"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Left"
+                            Click="DeleteDiagnosis_Click"/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Row="6"
                         Orientation="Horizontal"
                         HorizontalAlignment="Left">
                 <Button Content="Speichern"

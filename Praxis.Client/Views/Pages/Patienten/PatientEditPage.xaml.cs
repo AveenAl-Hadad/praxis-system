@@ -5,6 +5,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Praxis.Domain.Entities;
+using Praxis.Application.Interfaces;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
@@ -12,10 +17,17 @@ namespace Praxis.Client.Views.Pages.Patienten
     {
         private List<Patient> _allPatients = new();
         private Patient? _currentPatient;
+        private readonly IPatientDiagnosisService _patientDiagnosisService;
+        private readonly ObservableCollection<PatientDiagnosis> _diagnoses = new();
+        private CatalogItem? _selectedDiagnosisCatalogItem;
 
-        public PatientEditPage()
+        public PatientEditPage(IPatientDiagnosisService patientDiagnosisService)
         {
             InitializeComponent();
+
+            _patientDiagnosisService = patientDiagnosisService;
+            DiagnosesGrid.ItemsSource = _diagnoses;
+
             Loaded += PatientEditPage_Loaded;
         }
 
@@ -93,8 +105,19 @@ namespace Praxis.Client.Views.Pages.Patienten
 
             SetComboBoxByContent(VersicherungComboBox, patient.Versicherung);
             SetComboBoxByContent(GeschlechtComboBox, patient.Geschlecht);
+            _ = LoadDiagnosesAsync(patient.Id);
         }
 
+        //Diagnosen laden
+        private async Task LoadDiagnosesAsync(int patientId)
+        {
+            var diagnoses = await _patientDiagnosisService.GetByPatientAsync(patientId);
+
+            _diagnoses.Clear();
+
+            foreach (var diagnosis in diagnoses)
+                _diagnoses.Add(diagnosis);
+        }
         private void SetComboBoxByContent(System.Windows.Controls.ComboBox comboBox, string value)
         {
             foreach (var item in comboBox.Items)
@@ -197,5 +220,106 @@ namespace Praxis.Client.Views.Pages.Patienten
                 await mainWindow.OpenPatientSearchPageAsync();
             }
         }
+
+        //Autocomplete-Code hinzufügen
+        private async void DiagnosisSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var search = DiagnosisSearchBox.Text?.Trim() ?? "";
+
+            if (search.Length < 2)
+            {
+                DiagnosisSuggestionList.Visibility = Visibility.Collapsed;
+                DiagnosisSuggestionList.ItemsSource = null;
+                return;
+            }
+
+            var result = await _patientDiagnosisService.SearchIcdAsync(search);
+
+            var suggestions = result
+                .Select(x => new DiagnosisSuggestion { Item = x })
+                .ToList();
+
+            DiagnosisSuggestionList.ItemsSource = suggestions;
+            DiagnosisSuggestionList.Visibility = suggestions.Count > 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void DiagnosisSuggestionList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            SelectDiagnosisSuggestion();
+        }
+
+        private void DiagnosisSearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                SelectDiagnosisSuggestion();
+                e.Handled = true;
+            }
+        }
+
+        private void SelectDiagnosisSuggestion()
+        {
+            if (DiagnosisSuggestionList.SelectedItem is not DiagnosisSuggestion suggestion)
+                return;
+
+            _selectedDiagnosisCatalogItem = suggestion.Item;
+            DiagnosisSearchBox.Text = $"{suggestion.Item.Code} - {suggestion.Item.Name}";
+            DiagnosisSuggestionList.Visibility = Visibility.Collapsed;
+        }
+
+        //Hinzufügen/Löschen
+        private async void AddDiagnosis_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_currentPatient == null)
+                {
+                    MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+                    return;
+                }
+
+                if (_selectedDiagnosisCatalogItem == null)
+                {
+                    MessageBox.Show("Bitte zuerst eine ICD-Diagnose auswählen.");
+                    return;
+                }
+
+                await _patientDiagnosisService.AddAsync(
+                    _currentPatient.Id,
+                    _selectedDiagnosisCatalogItem.Id,
+                    DiagnosisNotesBox.Text);
+
+                DiagnosisSearchBox.Clear();
+                DiagnosisNotesBox.Clear();
+                _selectedDiagnosisCatalogItem = null;
+
+                await LoadDiagnosesAsync(_currentPatient.Id);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Diagnose Fehler");
+            }
+        }
+
+        private async void DeleteDiagnosis_Click(object sender, RoutedEventArgs e)
+        {
+            if (DiagnosesGrid.SelectedItem is not PatientDiagnosis diagnosis)
+            {
+                MessageBox.Show("Bitte zuerst eine Diagnose auswählen.");
+                return;
+            }
+
+            await _patientDiagnosisService.DeleteAsync(diagnosis.Id);
+
+            if (_currentPatient != null)
+                await LoadDiagnosesAsync(_currentPatient.Id);
+        }
+    }
+    public class DiagnosisSuggestion
+    {
+        public CatalogItem Item { get; set; } = null!;
+        public string DisplayText => $"{Item.Code} - {Item.Name}";
     }
 }

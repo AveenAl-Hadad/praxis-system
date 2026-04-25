@@ -27,6 +27,7 @@ public class PraxisDbContext : DbContext
     public DbSet<DoctorAppointmentType> DoctorAppointmentTypes => Set<DoctorAppointmentType>();
     public DbSet<DoctorBlockTime> DoctorBlockTimes => Set<DoctorBlockTime>();
     public DbSet<CatalogItem> CatalogItems => Set<CatalogItem>();
+    public DbSet<PatientDiagnosis> PatientDiagnoses => Set<PatientDiagnosis>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -197,5 +198,23 @@ public class PraxisDbContext : DbContext
         modelBuilder.Entity<CatalogItem>()
             .HasIndex(x => new { x.Category, x.Code })
             .IsUnique();
+        modelBuilder.Entity<PatientDiagnosis>()
+            .HasOne(x => x.Patient)
+            .WithMany(x => x.Diagnoses)
+            .HasForeignKey(x => x.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PatientDiagnosis>()
+            .HasOne(x => x.CatalogItem)
+            .WithMany()
+            .HasForeignKey(x => x.CatalogItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PatientDiagnosis>()
+            .Property(x => x.Notes)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<PatientDiagnosis>()
+            .HasIndex(x => new { x.PatientId, x.CatalogItemId });
     }
 }

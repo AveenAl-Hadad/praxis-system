@@ -78,6 +78,8 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IMedicationImportService, MedicationImportService>();
                 services.AddTransient<IServiceCatalogImportService, ServiceCatalogImportService>();
 
+                services.AddTransient<IPatientDiagnosisService, PatientDiagnosisService>();
+
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();

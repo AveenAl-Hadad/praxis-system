@@ -63,7 +63,7 @@ namespace Praxis.Client.Views
         private readonly DashboardPage _dashboardPage = new DashboardPage();
         private readonly PatientSearchPage _patientSearchPage = new PatientSearchPage();
         private readonly PatientCreatePage _patientCreatePage = new PatientCreatePage();
-        private readonly PatientEditPage _patientEditPage = new PatientEditPage();
+        private readonly PatientEditPage _patientEditPage;
         private readonly UserManagementPage _userManagementPage = new UserManagementPage();
         private readonly AddUserPage _addUserPage = new AddUserPage();
         private readonly EditUserPage _editUserPage = new EditUserPage();
@@ -127,7 +127,8 @@ namespace Praxis.Client.Views
                              IMedicationImportService medicationImportService,
                              IServiceCatalogImportService serviceCatalogImportService,
                              IBackupService backupService,
-                             IThemeService themeService
+                             IThemeService themeService,
+                             IPatientDiagnosisService patientDiagnosisService
                              )
         {
             InitializeComponent();
@@ -161,6 +162,7 @@ namespace Praxis.Client.Views
                                             serviceCatalogImportService);
 
             _settingsPage = new SettingsPage(authService, backupService, themeService);
+            _patientEditPage = new PatientEditPage(patientDiagnosisService);
             StartSessionTimer();
            
         }
