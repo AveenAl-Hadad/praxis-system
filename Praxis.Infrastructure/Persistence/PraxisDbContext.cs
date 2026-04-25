@@ -26,6 +26,7 @@ public class PraxisDbContext : DbContext
 
     public DbSet<DoctorAppointmentType> DoctorAppointmentTypes => Set<DoctorAppointmentType>();
     public DbSet<DoctorBlockTime> DoctorBlockTimes => Set<DoctorBlockTime>();
+    public DbSet<CatalogItem> CatalogItems => Set<CatalogItem>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -177,5 +178,24 @@ public class PraxisDbContext : DbContext
 
         modelBuilder.Entity<DoctorBlockTime>()
             .HasIndex(x => new { x.DoctorId, x.StartTime, x.EndTime });
+        modelBuilder.Entity<CatalogItem>()
+            .Property(x => x.Category)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<CatalogItem>()
+            .Property(x => x.Code)
+            .HasMaxLength(50);
+
+        modelBuilder.Entity<CatalogItem>()
+            .Property(x => x.Name)
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<CatalogItem>()
+            .Property(x => x.Description)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<CatalogItem>()
+            .HasIndex(x => new { x.Category, x.Code })
+            .IsUnique();
     }
 }

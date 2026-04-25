@@ -73,6 +73,11 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IDoctorService, DoctorService>();
                 services.AddTransient<IAppointmentTypeService, AppointmentTypeService>();
                 services.AddTransient<IDoctorBlockTimeService, DoctorBlockTimeService>();
+                services.AddTransient<ICatalogService, CatalogService>();
+                services.AddTransient<IIcdImportService, IcdImportService>();
+                services.AddTransient<IMedicationImportService, MedicationImportService>();
+                services.AddTransient<IServiceCatalogImportService, ServiceCatalogImportService>();
+
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
@@ -81,6 +86,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<OnlineBookingWindow>();
                 services.AddTransient<TaskEditWindow>();
                 services.AddTransient<NoticeEditWindow>();
+                services.AddTransient<IcdImportService>();
             })
             .Build();
 
@@ -144,45 +150,7 @@ public partial class App : System.Windows.Application
 
             await db.SaveChangesAsync();
         }
-
-       
-        //if (!db.AppointmentTypes.Any())
-        //{
-        //    db.AppointmentTypes.AddRange(
-        //        new AppointmentType
-        //        {
-        //            Name = "Sprechstunde",
-        //            Description = "Regulärer Arzttermin",
-        //            DurationMinutes = 15,
-        //            AllowOnlineBooking = true,
-        //            IsActive = true,
-        //            MinLeadHours = 2,
-        //            MaxAdvanceDays = 60
-        //        },
-        //        new AppointmentType
-        //        {
-        //            Name = "Check-up",
-        //            Description = "Vorsorge / längerer Termin",
-        //            DurationMinutes = 30,
-        //            AllowOnlineBooking = true,
-        //            IsActive = true,
-        //            MinLeadHours = 24,
-        //            MaxAdvanceDays = 90
-        //        },
-        //        new AppointmentType
-        //        {
-        //            Name = "Akuttermin",
-        //            Description = "Kurzfristige Vorstellung",
-        //            DurationMinutes = 15,
-        //            AllowOnlineBooking = true,
-        //            IsActive = true,
-        //            MinLeadHours = 1,
-        //            MaxAdvanceDays = 7
-        //        });
-
-        //    await db.SaveChangesAsync();
-       // }
-
+               
         if (!db.Users.Any())
         {
             await authService.RegisterUserAsync("admin", "admin123", Roles.Administrator);

@@ -16,6 +16,8 @@ using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 using Praxis.Client.Views.Pages.Abrechnung;
+using Praxis.Client.Views.Pages.Kataloge;
+using Praxis.Client.Security;
 
 using MessageBox = System.Windows.MessageBox;
 using Button = System.Windows.Controls.Button;
@@ -53,7 +55,8 @@ namespace Praxis.Client.Views
         private readonly RoomsPage _roomsPage;
         private readonly PatientAppointmentsPage _patientAppointmentsPage;
         private readonly DoctorsPage _doctorsPage;
-    
+        private readonly CatalogsPage _catalogsPage;
+
 
         private readonly ReportsPage _reportsPage = new ReportsPage();
         private readonly MessagesPage _messagesPage = new MessagesPage();
@@ -67,6 +70,8 @@ namespace Praxis.Client.Views
         private readonly PatientDeletePage _patientDeletePage = new PatientDeletePage();
         private readonly PatientDocumentsPage _patientDocumentsPage = new PatientDocumentsPage();
       
+        private readonly SettingsPage _settingsPage = new SettingsPage();
+
 
         private readonly IPatientService _patientService;
         private readonly IAppointmentService _appointmentService;
@@ -119,7 +124,11 @@ namespace Praxis.Client.Views
                              IDashboardLayoutService dashboardLayoutService,
                              IRoomService roomService,
                              IDoctorService doctorService,
-                             IAppointmentTypeService appointmentTypeService)
+                             IAppointmentTypeService appointmentTypeService,
+                             ICatalogService catalogService,
+                             IIcdImportService icdImportService,
+                             IMedicationImportService medicationImportService,
+                             IServiceCatalogImportService serviceCatalogImportService)
         {
             InitializeComponent();
 
@@ -148,7 +157,11 @@ namespace Praxis.Client.Views
             _roomsPage = new RoomsPage(_roomService);
             _doctorsPage = new DoctorsPage(doctorService, _roomService, appointmentTypeService);
             _patientAppointmentsPage = new PatientAppointmentsPage(_appointmentService, _roomService, _patientService);
-             StartSessionTimer();
+            _catalogsPage = new CatalogsPage(catalogService,
+                                            icdImportService,
+                                            medicationImportService,
+                                            serviceCatalogImportService);
+            StartSessionTimer();
            
         }
         #endregion
@@ -169,7 +182,6 @@ namespace Praxis.Client.Views
                     MessageBoxImage.Error);
             }
         }
-
         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
@@ -213,7 +225,7 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Kataloge:
-                    LoadPlaceholderPage("Kataloge");
+                    LoadPage(_catalogsPage);
                     break;
 
                 case BottomModule.Einrichtung:
@@ -224,7 +236,7 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Einstellungen:
-                    LoadPlaceholderPage("Einstellungen");
+                    LoadPage(_settingsPage);
                     break;
 
                 default:
@@ -294,7 +306,8 @@ namespace Praxis.Client.Views
         #region Sidebar
         private bool IsAdmin()
         {
-            return UserSession.HasRole(Roles.Administrator) || UserSession.HasRole("Admin");
+            //return UserSession.HasRole(Roles.Administrator) || UserSession.HasRole("Admin");
+            return PermissionHelper.IsAdmin;           
         }
         private void BuildSidebar(BottomModule module)
         {
@@ -311,7 +324,11 @@ namespace Praxis.Client.Views
                     AddSidebarButton("Suche", async(s, e) => await OpenPatientSearchPageAsync(), true);
                     AddSidebarButton("Neuer Patient", (s, e) => OpenPatientCreatePage());
                     AddSidebarButton("Bearbeiten", async (s, e) => await OpenPatientEditPageAsync());
-                    AddSidebarButton("Löschen", async (s, e) => await OpenPatientDeletePageAsync());
+
+                    if (PermissionHelper.CanDeletePatients)
+                    {
+                        AddSidebarButton("Löschen", async (s, e) => await OpenPatientDeletePageAsync());
+                    }
                     AddSidebarButton("Dokumente", async (s, e) => await OpenSelectedPatientDocumentsPageAsync());
                     AddSidebarButton("Termine", async (s, e) => await OpenSelectedPatientAppointmentsPageAsync());
                     AddSidebarButton("Wartezimmer", async (s, e) => {LoadPage(_waitingRoomPage); await _waitingRoomPage.RefreshAsync();});
@@ -351,27 +368,52 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Kataloge:
-                    AddSidebarButton("Katalogübersicht", DummySidebarClick, true);
-                    AddSidebarButton("Einträge", DummySidebarClick);
+                    AddSidebarButton("Katalogübersicht", async (s, e) =>
+                    {
+                        LoadPage(_catalogsPage);
+                        await _catalogsPage.ShowOverviewAsync();
+                    }, true);
+
+                    AddSidebarButton("Diagnosen / ICD", async (s, e) =>
+                    {
+                        LoadPage(_catalogsPage);
+                        await _catalogsPage.SelectCategoryAsync("Diagnosen / ICD");
+                    });
+
+                    AddSidebarButton("Leistungen / GOÄ / EBM", async (s, e) =>
+                    {
+                        LoadPage(_catalogsPage);
+                        await _catalogsPage.SelectCategoryAsync("Leistungen / GOÄ / EBM");
+                    });
+
+                    AddSidebarButton("Medikamente", async (s, e) =>
+                    {
+                        LoadPage(_catalogsPage);
+                        await _catalogsPage.SelectCategoryAsync("Medikamente");
+                    });
+
+                    AddSidebarButton("Formulare", async (s, e) =>
+                    {
+                        LoadPage(_catalogsPage);
+                        await _catalogsPage.SelectCategoryAsync("Formulare");
+                    });
+
+                    AddSidebarButton("Dokumentvorlagen", async (s, e) =>
+                    {
+                        LoadPage(_catalogsPage);
+                        await _catalogsPage.SelectCategoryAsync("Dokumentvorlagen");
+                    });
                     break;
 
                 case BottomModule.Einrichtung:
-                    if (IsAdmin())
+                    if (PermissionHelper.CanManageUsers)
                     {
                         AddSidebarButton("Benutzer", (s, e) => LoadPage(_userManagementPage), true);
                         AddSidebarButton("Arbeitsplätze", DummySidebarClick);
                         AddSidebarButton("TI-Konfiguration", DummySidebarClick);
-                        AddSidebarButton("Behandler", async (s, e) =>
-                        {
-                            LoadPage(_doctorsPage);
-                            await _doctorsPage.RefreshAsync();
-                        });
+                        AddSidebarButton("Behandler", async (s, e) => { LoadPage(_doctorsPage); await _doctorsPage.RefreshAsync();});
 
-                        AddSidebarButton("Räume", async (s, e) =>
-                        {
-                            LoadPage(_roomsPage);
-                            await _roomsPage.RefreshAsync();
-                        });
+                        AddSidebarButton("Räume", async (s, e) => { LoadPage(_roomsPage); await _roomsPage.RefreshAsync();});
                         AddSidebarButton("Rollen", DummySidebarClick);
                     }
                     else
@@ -382,7 +424,8 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Einstellungen:
-                    AddSidebarButton("Design", DummySidebarClick, true);
+                    AddSidebarButton("Übersicht", (s, e) => LoadPage(_settingsPage), true);
+                    AddSidebarButton("Design", DummySidebarClick);
                     AddSidebarButton("Passwort ändern", ChangePassword_Click);
                     AddSidebarButton("Backup", CreateBackup_Click);
                     AddSidebarButton("Restore", RestoreBackup_Click);
@@ -958,7 +1001,18 @@ namespace Praxis.Client.Views
 
         #endregion
 
-
+        private async void OpenCatalogCategory(string category)
+{
+    try
+    {
+        LoadPage(_catalogsPage);
+        await _catalogsPage.SelectCategoryAsync(category);
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show(ex.ToString(), "Katalog Fehler");
+    }
+}
 
 
     }

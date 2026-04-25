@@ -1,0 +1,35 @@
+﻿<UserControl x:Class="Praxis.Client.Views.Pages.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="20">
+        <StackPanel>
+            <TextBlock Text="Einstellungen"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Margin="0,0,0,16"/>
+
+            <Button Content="Design wechseln"
+                    Width="220"
+                    Height="42"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8"/>
+
+            <Button Content="Passwort ändern"
+                    Width="220"
+                    Height="42"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8"/>
+
+            <Button Content="Backup erstellen"
+                    Width="220"
+                    Height="42"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8"/>
+
+            <Button Content="Backup wiederherstellen"
+                    Width="220"
+                    Height="42"
+                    HorizontalAlignment="Left"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

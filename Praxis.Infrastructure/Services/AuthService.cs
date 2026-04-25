@@ -36,8 +36,10 @@ public class AuthService : IAuthService
             throw new ArgumentException("Passwort darf nicht leer sein.");
 
         // Rollenprüfung (nur erlaubte Rollen)
-        if (role != Roles.Administrator && role != Roles.Mitarbeiter)
+        if (role != Roles.Administrator && role != Roles.Mitarbeiter && role != Roles.Arzt)
+        {
             throw new ArgumentException("Ungültige Rolle.");
+        }
 
         // Prüfen, ob Benutzername bereits existiert
         var exists = await _context.Users
