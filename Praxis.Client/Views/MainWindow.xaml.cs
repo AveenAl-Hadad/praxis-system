@@ -78,9 +78,8 @@ namespace Praxis.Client.Views
         private readonly IAuthService _authService;
         private readonly IServiceProvider _serviceProvider;
         private readonly IDashboardService _dashboardService;
-        private readonly IBackupService _backupService;
         private readonly IAuditService _auditService;
-        private readonly IThemeService _themeService;
+        
         private readonly IDocumentService _documentService;
         private readonly IUserManagementService _userManagementService;        
         private readonly ILaborService _laborService;
@@ -112,9 +111,7 @@ namespace Praxis.Client.Views
                              IAuthService authService,
                              IServiceProvider serviceProvider,
                              IDashboardService dashboardService,
-                             IBackupService backupService,
-                             IAuditService auditService,
-                             IThemeService themeService,
+                             IAuditService auditService,                             
                              IUserManagementService userManagementService,
                              IDocumentService documentService,
                              ILaborService laborService,
@@ -128,7 +125,10 @@ namespace Praxis.Client.Views
                              ICatalogService catalogService,
                              IIcdImportService icdImportService,
                              IMedicationImportService medicationImportService,
-                             IServiceCatalogImportService serviceCatalogImportService)
+                             IServiceCatalogImportService serviceCatalogImportService,
+                             IBackupService backupService,
+                             IThemeService themeService
+                             )
         {
             InitializeComponent();
 
@@ -137,9 +137,7 @@ namespace Praxis.Client.Views
             _authService = authService;
             _serviceProvider = serviceProvider;
             _dashboardService = dashboardService;
-            _backupService = backupService;
             _auditService = auditService;
-            _themeService = themeService;
             _documentService = documentService;
             _userManagementService = userManagementService;
             Loaded += Window_Loaded;
@@ -161,7 +159,8 @@ namespace Praxis.Client.Views
                                             icdImportService,
                                             medicationImportService,
                                             serviceCatalogImportService);
-            _settingsPage = new SettingsPage(authService);
+
+            _settingsPage = new SettingsPage(authService, backupService, themeService);
             StartSessionTimer();
            
         }
