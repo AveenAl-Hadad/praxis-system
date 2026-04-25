@@ -316,13 +316,21 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <Button x:Name="DeleteMedicationButton"
-                            Content="Ausgewählte Verordnung löschen"
-                            Width="240"
-                            Height="32"
-                            Margin="0,10,0,0"
-                            HorizontalAlignment="Left"
-                            Click="DeleteMedication_Click"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="DeleteMedicationButton"
+                                Content="Ausgewählte Verordnung löschen"
+                                Width="240"
+                                Height="32"
+                                Margin="0,10,0,0"
+                                Click="DeleteMedication_Click"/>
+
+                        <Button x:Name="PrintPrescriptionButton"
+                                Content="Rezept anzeigen"
+                                Width="160"
+                                Height="32"
+                                Margin="10,10,0,0"
+                                Click="PrintPrescription_Click"/>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 

@@ -524,6 +524,28 @@ namespace Praxis.Client.Views.Pages.Patienten
                 await LoadDiagnosesAsync(_currentPatient.Id);
         }
 
+        private void PrintPrescription_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPatient == null)
+            {
+                MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+                return;
+            }
+
+            if (_medications.Count == 0)
+            {
+                MessageBox.Show("Keine Medikamente für diesen Patienten vorhanden.");
+                return;
+            }
+
+            var window = new PrescriptionPreviewWindow(_currentPatient, _medications)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            window.ShowDialog();
+        }
+
     }
     public class DiagnosisSuggestion
     {
