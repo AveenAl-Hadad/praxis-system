@@ -29,11 +29,40 @@
                         <ComboBoxItem Content="Dokumentvorlagen"/>
                     </ComboBox>
 
-                    <TextBox x:Name="SearchBox"
-                     Width="260"
-                     Margin="12,0,0,0"
-                     VerticalContentAlignment="Center"
-                     TextChanged="SearchBox_TextChanged"/>
+                    <StackPanel Margin="12,0,0,0">
+                        <Grid Width="260" Margin="12,0,0,0">
+                            <TextBox x:Name="SearchBox"
+                                     Height="34"
+                                     Padding="30,0,8,0"
+                                     VerticalContentAlignment="Center"
+                                     TextChanged="SearchBox_TextChanged"
+                                     KeyDown="SearchBox_KeyDown"
+                                     GotFocus="SearchBox_GotFocus"
+                                     LostFocus="SearchBox_LostFocus"/>
+
+                            <TextBlock Text="🔍"
+                                       FontSize="14"
+                                       Margin="8,0,0,0"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False"/>
+
+                            <TextBlock x:Name="SearchPlaceholder"
+                                       Text="Suche..."
+                                       Foreground="Gray"
+                                       Margin="32,0,0,0"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False"/>
+                        </Grid>
+
+                        <ListBox x:Name="SuggestionList"
+                                 Width="260"
+                                 MaxHeight="180"
+                                 Visibility="Collapsed"
+                                 MouseDoubleClick="SuggestionList_MouseDoubleClick"
+                                 KeyDown="SuggestionList_KeyDown"
+                                 DisplayMemberPath="DisplayText"/>
+                    </StackPanel>
+                    
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal"

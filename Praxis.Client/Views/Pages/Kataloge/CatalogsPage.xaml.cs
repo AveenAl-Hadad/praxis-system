@@ -10,6 +10,7 @@ using System.IO;
 using Praxis.Client.Session;
 using Praxis.Domain.Constants;
 using Praxis.Client.Security;
+using System.Windows.Input;
 
 using System.Windows.Controls;
 using MessageBox = System.Windows.MessageBox;
@@ -91,6 +92,87 @@ public partial class CatalogsPage : System.Windows.Controls.UserControl
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         ApplyFilter();
+        UpdateSuggestions();
+        UpdatePlaceholder();
+    }
+    private void UpdateSuggestions()
+    {
+        var search = SearchBox.Text?.Trim().ToLower() ?? "";
+
+        if (search.Length < 2)
+        {
+            SuggestionList.Visibility = Visibility.Collapsed;
+            SuggestionList.ItemsSource = null;
+            return;
+        }
+
+        var suggestions = _allItems
+            .Where(x =>
+                x.Code.ToLower().Contains(search) ||
+                x.Name.ToLower().Contains(search) ||
+                x.Description.ToLower().Contains(search))
+            .Take(20)
+            .Select(x => new CatalogSuggestion { Item = x })
+            .ToList();
+
+        SuggestionList.ItemsSource = suggestions;
+        SuggestionList.Visibility = suggestions.Count > 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private void SelectSuggestion()
+    {
+        if (SuggestionList.SelectedItem is not CatalogSuggestion suggestion)
+            return;
+
+        var item = suggestion.Item;
+
+        _selectedItem = item;
+
+        SearchBox.Text = item.Name;
+        CodeBox.Text = item.Code;
+        NameBox.Text = item.Name;
+        DescriptionBox.Text = item.Description;
+
+        SuggestionList.Visibility = Visibility.Collapsed;
+
+        CatalogGrid.SelectedItem = item;
+        CatalogGrid.ScrollIntoView(item);
+    }
+
+    private void SuggestionList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        SelectSuggestion();
+    }
+
+    private void SearchBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (SuggestionList.Visibility != Visibility.Visible)
+            return;
+
+        if (e.Key == Key.Down)
+        {
+            SuggestionList.Focus();
+
+            if (SuggestionList.Items.Count > 0)
+                SuggestionList.SelectedIndex = 0;
+
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Enter)
+        {
+            SelectSuggestion();
+            e.Handled = true;
+        }
+    }
+    private void SuggestionList_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            SelectSuggestion();
+            e.Handled = true;
+        }
     }
 
     private void ApplyFilter()
@@ -304,5 +386,29 @@ public partial class CatalogsPage : System.Windows.Controls.UserControl
         _allItems = await _catalogService.GetAllAsync();
 
         ApplyFilter();
+    }
+
+    public class CatalogSuggestion
+    {
+        public CatalogItem Item { get; set; } = null!;
+        public string DisplayText => $"{Item.Code} - {Item.Name}";
+    }
+
+    private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
+    {
+        UpdatePlaceholder();
+    }
+
+    private void SearchBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        UpdatePlaceholder();
+    }
+
+    private void UpdatePlaceholder()
+    {
+        SearchPlaceholder.Visibility =
+            string.IsNullOrWhiteSpace(SearchBox.Text) && !SearchBox.IsFocused
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 }
