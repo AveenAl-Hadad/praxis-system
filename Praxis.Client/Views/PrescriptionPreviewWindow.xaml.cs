@@ -7,8 +7,12 @@ using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
 using Praxis.Application.Interfaces;
 
+using System.Windows.Media;
+
 using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using MessageBox = System.Windows.MessageBox;
+using Brushes = System.Windows.Media.Brushes;
+
 
 
 namespace Praxis.Client.Views;
@@ -118,25 +122,24 @@ public partial class PrescriptionPreviewWindow : Window
     }
     private void BuildDocument(Patient patient, IEnumerable<PatientMedication> medications)
     {
-        if (_practiceSettings != null)
-        {
-            PrescriptionDocument.Blocks.Add(new Paragraph(new Run(
-                $"{_practiceSettings.PracticeName}\n" +
-                $"{_practiceSettings.DoctorName}\n" +
-                $"{_practiceSettings.Street}\n" +
-                $"{_practiceSettings.ZipCity}\n" +
-                $"Tel: {_practiceSettings.Phone}\n" +
-                $"{_practiceSettings.Email}"
-            ))
-            {
-                FontSize = 11,
-                Margin = new Thickness(0, 0, 0, 20)
-            });
-        }
         PrescriptionDocument.Blocks.Clear();
+
+        var mainTable = new Table();
+        mainTable.Columns.Add(new TableColumn { Width = new GridLength(220) });
+        mainTable.Columns.Add(new TableColumn { Width = new GridLength(260) });
+
+        var group = new TableRowGroup();
+        mainTable.RowGroups.Add(group);
+
+        var headerRow = new TableRow();
+        group.Rows.Add(headerRow);
+
+        var stampCell = new TableCell();
+        headerRow.Cells.Add(stampCell);
+
         if (_practiceSettings != null)
         {
-            PrescriptionDocument.Blocks.Add(new Paragraph(new Run(
+            stampCell.Blocks.Add(new Paragraph(new Run(
                 $"{_practiceSettings.PracticeName}\n" +
                 $"{_practiceSettings.DoctorName}\n" +
                 $"{_practiceSettings.Street}\n" +
@@ -146,47 +149,115 @@ public partial class PrescriptionPreviewWindow : Window
             ))
             {
                 FontSize = 11,
-                Margin = new Thickness(0, 0, 0, 25)
+                BorderBrush = Brushes.Gray,
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(8),
+                Margin = new Thickness(0, 0, 20, 20)
             });
         }
 
-        PrescriptionDocument.Blocks.Add(new Paragraph(new Run("Rezept / Medikamentenverordnung"))
+        var titleCell = new TableCell();
+        headerRow.Cells.Add(titleCell);
+
+        titleCell.Blocks.Add(new Paragraph(new Run("Rezept"))
         {
-            FontSize = 24,
-            FontWeight = FontWeights.Bold
+            FontSize = 30,
+            FontWeight = FontWeights.Bold,
+            TextAlignment = TextAlignment.Right
         });
 
-        PrescriptionDocument.Blocks.Add(new Paragraph(new Run(
+        titleCell.Blocks.Add(new Paragraph(new Run("Medikamentenverordnung"))
+        {
+            FontSize = 14,
+            TextAlignment = TextAlignment.Right
+        });
+
+        PrescriptionDocument.Blocks.Add(mainTable);
+
+        var patientBox = new Paragraph(new Run(
             $"Patient: {patient.Vorname} {patient.Nachname}\n" +
             $"Geburtsdatum: {patient.Geburtsdatum:dd.MM.yyyy}\n" +
             $"Datum: {DateTime.Now:dd.MM.yyyy}"
-        )));
+        ))
+        {
+            FontSize = 13,
+            BorderBrush = Brushes.Gray,
+            BorderThickness = new Thickness(1),
+            Padding = new Thickness(10),
+            Margin = new Thickness(0, 10, 0, 20)
+        };
 
-        PrescriptionDocument.Blocks.Add(new Paragraph(new Run("Medikamente"))
+        PrescriptionDocument.Blocks.Add(patientBox);
+
+        PrescriptionDocument.Blocks.Add(new Paragraph(new Run("Verordnete Medikamente"))
         {
             FontSize = 18,
             FontWeight = FontWeights.Bold,
-            Margin = new Thickness(0, 20, 0, 8)
+            Margin = new Thickness(0, 0, 0, 8)
         });
+
+        var medTable = new Table
+        {
+            BorderBrush = Brushes.Gray,
+            BorderThickness = new Thickness(1)
+        };
+
+        medTable.Columns.Add(new TableColumn { Width = new GridLength(200) });
+        medTable.Columns.Add(new TableColumn { Width = new GridLength(120) });
+        medTable.Columns.Add(new TableColumn { Width = new GridLength(220) });
+
+        var medGroup = new TableRowGroup();
+        medTable.RowGroups.Add(medGroup);
+
+        var tableHeader = new TableRow
+        {
+            Background = Brushes.LightGray
+        };
+
+        medGroup.Rows.Add(tableHeader);
+
+        tableHeader.Cells.Add(CreateCell("Medikament", true));
+        tableHeader.Cells.Add(CreateCell("Dosierung", true));
+        tableHeader.Cells.Add(CreateCell("Hinweis", true));
 
         foreach (var medication in medications)
         {
-            var text =
-                $"{medication.CatalogItem.Name}\n" +
-                $"Dosierung: {medication.Dosage}\n" +
-                $"Notiz: {medication.Notes}\n";
+            var row = new TableRow();
+            medGroup.Rows.Add(row);
 
-            PrescriptionDocument.Blocks.Add(new Paragraph(new Run(text))
-            {
-                Margin = new Thickness(0, 0, 0, 12)
-            });
+            row.Cells.Add(CreateCell(medication.CatalogItem.Name));
+            row.Cells.Add(CreateCell(medication.Dosage));
+            row.Cells.Add(CreateCell(medication.Notes));
         }
 
-        PrescriptionDocument.Blocks.Add(new Paragraph(new Run(
-            "\n\nUnterschrift Arzt: ______________________________"
-        )));
-    }
+        PrescriptionDocument.Blocks.Add(medTable);
 
+        PrescriptionDocument.Blocks.Add(new Paragraph(new Run(
+            "\n\nUnterschrift Arzt / Stempel: ______________________________"
+        ))
+        {
+            FontSize = 13,
+            Margin = new Thickness(0, 35, 0, 0)
+        });
+    }
+    private static TableCell CreateCell(string text, bool bold = false)
+    {
+        var paragraph = new Paragraph(new Run(text ?? string.Empty))
+        {
+            Margin = new Thickness(0),
+            Padding = new Thickness(6)
+        };
+
+        if (bold)
+            paragraph.FontWeight = FontWeights.Bold;
+
+        return new TableCell(paragraph)
+        {
+            BorderBrush = Brushes.Gray,
+            BorderThickness = new Thickness(0.5),
+            Padding = new Thickness(4)
+        };
+    }
     private void Print_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new System.Windows.Controls.PrintDialog();
