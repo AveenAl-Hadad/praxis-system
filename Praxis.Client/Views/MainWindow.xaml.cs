@@ -128,7 +128,8 @@ namespace Praxis.Client.Views
                              IServiceCatalogImportService serviceCatalogImportService,
                              IBackupService backupService,
                              IThemeService themeService,
-                             IPatientDiagnosisService patientDiagnosisService
+                             IPatientDiagnosisService patientDiagnosisService,
+                             IPatientMedicationService patientMedicationService
                              )
         {
             InitializeComponent();
@@ -162,7 +163,9 @@ namespace Praxis.Client.Views
                                             serviceCatalogImportService);
 
             _settingsPage = new SettingsPage(authService, backupService, themeService);
-            _patientEditPage = new PatientEditPage(patientDiagnosisService);
+            _patientEditPage = new PatientEditPage(
+                                                    patientDiagnosisService,
+                                                    patientMedicationService);
             StartSessionTimer();
            
         }

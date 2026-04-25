@@ -23,15 +23,29 @@ namespace Praxis.Client.Views.Pages.Patienten
         private readonly ObservableCollection<PatientDiagnosis> _diagnoses = new();
         private CatalogItem? _selectedDiagnosisCatalogItem;
 
-        public PatientEditPage(IPatientDiagnosisService patientDiagnosisService)
+        private readonly IPatientMedicationService _patientMedicationService;
+        private readonly ObservableCollection<PatientMedication> _medications = new();
+        private CatalogItem? _selectedMedicationCatalogItem;
+
+        public PatientEditPage(
+                                 IPatientDiagnosisService patientDiagnosisService,
+                                 IPatientMedicationService patientMedicationService)
         {
             InitializeComponent();
-            DeleteDiagnosisButton.Visibility = PermissionHelper.CanDeletePatients
-                                ? Visibility.Visible
-                                : Visibility.Collapsed;
 
             _patientDiagnosisService = patientDiagnosisService;
+            _patientMedicationService = patientMedicationService;
+
             DiagnosesGrid.ItemsSource = _diagnoses;
+            MedicationsGrid.ItemsSource = _medications;
+
+            DeleteDiagnosisButton.Visibility = PermissionHelper.CanDeletePatients
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            DeleteMedicationButton.Visibility = PermissionHelper.CanDeletePatients
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
             Loaded += PatientEditPage_Loaded;
         }
@@ -111,8 +125,160 @@ namespace Praxis.Client.Views.Pages.Patienten
             SetComboBoxByContent(VersicherungComboBox, patient.Versicherung);
             SetComboBoxByContent(GeschlechtComboBox, patient.Geschlecht);
             _ = LoadDiagnosesAsync(patient.Id);
+            _ = LoadMedicationsAsync(patient.Id);
+        }
+        // Medikament laden
+        private async Task LoadMedicationsAsync(int patientId)
+        {
+            var medications = await _patientMedicationService.GetByPatientAsync(patientId);
+
+            _medications.Clear();
+
+            foreach (var medication in medications)
+                _medications.Add(medication);
+        }
+        //Autocomplete für Medikamente
+        private async void MedicationSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var search = MedicationSearchBox.Text?.Trim() ?? "";
+
+            if (search.Length < 2)
+            {
+                MedicationSuggestionList.Visibility = Visibility.Collapsed;
+                MedicationSuggestionList.ItemsSource = null;
+                return;
+            }
+
+            var result = await _patientMedicationService.SearchMedicationAsync(search);
+
+            var suggestions = result
+                .Select(x => new MedicationSuggestion { Item = x })
+                .ToList();
+
+            MedicationSuggestionList.ItemsSource = suggestions;
+            MedicationSuggestionList.Visibility = suggestions.Count > 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
+        private void MedicationSearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (MedicationSuggestionList.Visibility != Visibility.Visible)
+                return;
+
+            if (e.Key == Key.Down)
+            {
+                MedicationSuggestionList.Focus();
+
+                if (MedicationSuggestionList.Items.Count > 0)
+                    MedicationSuggestionList.SelectedIndex = 0;
+
+                e.Handled = true;
+            }
+
+            if (e.Key == Key.Enter)
+            {
+                if (MedicationSuggestionList.Items.Count > 0 &&
+                    MedicationSuggestionList.SelectedIndex < 0)
+                {
+                    MedicationSuggestionList.SelectedIndex = 0;
+                }
+
+                SelectMedicationSuggestion();
+                e.Handled = true;
+            }
+        }
+
+        private void MedicationSuggestionList_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                SelectMedicationSuggestion();
+                e.Handled = true;
+            }
+        }
+
+        private void MedicationSuggestionList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            SelectMedicationSuggestion();
+        }
+
+        private void SelectMedicationSuggestion()
+        {
+            if (MedicationSuggestionList.SelectedItem is not MedicationSuggestion suggestion)
+                return;
+
+            _selectedMedicationCatalogItem = suggestion.Item;
+
+            MedicationSearchBox.Text = $"{suggestion.Item.Code} - {suggestion.Item.Name}";
+            MedicationSuggestionList.Visibility = Visibility.Collapsed;
+            MedicationDosageBox.Focus();
+        }
+
+        // Speichern und Löschen
+        private async void AddMedication_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_currentPatient == null)
+                {
+                    MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+                    return;
+                }
+
+                if (_selectedMedicationCatalogItem == null)
+                {
+                    MessageBox.Show("Bitte zuerst ein Medikament auswählen.");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(MedicationDosageBox.Text))
+                {
+                    MessageBox.Show("Bitte Dosierung eingeben, z.B. 1-0-1.");
+                    return;
+                }
+
+                await _patientMedicationService.AddAsync(
+                    _currentPatient.Id,
+                    _selectedMedicationCatalogItem.Id,
+                    MedicationDosageBox.Text,
+                    MedicationNotesBox.Text);
+
+                MedicationSearchBox.Clear();
+                MedicationDosageBox.Clear();
+                MedicationNotesBox.Clear();
+                _selectedMedicationCatalogItem = null;
+
+                await LoadMedicationsAsync(_currentPatient.Id);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Medikament Fehler");
+            }
+        }
+
+        private async void DeleteMedication_Click(object sender, RoutedEventArgs e)
+        {
+            if (MedicationsGrid.SelectedItem is not PatientMedication medication)
+            {
+                MessageBox.Show("Bitte zuerst eine Verordnung auswählen.");
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"Verordnung {medication.CatalogItem.Name} wirklich löschen?",
+                "Verordnung löschen",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
+            await _patientMedicationService.DeleteAsync(medication.Id);
+
+            if (_currentPatient != null)
+                await LoadMedicationsAsync(_currentPatient.Id);
+        }
         //Diagnosen laden
         private async Task LoadDiagnosesAsync(int patientId)
         {
@@ -360,6 +526,11 @@ namespace Praxis.Client.Views.Pages.Patienten
 
     }
     public class DiagnosisSuggestion
+    {
+        public CatalogItem Item { get; set; } = null!;
+        public string DisplayText => $"{Item.Code} - {Item.Name}";
+    }
+    public class MedicationSuggestion
     {
         public CatalogItem Item { get; set; } = null!;
         public string DisplayText => $"{Item.Code} - {Item.Name}";

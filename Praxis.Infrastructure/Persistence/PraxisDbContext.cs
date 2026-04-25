@@ -28,6 +28,8 @@ public class PraxisDbContext : DbContext
     public DbSet<DoctorBlockTime> DoctorBlockTimes => Set<DoctorBlockTime>();
     public DbSet<CatalogItem> CatalogItems => Set<CatalogItem>();
     public DbSet<PatientDiagnosis> PatientDiagnoses => Set<PatientDiagnosis>();
+
+    public DbSet<PatientMedication> PatientMedications => Set<PatientMedication>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -216,5 +218,24 @@ public class PraxisDbContext : DbContext
 
         modelBuilder.Entity<PatientDiagnosis>()
             .HasIndex(x => new { x.PatientId, x.CatalogItemId });
+        modelBuilder.Entity<PatientMedication>()
+            .HasOne(x => x.Patient)
+            .WithMany(x => x.Medications)
+            .HasForeignKey(x => x.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PatientMedication>()
+            .HasOne(x => x.CatalogItem)
+            .WithMany()
+            .HasForeignKey(x => x.CatalogItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PatientMedication>()
+            .Property(x => x.Dosage)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<PatientMedication>()
+            .Property(x => x.Notes)
+            .HasMaxLength(500);
     }
 }
