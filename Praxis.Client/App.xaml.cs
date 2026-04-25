@@ -80,6 +80,7 @@ public partial class App : System.Windows.Application
 
                 services.AddTransient<IPatientDiagnosisService, PatientDiagnosisService>();
                 services.AddTransient<IPatientMedicationService, PatientMedicationService>();
+                services.AddTransient<IPracticeSettingsService, PracticeSettingsService>();
 
 
                 services.AddTransient<MainWindow>();

@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using Microsoft.Win32;
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
+using Praxis.Application.Interfaces;
+
 using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using MessageBox = System.Windows.MessageBox;
 
@@ -15,13 +17,26 @@ public partial class PrescriptionPreviewWindow : Window
 {
     private readonly Patient _patient;
     private readonly List<PatientMedication> _medications;
-    public PrescriptionPreviewWindow(Patient patient, IEnumerable<PatientMedication> medications)
+
+    private readonly IPracticeSettingsService _practiceSettingsService;
+    private PracticeSettings? _practiceSettings;
+    public PrescriptionPreviewWindow(
+    Patient patient,
+    IEnumerable<PatientMedication> medications,
+    IPracticeSettingsService practiceSettingsService)
     {
         InitializeComponent();
 
         _patient = patient;
         _medications = medications.ToList();
+        _practiceSettingsService = practiceSettingsService;
 
+        LoadSettingsAndBuild();
+    }
+
+    private async void LoadSettingsAndBuild()
+    {
+        _practiceSettings = await _practiceSettingsService.GetAsync();
         BuildDocument(_patient, _medications);
     }
 
@@ -103,6 +118,21 @@ public partial class PrescriptionPreviewWindow : Window
     }
     private void BuildDocument(Patient patient, IEnumerable<PatientMedication> medications)
     {
+        if (_practiceSettings != null)
+        {
+            PrescriptionDocument.Blocks.Add(new Paragraph(new Run(
+                $"{_practiceSettings.PracticeName}\n" +
+                $"{_practiceSettings.DoctorName}\n" +
+                $"{_practiceSettings.Street}\n" +
+                $"{_practiceSettings.ZipCity}\n" +
+                $"Tel: {_practiceSettings.Phone}\n" +
+                $"{_practiceSettings.Email}"
+            ))
+            {
+                FontSize = 11,
+                Margin = new Thickness(0, 0, 0, 20)
+            });
+        }
         PrescriptionDocument.Blocks.Clear();
 
         PrescriptionDocument.Blocks.Add(new Paragraph(new Run("Rezept / Medikamentenverordnung"))

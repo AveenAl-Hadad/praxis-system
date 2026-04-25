@@ -12,6 +12,7 @@ using Praxis.Client.Security;
 
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
+using Praxis.Infrastructure.Services;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
@@ -27,9 +28,12 @@ namespace Praxis.Client.Views.Pages.Patienten
         private readonly ObservableCollection<PatientMedication> _medications = new();
         private CatalogItem? _selectedMedicationCatalogItem;
 
+        private readonly IPracticeSettingsService _practiceSettingsService;
+
         public PatientEditPage(
                                  IPatientDiagnosisService patientDiagnosisService,
-                                 IPatientMedicationService patientMedicationService)
+                                 IPatientMedicationService patientMedicationService,
+                                 IPracticeSettingsService practiceSettingsService)
         {
             InitializeComponent();
 
@@ -48,6 +52,7 @@ namespace Praxis.Client.Views.Pages.Patienten
                 : Visibility.Collapsed;
 
             Loaded += PatientEditPage_Loaded;
+            _practiceSettingsService = practiceSettingsService;
         }
 
         private async void PatientEditPage_Loaded(object sender, RoutedEventArgs e)
@@ -538,7 +543,7 @@ namespace Praxis.Client.Views.Pages.Patienten
                 return;
             }
 
-            var window = new PrescriptionPreviewWindow(_currentPatient, _medications)
+            var window = new PrescriptionPreviewWindow(_currentPatient,_medications, _practiceSettingsService)
             {
                 Owner = Window.GetWindow(this)
             };

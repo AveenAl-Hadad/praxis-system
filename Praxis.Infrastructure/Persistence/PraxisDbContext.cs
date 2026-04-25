@@ -30,6 +30,7 @@ public class PraxisDbContext : DbContext
     public DbSet<PatientDiagnosis> PatientDiagnoses => Set<PatientDiagnosis>();
 
     public DbSet<PatientMedication> PatientMedications => Set<PatientMedication>();
+    public DbSet<PracticeSettings> PracticeSettings => Set<PracticeSettings>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -237,5 +238,12 @@ public class PraxisDbContext : DbContext
         modelBuilder.Entity<PatientMedication>()
             .Property(x => x.Notes)
             .HasMaxLength(500);
+        modelBuilder.Entity<PracticeSettings>()
+            .Property(x => x.PracticeName)
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<PracticeSettings>()
+            .Property(x => x.DoctorName)
+            .HasMaxLength(200);
     }
 }
