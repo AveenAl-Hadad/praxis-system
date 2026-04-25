@@ -8,6 +8,8 @@ using Praxis.Domain.Entities;
 using Praxis.Application.Interfaces;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Praxis.Client.Security;
+
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 
@@ -24,6 +26,9 @@ namespace Praxis.Client.Views.Pages.Patienten
         public PatientEditPage(IPatientDiagnosisService patientDiagnosisService)
         {
             InitializeComponent();
+            DeleteDiagnosisButton.Visibility = PermissionHelper.CanDeletePatients
+                                ? Visibility.Visible
+                                : Visibility.Collapsed;
 
             _patientDiagnosisService = patientDiagnosisService;
             DiagnosesGrid.ItemsSource = _diagnoses;
@@ -252,6 +257,33 @@ namespace Praxis.Client.Views.Pages.Patienten
 
         private void DiagnosisSearchBox_KeyDown(object sender, KeyEventArgs e)
         {
+            if (DiagnosisSuggestionList.Visibility != Visibility.Visible)
+                return;
+
+            if (e.Key == Key.Down)
+            {
+                DiagnosisSuggestionList.Focus();
+
+                if (DiagnosisSuggestionList.Items.Count > 0)
+                    DiagnosisSuggestionList.SelectedIndex = 0;
+
+                e.Handled = true;
+            }
+
+            if (e.Key == Key.Enter)
+            {
+                if (DiagnosisSuggestionList.Items.Count > 0 &&
+                    DiagnosisSuggestionList.SelectedIndex < 0)
+                {
+                    DiagnosisSuggestionList.SelectedIndex = 0;
+                }
+
+                SelectDiagnosisSuggestion();
+                e.Handled = true;
+            }
+        }
+        private void DiagnosisSuggestionList_KeyDown(object sender, KeyEventArgs e)
+        {
             if (e.Key == Key.Enter)
             {
                 SelectDiagnosisSuggestion();
@@ -311,11 +343,21 @@ namespace Praxis.Client.Views.Pages.Patienten
                 return;
             }
 
+            var confirm = MessageBox.Show(
+                $"Diagnose {diagnosis.CatalogItem.Code} wirklich löschen?",
+                "Diagnose löschen",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
             await _patientDiagnosisService.DeleteAsync(diagnosis.Id);
 
             if (_currentPatient != null)
                 await LoadDiagnosesAsync(_currentPatient.Id);
         }
+
     }
     public class DiagnosisSuggestion
     {
