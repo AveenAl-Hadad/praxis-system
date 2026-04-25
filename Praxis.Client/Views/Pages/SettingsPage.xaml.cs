@@ -1,28 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Praxis.Client.Security;
+using Praxis.Client.Session;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Praxis.Application.Interfaces;
+using Praxis.Client.Views;
 
-namespace Praxis.Client.Views.Pages
+using System.Windows.Controls;
+using MessageBox = System.Windows.MessageBox;
+
+namespace Praxis.Client.Views.Pages;
+
+public partial class SettingsPage : System.Windows.Controls.UserControl
 {
-    /// <summary>
-    /// Interaction logic for SettingsPage.xaml
-    /// </summary>
-    public partial class SettingsPage : System.Windows.Controls.UserControl
+    private readonly IAuthService _authService;
+    public SettingsPage(IAuthService authService)
     {
-        public SettingsPage()
+        InitializeComponent();
+
+        _authService = authService;
+
+        var user = UserSession.CurrentUser;
+
+        CurrentUserText.Text = user == null
+            ? "Nicht angemeldet"
+            : $"Angemeldet als: {user.Username} | Rolle: {user.Role}";
+
+        AdminPanel.Visibility = PermissionHelper.IsAdmin
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+      
+    }
+
+    private void ChangePassword_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new ChangePasswordWindow(_authService)
         {
-            InitializeComponent();
-        }
+            Owner = Window.GetWindow(this)
+        };
+
+        window.ShowDialog();
+    }
+    private void LightTheme_Click(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Helles Design aktiviert.");
+    }
+
+    private void DarkTheme_Click(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Dunkles Design aktiviert.");
+    }
+
+    private void UserManagement_Click(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Benutzerverwaltung öffnen.");
+    }
+
+    private void CreateBackup_Click(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Backup erstellen.");
+    }
+
+    private void RestoreBackup_Click(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Backup wiederherstellen.");
     }
 }

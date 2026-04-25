@@ -95,13 +95,11 @@ public class AuthService : IAuthService
     /// </summary>
     public async Task ChangePasswordAsync(int userId, string oldPassword, string newPassword)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await _context.Users.FindAsync(userId);
 
         if (user == null)
             throw new InvalidOperationException("Benutzer wurde nicht gefunden.");
 
-        // Prüfen, ob das alte Passwort korrekt ist
         var passwordMatches = _passwordService.VerifyPassword(
             oldPassword,
             user.PasswordHash);
@@ -109,12 +107,16 @@ public class AuthService : IAuthService
         if (!passwordMatches)
             throw new InvalidOperationException("Das alte Passwort ist falsch.");
 
-        // Neues Passwort setzen (gehasht)
+        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            throw new InvalidOperationException("Das neue Passwort muss mindestens 6 Zeichen haben.");
+
+        if (_passwordService.VerifyPassword(newPassword, user.PasswordHash))
+            throw new InvalidOperationException("Das neue Passwort darf nicht gleich dem alten sein.");
+
         user.PasswordHash = _passwordService.HashPassword(newPassword);
 
         await _context.SaveChangesAsync();
 
-        // ChangeTracker leeren (verhindert Side Effects bei weiteren Operationen)
         _context.ChangeTracker.Clear();
     }
 }

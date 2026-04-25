@@ -69,8 +69,8 @@ namespace Praxis.Client.Views
         private readonly EditUserPage _editUserPage = new EditUserPage();
         private readonly PatientDeletePage _patientDeletePage = new PatientDeletePage();
         private readonly PatientDocumentsPage _patientDocumentsPage = new PatientDocumentsPage();
-      
-        private readonly SettingsPage _settingsPage = new SettingsPage();
+
+        private readonly SettingsPage _settingsPage;
 
 
         private readonly IPatientService _patientService;
@@ -161,6 +161,7 @@ namespace Praxis.Client.Views
                                             icdImportService,
                                             medicationImportService,
                                             serviceCatalogImportService);
+            _settingsPage = new SettingsPage(authService);
             StartSessionTimer();
            
         }
