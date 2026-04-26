@@ -715,8 +715,7 @@ namespace Praxis.Client.Views
             LoadPage(page);
             await page.LoadPatientAsync(patient);
         }
-        
-
+       
         public async Task OpenSelectedPatientDocumentsPageAsync()
         {
             if (_selectedPatient == null)

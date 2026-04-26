@@ -11,10 +11,8 @@ namespace Praxis.Client.Views.Pages.Patienten;
 public partial class PatientMedicalRecordPage : System.Windows.Controls.UserControl
 {
     private readonly IPatientMedicalRecordService _medicalRecordService;
-
     private readonly ObservableCollection<PatientMedicalRecordEntry> _entries = new();
 
-    private List<Patient> _patients = new();
     private Patient? _currentPatient;
     private PatientMedicalRecordEntry? _selectedEntry;
 
@@ -26,67 +24,25 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
 
         EntriesGrid.ItemsSource = _entries;
         EntryTypeComboBox.ItemsSource = Enum.GetValues(typeof(MedicalRecordEntryType));
-
         EntryTypeComboBox.SelectedItem = MedicalRecordEntryType.Notiz;
-
-        Loaded += PatientMedicalRecordPage_Loaded;
     }
 
-    private async void PatientMedicalRecordPage_Loaded(object sender, RoutedEventArgs e)
+    public async Task LoadPatientAsync(Patient patient)
     {
-        await LoadPatientsAsync();
-    }
-
-    public async Task RefreshAsync()
-    {
-        await LoadPatientsAsync();
-
-        if (_currentPatient != null)
-            await LoadEntriesAsync(_currentPatient.Id);
-    }
-
-    private async Task LoadPatientsAsync()
-    {
-        try
-        {
-            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
-                return;
-
-            var patients = await mainWindow.GetPatientsAsync();
-
-            _patients = patients
-                .Where(x => x.IsActive)
-                .OrderBy(x => x.Nachname)
-                .ThenBy(x => x.Vorname)
-                .ToList();
-
-            PatientComboBox.ItemsSource = _patients;
-
-            if (_patients.Count > 0 && PatientComboBox.SelectedItem == null)
-                PatientComboBox.SelectedIndex = 0;
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(
-                $"Fehler beim Laden der Patienten:\n{ex.Message}",
-                "Fehler",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
-    }
-
-    private async void PatientComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (PatientComboBox.SelectedItem is not Patient patient)
-            return;
-
         _currentPatient = patient;
 
         PatientHeaderTextBlock.Text =
             $"{patient.FullName} · geb. {patient.Geburtsdatum:dd.MM.yyyy} · {patient.Versicherung}";
 
         ClearForm();
+
         await LoadEntriesAsync(patient.Id);
+    }
+
+    public async Task RefreshAsync()
+    {
+        if (_currentPatient != null)
+            await LoadEntriesAsync(_currentPatient.Id);
     }
 
     private async Task LoadEntriesAsync(int patientId)
@@ -255,14 +211,5 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         return string.IsNullOrWhiteSpace(value)
             ? null
             : value.Trim();
-    }
-
-    public async Task LoadPatientAsync(Patient patient)
-    {
-        _currentPatient = patient;
-        PatientHeaderTextBlock.Text =
-            $"{patient.FullName} · geb. {patient.Geburtsdatum:dd.MM.yyyy} · {patient.Versicherung}";
-
-        await LoadEntriesAsync(patient.Id);
     }
 }
