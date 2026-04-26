@@ -9,9 +9,10 @@ public class InvoiceItem
 
     public string Description { get; set; } = string.Empty;
 
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     public decimal UnitPrice { get; set; }
 
-    public decimal TotalPrice => Quantity * UnitPrice;
+    public decimal TotalPrice { get; set; }
+    public string Code { get; set; } = string.Empty;
 }

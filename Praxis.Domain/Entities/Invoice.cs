@@ -14,4 +14,5 @@ public class Invoice
     public decimal TotalAmount { get; set; }
 
     public ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
+
 }

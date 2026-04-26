@@ -11,4 +11,6 @@ public class CatalogItem
 
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public decimal Price { get; set; }
 }

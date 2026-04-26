@@ -59,18 +59,18 @@ public class PraxisDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<InvoiceItem>()
-            .HasOne(ii => ii.Invoice)
-            .WithMany(i => i.Items)
-            .HasForeignKey(ii => ii.InvoiceId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Invoice>()
-            .Property(i => i.TotalAmount)
-            .HasColumnType("TEXT");
+             .HasOne(x => x.Invoice)
+             .WithMany(x => x.Items)
+             .HasForeignKey(x => x.InvoiceId)
+             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<InvoiceItem>()
-            .Property(i => i.UnitPrice)
-            .HasColumnType("TEXT");
+            .Property(x => x.UnitPrice)
+            .HasPrecision(10, 2);
+
+        modelBuilder.Entity<InvoiceItem>()
+            .Property(x => x.TotalPrice)
+            .HasPrecision(10, 2);
 
         modelBuilder.Entity<Prescription>()
             .HasOne(p => p.Patient)
@@ -200,8 +200,13 @@ public class PraxisDbContext : DbContext
             .HasMaxLength(500);
 
         modelBuilder.Entity<CatalogItem>()
+            .Property(x => x.Price)
+            .HasPrecision(10,2);
+
+        modelBuilder.Entity<CatalogItem>()
             .HasIndex(x => new { x.Category, x.Code })
             .IsUnique();
+
         modelBuilder.Entity<PatientDiagnosis>()
             .HasOne(x => x.Patient)
             .WithMany(x => x.Diagnoses)

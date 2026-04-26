@@ -43,6 +43,16 @@ public class ServiceCatalogImportService : IServiceCatalogImportService
             var code = parts[0].Trim();
             var name = parts[1].Trim();
             var description = parts.Length > 2 ? parts[2].Trim() : "";
+            var price = 0m;
+
+            if (parts.Length > 3)
+            {
+                decimal.TryParse(
+                    parts[3].Trim(),
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.GetCultureInfo("de-DE"),
+                    out price);
+            }
 
             if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name))
                 continue;
@@ -56,6 +66,7 @@ public class ServiceCatalogImportService : IServiceCatalogImportService
                 Code = code,
                 Name = name,
                 Description = description,
+                Price = price,
                 IsActive = true
             });
         }

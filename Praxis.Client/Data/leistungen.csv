@@ -1,4 +1,4 @@
-﻿Code;Name;Beschreibung
-1;Beratung;Ärztliche Beratung
-3;Eingehende Beratung;Längeres ärztliches Gespräch
-250;Blutentnahme;Venöse Blutentnahme
+﻿Code;Name;Beschreibung,Preis
+1;Beratung;Ärztliche Beratung;10,72
+3;Eingehende Beratung;Längeres ärztliches Gespräch;20,11
+250;Blutentnahme;Venöse Blutentnahme;4,20
