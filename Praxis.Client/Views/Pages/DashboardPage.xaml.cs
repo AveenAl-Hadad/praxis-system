@@ -11,8 +11,6 @@ using Brushes = System.Windows.Media.Brushes;
 using ListBox = System.Windows.Controls.ListBox;
 
 
-
-
 namespace Praxis.Client.Views.Pages
 {
 
@@ -168,6 +166,12 @@ namespace Praxis.Client.Views.Pages
                 MonthInvoicesText.Text = stats.CurrentMonthInvoices.ToString();
                 MonthRevenueText.Text = $"{stats.CurrentMonthRevenue:N2} €";
                 TotalRevenueText.Text = $"{stats.TotalRevenue:N2} €";
+
+                TodayCheckedInText.Text = stats.TodayCheckedIn.ToString();
+                TodayInTreatmentText.Text = stats.TodayInTreatment.ToString();
+                TodayServicesText.Text = stats.TodayServices.ToString();
+                TodayDiagnosesText.Text = stats.TodayDiagnoses.ToString();
+                TodayRevenueText.Text = $"{stats.TodayRevenue:N2} €";
 
                 // Heutige Kennzahlen
                 TodayAppointmentsText.Text = todayAppointments.Count.ToString();

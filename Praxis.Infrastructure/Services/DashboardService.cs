@@ -26,6 +26,8 @@ public class DashboardService : IDashboardService
     public async Task<DashboardStats> GetStatsAsync()
     {
         var now = DateTime.Now;
+        var today = DateTime.Today;
+        var tomorrow = today.AddDays(1);
 
         // Monatsanfang und Monatsende bestimmen
         var startOfMonth = new DateTime(now.Year, now.Month, 1);
@@ -60,6 +62,43 @@ public class DashboardService : IDashboardService
             CurrentMonthInvoices = currentMonthInvoices.Count,
             CurrentMonthRevenue = currentMonthInvoices.Sum(i => i.TotalAmount)
         };
+        stats.TodayAppointments = await _db.Appointments
+    .CountAsync(a => a.StartTime >= today && a.StartTime < tomorrow);
+
+        stats.TodayCheckedIn = await _db.Appointments
+            .CountAsync(a => a.StartTime >= today &&
+                             a.StartTime < tomorrow &&
+                             a.CheckInTime != null);
+
+        stats.TodayInTreatment = await _db.Appointments
+            .CountAsync(a => a.StartTime >= today &&
+                             a.StartTime < tomorrow &&
+                             a.TreatmentState == "In Behandlung");
+
+        stats.TodayCompleted = await _db.Appointments
+            .CountAsync(a => a.StartTime >= today &&
+                             a.StartTime < tomorrow &&
+                             (a.TreatmentState == "Abgeschlossen" ||
+                              a.Status == "Abgeschlossen"));
+
+        stats.TodayCancelled = await _db.Appointments
+            .CountAsync(a => a.StartTime >= today &&
+                             a.StartTime < tomorrow &&
+                             a.Status == "Abgesagt");
+
+        stats.TodayServices = await _db.AppointmentMedicalEntries
+            .CountAsync(x => x.ServiceCatalogItemId != null &&
+                             x.CreatedAt >= today &&
+                             x.CreatedAt < tomorrow);
+
+        stats.TodayDiagnoses = await _db.AppointmentMedicalEntries
+            .CountAsync(x => x.DiagnosisCatalogItemId != null &&
+                             x.CreatedAt >= today &&
+                             x.CreatedAt < tomorrow);
+
+        stats.TodayRevenue = await _db.Invoices
+            .Where(i => i.InvoiceDate >= today && i.InvoiceDate < tomorrow)
+            .SumAsync(i => i.TotalAmount);
 
         return stats;
     }

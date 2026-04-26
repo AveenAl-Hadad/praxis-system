@@ -148,11 +148,11 @@
                     <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
                         <StackPanel>
                             <TextBlock Text="Aktueller Monat"
-                           FontWeight="Bold"
-                           FontSize="15"/>
+                                       FontWeight="Bold"
+                                       FontSize="15"/>
                             <TextBlock Text="Leistungs- und Umsatzübersicht"
-                           Margin="0,2,0,12"
-                           Foreground="{DynamicResource MutedTextBrush}"/>
+                                       Margin="0,2,0,12"
+                                       Foreground="{DynamicResource MutedTextBrush}"/>
 
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -186,14 +186,19 @@
                     <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
                         <StackPanel>
                             <TextBlock Text="Heute"
-                           FontWeight="Bold"
-                           FontSize="15"/>
+                                       FontWeight="Bold"
+                                       FontSize="15"/>
                             <TextBlock Text="Status der heutigen Termine"
-                           Margin="0,2,0,12"
-                           Foreground="{DynamicResource MutedTextBrush}"/>
+                                       Margin="0,2,0,12"
+                                       Foreground="{DynamicResource MutedTextBrush}"/>
 
                             <Grid>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
@@ -203,7 +208,7 @@
 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="100"/>
                                 </Grid.ColumnDefinitions>
 
                                 <TextBlock Text="Heutige Termine" Grid.Row="0" Grid.Column="0" Margin="0,0,0,8"/>
@@ -220,6 +225,21 @@
 
                                 <TextBlock Text="Online gebucht" Grid.Row="4" Grid.Column="0" Margin="0,8,0,0"/>
                                 <TextBlock x:Name="OnlineAppointmentsText" Grid.Row="4" Grid.Column="1" Margin="0,8,0,0" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="Check-in heute" Grid.Row="5" Grid.Column="0" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="TodayCheckedInText" Grid.Row="5" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="In Behandlung" Grid.Row="6" Grid.Column="0" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="TodayInTreatmentText" Grid.Row="6" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="Leistungen heute" Grid.Row="7" Grid.Column="0" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="TodayServicesText" Grid.Row="7" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="Diagnosen heute" Grid.Row="8" Grid.Column="0" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="TodayDiagnosesText" Grid.Row="8" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="Umsatz heute" Grid.Row="9" Grid.Column="0"/>
+                                <TextBlock x:Name="TodayRevenueText" Grid.Row="9" Grid.Column="1" FontWeight="SemiBold"/>
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -809,10 +829,7 @@
                             </StackPanel>
                         </UniformGrid>
 
-
-                    <ItemsControl Grid.Row="5"
-              Margin="0,10,0,0"
-              x:Name="NoticeCardsList">
+                    <ItemsControl Grid.Row="5" Margin="0,10,0,0" x:Name="NoticeCardsList">
 
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -823,42 +840,38 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Width="260"
-                    Margin="0,0,10,10"
-                    Padding="10"
-                    CornerRadius="10"
-                    BorderThickness="1"
-                    BorderBrush="#E5E7EB"
-                    Background="White">
+                                        Margin="0,0,10,10"
+                                        Padding="10"
+                                        CornerRadius="10"
+                                        BorderThickness="1"
+                                        BorderBrush="#E5E7EB"
+                                        Background="White">
 
                                     <Border.ContextMenu>
                                         <ContextMenu DataContext="{Binding}">
-                                            <MenuItem Header="Bearbeiten"
-                                  Click="EditNoticeCard_Click"/>
-                                            <MenuItem Header="Deaktivieren"
-                                  Click="DeactivateNoticeCard_Click"/>
-                                            <MenuItem Header="Löschen"
-                                  Click="DeleteNoticeCard_Click"/>
+                                            <MenuItem Header="Bearbeiten" Click="EditNoticeCard_Click"/>
+                                            <MenuItem Header="Deaktivieren" Click="DeactivateNoticeCard_Click"/>
+                                            <MenuItem Header="Löschen" Click="DeleteNoticeCard_Click"/>
                                         </ContextMenu>
                                     </Border.ContextMenu>
 
                                     <StackPanel>
                                         <TextBlock Text="{Binding Title}"
-                               FontWeight="Bold"
-                               TextWrapping="Wrap"/>
+                                                   FontWeight="Bold"
+                                                   TextWrapping="Wrap"/>
 
                                         <Border Background="{Binding CategoryColor}"
-                            CornerRadius="8"
-                            Padding="6,2"
-                            Margin="0,6,0,0"
-                            HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding Category}"
-                                   Foreground="White"/>
+                                                CornerRadius="8"
+                                                Padding="6,2"
+                                                Margin="0,6,0,0"
+                                                HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding Category}" Foreground="White"/>
                                         </Border>
 
                                         <TextBlock Text="{Binding Content}"
-                               Margin="0,6,0,0"
-                               TextWrapping="Wrap"
-                               Foreground="#374151"/>
+                                                   Margin="0,6,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#374151"/>
 
                                     </StackPanel>
                                 </Border>
@@ -910,20 +923,19 @@
                     </Grid>
                 </Border>
             
-            <!-- Heutige Termine -->
-            <!-- Heutige Termine -->
+            <!-- Heutige Termine -->            
             <Border x:Name="AppointmentsWidget"
-        Grid.Row="10"
-        Tag="Appointments"
-        AllowDrop="True"
-        Background="Transparent"
-        PreviewMouseLeftButtonDown="Widget_PreviewMouseLeftButtonDown"
-        MouseMove="Widget_MouseMove"
-        DragEnter="Widget_DragEnter"
-        DragOver="Widget_DragOver"
-        DragLeave="Widget_DragLeave"
-        Drop="Widget_Drop"
-        Style="{StaticResource CardBorderStyle}">
+                    Grid.Row="10"
+                    Tag="Appointments"
+                    AllowDrop="True"
+                    Background="Transparent"
+                    PreviewMouseLeftButtonDown="Widget_PreviewMouseLeftButtonDown"
+                    MouseMove="Widget_MouseMove"
+                    DragEnter="Widget_DragEnter"
+                    DragOver="Widget_DragOver"
+                    DragLeave="Widget_DragLeave"
+                    Drop="Widget_Drop"
+                    Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -935,21 +947,22 @@
 
                     <StackPanel Grid.Row="0">
                         <TextBlock Text="Heutige Termine"
-                       FontWeight="Bold"
-                       FontSize="15"/>
+                                   FontWeight="Bold"
+                                   FontSize="15"/>
                         <TextBlock x:Name="TodayDateText"
-                       Margin="0,2,0,0"
-                       Foreground="{DynamicResource MutedTextBrush}"/>
+                                   Margin="0,2,0,0"
+                                   Foreground="{DynamicResource MutedTextBrush}"/>
+                        
                     </StackPanel>
 
                     <DataGrid Grid.Row="2"
-                  x:Name="TodayAppointmentsGrid"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  IsReadOnly="True"
-                  SelectionMode="Single"
-                  MinHeight="180">
+                              x:Name="TodayAppointmentsGrid"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              MinHeight="180">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Uhrzeit" Binding="{Binding Time}" Width="110"/>
                             <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="220"/>
@@ -960,26 +973,26 @@
                     </DataGrid>
 
                     <Border Grid.Row="4"
-                BorderBrush="#E5E7EB"
-                BorderThickness="1"
-                CornerRadius="10"
-                Padding="12"
-                Background="White">
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12"
+                            Background="White">
                         <StackPanel>
                             <TextBlock Text="Online-Buchungen heute"
-                           FontWeight="Bold"
-                           FontSize="15"/>
+                                       FontWeight="Bold"
+                                       FontSize="15"/>
                             <TextBlock Text="Termine aus der Online-Buchung"
-                           Margin="0,2,0,12"
-                           Foreground="{DynamicResource MutedTextBrush}"/>
+                                       Margin="0,2,0,12"
+                                       Foreground="{DynamicResource MutedTextBrush}"/>
 
                             <DataGrid x:Name="OnlineAppointmentsGrid"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          IsReadOnly="True"
-                          SelectionMode="Single"
-                          MinHeight="160">
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False"
+                                      IsReadOnly="True"
+                                      SelectionMode="Single"
+                                      MinHeight="160">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Zeit" Binding="{Binding Time}" Width="110"/>
                                     <DataGridTextColumn Header="Patient" Binding="{Binding PatientName}" Width="220"/>
