@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Praxis.Application.Interfaces;
 using Praxis.Client.Logic.UI;
 using Praxis.Client.Views;
+using Praxis.Client.Views.Pages.Patienten;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure;
@@ -85,7 +86,9 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IBillingGenerationService, BillingGenerationService>();
                 services.AddTransient<IPatientCaseService, PatientCaseService>();
                 services.AddTransient<IPatientMedicalRecordService, PatientMedicalRecordService>();
+                services.AddTransient<IPatientMedicalRecordService, PatientMedicalRecordService>();
 
+                services.AddTransient<PatientMedicalRecordPage>();
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();
                 services.AddTransient<ChangePasswordWindow>();

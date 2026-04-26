@@ -96,9 +96,12 @@ public class DashboardService : IDashboardService
                              x.CreatedAt >= today &&
                              x.CreatedAt < tomorrow);
 
-        stats.TodayRevenue = await _db.Invoices
-            .Where(i => i.InvoiceDate >= today && i.InvoiceDate < tomorrow)
-            .SumAsync(i => i.TotalAmount);
+        var todayRevenueItems = await _db.Invoices
+                .Where(i => i.InvoiceDate >= today && i.InvoiceDate < tomorrow)
+                .Select(i => i.TotalAmount)
+                .ToListAsync();
+
+        stats.TodayRevenue = todayRevenueItems.Sum();
 
         return stats;
     }

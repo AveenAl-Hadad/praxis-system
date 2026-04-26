@@ -347,6 +347,7 @@ namespace Praxis.Client.Views
                     }
                     AddSidebarButton("Dokumente", async (s, e) => await OpenSelectedPatientDocumentsPageAsync());
                     AddSidebarButton("Termine", async (s, e) => await OpenSelectedPatientAppointmentsPageAsync());
+                    AddSidebarButton("Karteikarte", async (s, e) => await OpenSelectedPatientMedicalRecordPageAsync());
                     AddSidebarButton("Wartezimmer", async (s, e) => {LoadPage(_waitingRoomPage); await _waitingRoomPage.RefreshAsync();});
                     AddSidebarButton("Online-Buchung", OpenOnlineBooking_Click);
                     break;
@@ -698,6 +699,24 @@ namespace Praxis.Client.Views
             LoadPage(_patientAppointmentsPage);
             await _patientAppointmentsPage.LoadPatientAsync(patient);
         }
+        public async Task OpenSelectedPatientMedicalRecordPageAsync()
+        {
+            if (_selectedPatient == null)
+            {
+                MessageBox.Show("Bitte zuerst in der Patientensuche einen Patienten auswählen oder doppelt anklicken.");
+                return;
+            }
+
+            await OpenPatientMedicalRecordPageAsync(_selectedPatient);
+        }
+        public async Task OpenPatientMedicalRecordPageAsync(Patient patient)
+        {
+            var page = _serviceProvider.GetRequiredService<PatientMedicalRecordPage>();
+            LoadPage(page);
+            await page.LoadPatientAsync(patient);
+        }
+        
+
         public async Task OpenSelectedPatientDocumentsPageAsync()
         {
             if (_selectedPatient == null)
@@ -834,6 +853,7 @@ namespace Praxis.Client.Views
             MessageBox.Show("Hier öffnest du AppointmentWindow.");
         }
 
+      
         private void OpenDocuments_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Hier öffnest du DocumentWindow.");
