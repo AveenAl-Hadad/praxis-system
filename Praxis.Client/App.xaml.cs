@@ -83,6 +83,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IPracticeSettingsService, PracticeSettingsService>();
                 services.AddTransient<IAppointmentMedicalEntryService, AppointmentMedicalEntryService>();
                 services.AddTransient<IBillingGenerationService, BillingGenerationService>();
+                services.AddTransient<IPatientCaseService, PatientCaseService>();
 
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();

@@ -32,6 +32,7 @@ public class PraxisDbContext : DbContext
     public DbSet<PatientMedication> PatientMedications => Set<PatientMedication>();
     public DbSet<PracticeSettings> PracticeSettings => Set<PracticeSettings>();
     public DbSet<AppointmentMedicalEntry> AppointmentMedicalEntries => Set<AppointmentMedicalEntry>();
+    public DbSet<PatientCase> PatientCases => Set<PatientCase>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -272,5 +273,33 @@ public class PraxisDbContext : DbContext
         modelBuilder.Entity<AppointmentMedicalEntry>()
             .Property(x => x.Notes)
             .HasMaxLength(500);
+        modelBuilder.Entity<PatientCase>()
+            .HasOne(x => x.Patient)
+            .WithMany(x => x.Cases)
+            .HasForeignKey(x => x.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PatientCase>()
+            .Property(x => x.CaseNumber)
+            .HasMaxLength(50);
+
+        modelBuilder.Entity<PatientCase>()
+            .Property(x => x.InsuranceType)
+            .HasMaxLength(30);
+
+        modelBuilder.Entity<PatientCase>()
+            .Property(x => x.InsuranceName)
+            .HasMaxLength(150);
+
+        modelBuilder.Entity<PatientCase>()
+            .Property(x => x.Quarter)
+            .HasMaxLength(20);
+
+        modelBuilder.Entity<PatientCase>()
+            .Property(x => x.Notes)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<PatientCase>()
+            .HasIndex(x => new { x.PatientId, x.Quarter, x.InsuranceType });
     }
 }
