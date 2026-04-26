@@ -43,4 +43,5 @@ public class Patient
     public ICollection<PatientDiagnosis> Diagnoses { get; set; } = new List<PatientDiagnosis>();
     public ICollection<PatientMedication> Medications { get; set; } = new List<PatientMedication>();
     public ICollection<PatientCase> Cases { get; set; } = new List<PatientCase>();
+    public ICollection<PatientMedicalRecordEntry> MedicalRecordEntries { get; set; } = new List<PatientMedicalRecordEntry>();
 }

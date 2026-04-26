@@ -33,6 +33,7 @@ public class PraxisDbContext : DbContext
     public DbSet<PracticeSettings> PracticeSettings => Set<PracticeSettings>();
     public DbSet<AppointmentMedicalEntry> AppointmentMedicalEntries => Set<AppointmentMedicalEntry>();
     public DbSet<PatientCase> PatientCases => Set<PatientCase>();
+    public DbSet<PatientMedicalRecordEntry> PatientMedicalRecordEntries => Set<PatientMedicalRecordEntry>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -301,5 +302,64 @@ public class PraxisDbContext : DbContext
 
         modelBuilder.Entity<PatientCase>()
             .HasIndex(x => new { x.PatientId, x.Quarter, x.InsuranceType });
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .HasOne(x => x.Patient)
+            .WithMany(x => x.MedicalRecordEntries)
+            .HasForeignKey(x => x.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .HasOne(x => x.Appointment)
+            .WithMany(x => x.MedicalRecordEntries)
+            .HasForeignKey(x => x.AppointmentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .HasOne(x => x.CatalogItem)
+            .WithMany()
+            .HasForeignKey(x => x.CatalogItemId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .HasOne(x => x.LaborRecord)
+            .WithMany()
+            .HasForeignKey(x => x.LaborRecordId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .HasOne(x => x.PatientDocument)
+            .WithMany()
+            .HasForeignKey(x => x.PatientDocumentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .HasOne(x => x.Invoice)
+            .WithMany()
+            .HasForeignKey(x => x.InvoiceId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .Property(x => x.Title)
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .Property(x => x.Text)
+            .HasMaxLength(4000);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .Property(x => x.IcdCode)
+            .HasMaxLength(30);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .Property(x => x.IcdText)
+            .HasMaxLength(300);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .Property(x => x.CreatedBy)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<PatientMedicalRecordEntry>()
+            .HasIndex(x => new { x.PatientId, x.EntryType, x.CreatedAt });
     }
 }

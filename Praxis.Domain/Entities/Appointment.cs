@@ -40,6 +40,7 @@ public class Appointment
 
     public DateTime? CheckInTime { get; set; }
     public ICollection<AppointmentMedicalEntry> MedicalEntries { get; set; } = new List<AppointmentMedicalEntry>();
+    public ICollection<PatientMedicalRecordEntry> MedicalRecordEntries { get; set; } = new List<PatientMedicalRecordEntry>();
 
 
 
