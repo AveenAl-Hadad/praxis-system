@@ -551,6 +551,28 @@ namespace Praxis.Client.Views.Pages.Patienten
             window.ShowDialog();
         }
 
+        private async void CreateDoctorLetter_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPatient == null)
+            {
+                MessageBox.Show("Bitte zuerst einen Patienten auswählen.");
+                return;
+            }
+
+            var settings = await _practiceSettingsService.GetAsync();
+
+            var window = new DoctorLetterWindow(
+                _currentPatient,
+                _diagnoses,
+                _medications,
+                settings)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            window.ShowDialog();
+        }
+
     }
     public class DiagnosisSuggestion
     {

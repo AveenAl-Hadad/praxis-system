@@ -330,6 +330,11 @@
                                 Height="32"
                                 Margin="10,10,0,0"
                                 Click="PrintPrescription_Click"/>
+                        <Button Content="Arztbrief erstellen"
+                                Width="160"
+                                Height="32"
+                                Margin="10,10,0,0"
+                                Click="CreateDoctorLetter_Click"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

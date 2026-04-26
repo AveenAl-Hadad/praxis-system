@@ -31,6 +31,7 @@ public class PraxisDbContext : DbContext
 
     public DbSet<PatientMedication> PatientMedications => Set<PatientMedication>();
     public DbSet<PracticeSettings> PracticeSettings => Set<PracticeSettings>();
+    public DbSet<AppointmentMedicalEntry> AppointmentMedicalEntries => Set<AppointmentMedicalEntry>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -245,5 +246,26 @@ public class PraxisDbContext : DbContext
         modelBuilder.Entity<PracticeSettings>()
             .Property(x => x.DoctorName)
             .HasMaxLength(200);
+        modelBuilder.Entity<AppointmentMedicalEntry>()
+            .HasOne(x => x.Appointment)
+            .WithMany(x => x.MedicalEntries)
+            .HasForeignKey(x => x.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AppointmentMedicalEntry>()
+            .HasOne(x => x.DiagnosisCatalogItem)
+            .WithMany()
+            .HasForeignKey(x => x.DiagnosisCatalogItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AppointmentMedicalEntry>()
+            .HasOne(x => x.ServiceCatalogItem)
+            .WithMany()
+            .HasForeignKey(x => x.ServiceCatalogItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AppointmentMedicalEntry>()
+            .Property(x => x.Notes)
+            .HasMaxLength(500);
     }
 }
