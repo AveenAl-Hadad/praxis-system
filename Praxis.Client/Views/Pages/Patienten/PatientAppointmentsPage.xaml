@@ -21,6 +21,9 @@
 
                 <RowDefinition Height="Auto"/>                <!-- Terminformular -->
                 <RowDefinition Height="16"/>
+                
+                <RowDefinition Height="Auto"/>                <!-- Diagnose + Leistung -->
+                <RowDefinition Height="16"/>
 
                 <RowDefinition Height="220"/>                <!-- Freie Slots -->
                 <RowDefinition Height="16"/>
@@ -209,9 +212,102 @@
                     </StackPanel>
                 </Grid>
             </Border>
+            
+            <!-- Diagnose + Leistung -->
+            <Border Grid.Row="6"
+        Style="{StaticResource CardBorderStyle}">
+                <StackPanel>
+                    <TextBlock Text="Diagnose / Leistung zum Termin"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,10"/>
+
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="260"/>
+                            <ColumnDefinition Width="260"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="120"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBox x:Name="AppointmentDiagnosisSearchBox"
+                                     Height="32"
+                                     Padding="8,0,8,0"
+                                     VerticalContentAlignment="Center"
+                                     ToolTip="ICD Diagnose suchen"
+                                     TextChanged="AppointmentDiagnosisSearchBox_TextChanged"
+                                     KeyDown="AppointmentDiagnosisSearchBox_KeyDown"/>
+
+                            <ListBox x:Name="AppointmentDiagnosisSuggestionList"
+                                     MaxHeight="140"
+                                     Visibility="Collapsed"
+                                     DisplayMemberPath="DisplayText"
+                                     MouseDoubleClick="AppointmentDiagnosisSuggestionList_MouseDoubleClick"
+                                     KeyDown="AppointmentDiagnosisSuggestionList_KeyDown"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                            <TextBox x:Name="AppointmentServiceSearchBox"
+                                     Height="32"
+                                     Padding="8,0,8,0"
+                                     VerticalContentAlignment="Center"
+                                     ToolTip="Leistung suchen"
+                                     TextChanged="AppointmentServiceSearchBox_TextChanged"
+                                     KeyDown="AppointmentServiceSearchBox_KeyDown"/>
+
+                            <ListBox x:Name="AppointmentServiceSuggestionList"
+                                     MaxHeight="140"
+                                     Visibility="Collapsed"
+                                     DisplayMemberPath="DisplayText"
+                                     MouseDoubleClick="AppointmentServiceSuggestionList_MouseDoubleClick"
+                                     KeyDown="AppointmentServiceSuggestionList_KeyDown"/>
+                        </StackPanel>
+
+                        <TextBox x:Name="AppointmentMedicalNotesBox"
+                                 Grid.Column="2"
+                                 Height="32"
+                                 Margin="10,0,10,0"
+                                 VerticalContentAlignment="Center"
+                                 ToolTip="Notiz"/>
+
+                        <Button Content="Hinzufügen"
+                                Grid.Column="3"
+                                Height="32"
+                                Click="AddAppointmentMedicalEntry_Click"/>
+                    </Grid>
+
+                    <DataGrid x:Name="AppointmentMedicalEntriesGrid"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              Height="160"
+                              SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Diagnose"
+                                    Binding="{Binding DiagnosisText}"
+                                    Width="*"/>
+
+                            <DataGridTextColumn Header="Leistung"
+                                    Binding="{Binding ServiceText}"
+                                    Width="*"/>
+
+                            <DataGridTextColumn Header="Notiz"
+                                    Binding="{Binding Notes}"
+                                    Width="220"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Button Content="Ausgewählten Eintrag löschen"
+                            Width="220"
+                            Height="32"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Left"
+                            Click="DeleteAppointmentMedicalEntry_Click"/>
+                </StackPanel>
+            </Border>
 
             <!-- Freie Slots -->
-            <Border Grid.Row="6"
+            <Border Grid.Row="8"
                     Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -242,7 +338,7 @@
             </Border>
 
             <!-- Kalender Block -->
-            <Border Grid.Row="8"
+            <Border Grid.Row="10"
                     Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -475,7 +571,7 @@
             </Border>
 
             <!-- Patientenfluss / Warteliste -->
-            <Border Grid.Row="10" Style="{StaticResource CardBorderStyle}">
+            <Border Grid.Row="12" Style="{StaticResource CardBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -805,7 +901,7 @@
             </Border>
 
             <!-- Terminliste -->
-            <Border Grid.Row="12"
+            <Border Grid.Row="14"
                     Style="{StaticResource CardBorderStyle}">
                 <DataGrid x:Name="AppointmentsGrid"
                           AutoGenerateColumns="False"

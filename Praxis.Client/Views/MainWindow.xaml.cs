@@ -130,7 +130,8 @@ namespace Praxis.Client.Views
                              IThemeService themeService,
                              IPatientDiagnosisService patientDiagnosisService,
                              IPatientMedicationService patientMedicationService,
-                             IPracticeSettingsService practiceSettingsService
+                             IPracticeSettingsService practiceSettingsService,
+                             IAppointmentMedicalEntryService appointmentMedicalEntryService
                              )
         {
             InitializeComponent();
@@ -157,7 +158,11 @@ namespace Praxis.Client.Views
             _waitingRoomPage = new WaitingRoomPage(_appointmentService);
             _roomsPage = new RoomsPage(_roomService);
             _doctorsPage = new DoctorsPage(doctorService, _roomService, appointmentTypeService);
-            _patientAppointmentsPage = new PatientAppointmentsPage(_appointmentService, _roomService, _patientService);
+            _patientAppointmentsPage = new PatientAppointmentsPage(
+                                                                    appointmentService,
+                                                                    roomService,
+                                                                    patientService,
+                                                                    appointmentMedicalEntryService);
             _catalogsPage = new CatalogsPage(catalogService,
                                             icdImportService,
                                             medicationImportService,

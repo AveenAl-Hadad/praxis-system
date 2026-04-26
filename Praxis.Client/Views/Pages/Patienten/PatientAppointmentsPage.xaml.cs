@@ -27,6 +27,9 @@ using Microsoft.Extensions.Logging;
 using Praxis.Infrastructure.Services;
 using Microsoft.VisualBasic.Logging;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace Praxis.Client.Views.Pages.Patienten
 {
@@ -47,15 +50,25 @@ namespace Praxis.Client.Views.Pages.Patienten
         private Point? _flowDragStartPoint;
         private readonly DispatcherTimer _flowRefreshTimer = new DispatcherTimer();
 
+        private readonly IAppointmentMedicalEntryService _appointmentMedicalEntryService;
+
+        private readonly ObservableCollection<AppointmentMedicalEntryRow> _appointmentMedicalEntries = new();
+
+        private CatalogItem? _selectedAppointmentDiagnosis;
+        private CatalogItem? _selectedAppointmentService;
+
         public PatientAppointmentsPage(
-            IAppointmentService appointmentService,
-            IRoomService roomService,
-            IPatientService patientService)
+                                        IAppointmentService appointmentService,
+                                        IRoomService roomService,
+                                        IPatientService patientService,
+                                        IAppointmentMedicalEntryService appointmentMedicalEntryService)
         {
             InitializeComponent();
 
             _appointmentService = appointmentService;
             _roomService = roomService;
+            _appointmentMedicalEntryService = appointmentMedicalEntryService;
+            AppointmentMedicalEntriesGrid.ItemsSource = _appointmentMedicalEntries;
 
             AppointmentDatePicker.SelectedDate = DateTime.Today;
             Loaded += PatientAppointmentsPage_Loaded;
@@ -63,6 +76,7 @@ namespace Praxis.Client.Views.Pages.Patienten
             _flowRefreshTimer.Interval = TimeSpan.FromMinutes(1);
             _flowRefreshTimer.Tick += FlowRefreshTimer_Tick;
             _flowRefreshTimer.Start();
+
         }
         private async void FlowRefreshTimer_Tick(object? sender, EventArgs e)
         {
@@ -329,6 +343,19 @@ namespace Praxis.Client.Views.Pages.Patienten
             _isLoadingForm = true;
 
             _selectedAppointment = null;
+
+            _appointmentMedicalEntries.Clear();
+            _selectedAppointmentDiagnosis = null;
+            _selectedAppointmentService = null;
+
+            if (AppointmentDiagnosisSearchBox != null)
+                AppointmentDiagnosisSearchBox.Clear();
+
+            if (AppointmentServiceSearchBox != null)
+                AppointmentServiceSearchBox.Clear();
+
+            if (AppointmentMedicalNotesBox != null)
+                AppointmentMedicalNotesBox.Clear();
 
             if (AppointmentDatePicker != null)
                 AppointmentDatePicker.SelectedDate = _plannerSelectedDate;
@@ -1232,8 +1259,30 @@ namespace Praxis.Client.Views.Pages.Patienten
             // Neu:
             MainPageScrollViewer?.ScrollToTop();
             AppointmentDatePicker?.Focus();
+            await LoadAppointmentMedicalEntriesAsync(appointmentId);
         }
+        private async Task LoadAppointmentMedicalEntriesAsync(int appointmentId)
+        {
+            var entries = await _appointmentMedicalEntryService.GetByAppointmentAsync(appointmentId);
 
+            _appointmentMedicalEntries.Clear();
+
+            foreach (var entry in entries)
+            {
+                _appointmentMedicalEntries.Add(new AppointmentMedicalEntryRow
+                {
+                    Id = entry.Id,
+                    Notes = entry.Notes,
+                    DiagnosisText = entry.DiagnosisCatalogItem == null
+                        ? ""
+                        : $"{entry.DiagnosisCatalogItem.Code} - {entry.DiagnosisCatalogItem.Name}",
+                    ServiceText = entry.ServiceCatalogItem == null
+                        ? ""
+                        : $"{entry.ServiceCatalogItem.Code} - {entry.ServiceCatalogItem.Name}"
+                });
+            }
+           
+        }
         private string GetPlannerTitlePrefix(Appointment appointment)
         {
             var status = appointment.Status?.Trim().ToLowerInvariant() ?? string.Empty;
@@ -1429,6 +1478,205 @@ namespace Praxis.Client.Views.Pages.Patienten
             _isLoadingForm = false;
 
             await RefreshAvailableSlotsAsync();
+            await LoadAppointmentMedicalEntriesAsync(appointment.Id);
+        }
+
+        // Autocomplete für Diagnose
+        private async void AppointmentDiagnosisSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var search = AppointmentDiagnosisSearchBox.Text?.Trim() ?? "";
+
+            if (search.Length < 2)
+            {
+                AppointmentDiagnosisSuggestionList.Visibility = Visibility.Collapsed;
+                AppointmentDiagnosisSuggestionList.ItemsSource = null;
+                return;
+            }
+
+            var result = await _appointmentMedicalEntryService.SearchDiagnosisAsync(search);
+
+            AppointmentDiagnosisSuggestionList.ItemsSource = result
+                .Select(x => new AppointmentCatalogSuggestion { Item = x })
+                .ToList();
+
+            AppointmentDiagnosisSuggestionList.Visibility =
+                AppointmentDiagnosisSuggestionList.Items.Count > 0
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        private void AppointmentDiagnosisSearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (AppointmentDiagnosisSuggestionList.Visibility != Visibility.Visible)
+                return;
+
+            if (e.Key == Key.Down)
+            {
+                AppointmentDiagnosisSuggestionList.Focus();
+
+                if (AppointmentDiagnosisSuggestionList.Items.Count > 0)
+                    AppointmentDiagnosisSuggestionList.SelectedIndex = 0;
+
+                e.Handled = true;
+            }
+
+            if (e.Key == Key.Enter)
+            {
+                if (AppointmentDiagnosisSuggestionList.SelectedIndex < 0 &&
+                    AppointmentDiagnosisSuggestionList.Items.Count > 0)
+                {
+                    AppointmentDiagnosisSuggestionList.SelectedIndex = 0;
+                }
+
+                SelectAppointmentDiagnosisSuggestion();
+                e.Handled = true;
+            }
+        }
+
+        private void AppointmentDiagnosisSuggestionList_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                SelectAppointmentDiagnosisSuggestion();
+                e.Handled = true;
+            }
+        }
+
+        private void AppointmentDiagnosisSuggestionList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            SelectAppointmentDiagnosisSuggestion();
+        }
+
+        private void SelectAppointmentDiagnosisSuggestion()
+        {
+            if (AppointmentDiagnosisSuggestionList.SelectedItem is not AppointmentCatalogSuggestion suggestion)
+                return;
+
+            _selectedAppointmentDiagnosis = suggestion.Item;
+            AppointmentDiagnosisSearchBox.Text = $"{suggestion.Item.Code} - {suggestion.Item.Name}";
+            AppointmentDiagnosisSuggestionList.Visibility = Visibility.Collapsed;
+        }
+
+        //Autocomplete für Leistung
+        private async void AppointmentServiceSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var search = AppointmentServiceSearchBox.Text?.Trim() ?? "";
+
+            if (search.Length < 1)
+            {
+                AppointmentServiceSuggestionList.Visibility = Visibility.Collapsed;
+                AppointmentServiceSuggestionList.ItemsSource = null;
+                return;
+            }
+
+            var result = await _appointmentMedicalEntryService.SearchServiceAsync(search);
+
+            AppointmentServiceSuggestionList.ItemsSource = result
+                .Select(x => new AppointmentCatalogSuggestion { Item = x })
+                .ToList();
+
+            AppointmentServiceSuggestionList.Visibility =
+                AppointmentServiceSuggestionList.Items.Count > 0
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        private void AppointmentServiceSearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (AppointmentServiceSuggestionList.Visibility != Visibility.Visible)
+                return;
+
+            if (e.Key == Key.Down)
+            {
+                AppointmentServiceSuggestionList.Focus();
+
+                if (AppointmentServiceSuggestionList.Items.Count > 0)
+                    AppointmentServiceSuggestionList.SelectedIndex = 0;
+
+                e.Handled = true;
+            }
+
+            if (e.Key == Key.Enter)
+            {
+                if (AppointmentServiceSuggestionList.SelectedIndex < 0 &&
+                    AppointmentServiceSuggestionList.Items.Count > 0)
+                {
+                    AppointmentServiceSuggestionList.SelectedIndex = 0;
+                }
+
+                SelectAppointmentServiceSuggestion();
+                e.Handled = true;
+            }
+        }
+
+        private void AppointmentServiceSuggestionList_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                SelectAppointmentServiceSuggestion();
+                e.Handled = true;
+            }
+        }
+
+        private void AppointmentServiceSuggestionList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            SelectAppointmentServiceSuggestion();
+        }
+
+        private void SelectAppointmentServiceSuggestion()
+        {
+            if (AppointmentServiceSuggestionList.SelectedItem is not AppointmentCatalogSuggestion suggestion)
+                return;
+
+            _selectedAppointmentService = suggestion.Item;
+            AppointmentServiceSearchBox.Text = $"{suggestion.Item.Code} - {suggestion.Item.Name}";
+            AppointmentServiceSuggestionList.Visibility = Visibility.Collapsed;
+        }
+
+        //Hinzufügen/Löschen
+        private async void AddAppointmentMedicalEntry_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_selectedAppointment == null)
+                {
+                    MessageBox.Show("Bitte zuerst einen Termin auswählen oder speichern.");
+                    return;
+                }
+
+                await _appointmentMedicalEntryService.AddAsync(
+                    _selectedAppointment.Id,
+                    _selectedAppointmentDiagnosis?.Id,
+                    _selectedAppointmentService?.Id,
+                    AppointmentMedicalNotesBox.Text);
+
+                _selectedAppointmentDiagnosis = null;
+                _selectedAppointmentService = null;
+
+                AppointmentDiagnosisSearchBox.Clear();
+                AppointmentServiceSearchBox.Clear();
+                AppointmentMedicalNotesBox.Clear();
+
+                await LoadAppointmentMedicalEntriesAsync(_selectedAppointment.Id);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Diagnose / Leistung Fehler");
+            }
+        }
+
+        private async void DeleteAppointmentMedicalEntry_Click(object sender, RoutedEventArgs e)
+        {
+            if (AppointmentMedicalEntriesGrid.SelectedItem is not AppointmentMedicalEntryRow row)
+            {
+                MessageBox.Show("Bitte zuerst einen Eintrag auswählen.");
+                return;
+            }
+
+            await _appointmentMedicalEntryService.DeleteAsync(row.Id);
+
+            if (_selectedAppointment != null)
+                await LoadAppointmentMedicalEntriesAsync(_selectedAppointment.Id);
         }
 
         private DateTime BuildStartTime()
@@ -2553,6 +2801,22 @@ namespace Praxis.Client.Views.Pages.Patienten
             public string SourceColumn { get; set; } = string.Empty;
         }
 
+    }
+    public class AppointmentMedicalEntryRow
+    {
+        public int Id { get; set; }
+
+        public string DiagnosisText { get; set; } = string.Empty;
+
+        public string ServiceText { get; set; } = string.Empty;
+
+        public string Notes { get; set; } = string.Empty;
+    }
+    public class AppointmentCatalogSuggestion
+    {
+        public CatalogItem Item { get; set; } = null!;
+
+        public string DisplayText => $"{Item.Code} - {Item.Name}";
     }
 
 }
