@@ -17,6 +17,8 @@ namespace Praxis.Client.Views.Pages.Abrechnung
         private bool _isNewMode = false;
         private string _currentView = "Alle";
         private string _currentFilter = "Alle";
+       
+        private bool _isNew = true;
 
         public AbrechnungPage(IAbrechnungService abrechnungService)
         {
@@ -346,6 +348,8 @@ namespace Praxis.Client.Views.Pages.Abrechnung
         private void StartNewAbrechnung(string typ)
         {
             _currentFilter = typ;
+            _editingItem = null;
+            _isNew = true;
 
             PageTitleTextBlock.Text = typ == "KV"
                 ? "Neue KV-Abrechnung"

@@ -11,12 +11,18 @@ public class InvoiceService : IInvoiceService
 
     // Audit-Service zum Protokollieren von Aktionen (z.B. Create/Delete)
     private readonly IAuditService _auditService;
+    private readonly IInvoiceNumberService _invoiceNumberService;
+
 
     // Konstruktor (Dependency Injection)
-    public InvoiceService(PraxisDbContext db, IAuditService auditService)
+    public InvoiceService(
+    PraxisDbContext db,
+    IAuditService auditService,
+    IInvoiceNumberService invoiceNumberService)
     {
         _db = db;
         _auditService = auditService;
+        _invoiceNumberService = invoiceNumberService;
     }
 
     // Alle Rechnungen laden (inkl. Patient + Positionen)
@@ -58,7 +64,7 @@ public class InvoiceService : IInvoiceService
         // Falls keine Rechnungsnummer vorhanden → automatisch generieren
         if (string.IsNullOrWhiteSpace(invoice.InvoiceNumber))
         {
-            invoice.InvoiceNumber = $"RE-{DateTime.Now:yyyyMMddHHmmss}";
+            invoice.InvoiceNumber = await _invoiceNumberService.GenerateNextInvoiceNumberAsync(invoice.InvoiceDate);
         }
 
         // Rechnung zur DB hinzufügen
