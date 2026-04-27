@@ -35,36 +35,38 @@
                 <TextBlock Text="Patient:" VerticalAlignment="Center"/>
                 <TextBox x:Name="PatientNameTextBox"
                          Grid.Column="1"
-                         Margin="0,4,0,4"
+                         Margin="0,4"
                          IsReadOnly="True"/>
 
                 <TextBlock Grid.Row="1" Text="Geburtsdatum:" VerticalAlignment="Center"/>
                 <TextBox x:Name="GeburtsdatumTextBox"
                          Grid.Row="1"
                          Grid.Column="1"
-                         Margin="0,4,0,4"
+                         Margin="0,4"
                          IsReadOnly="True"/>
 
                 <TextBlock Grid.Row="2" Text="Telefon:" VerticalAlignment="Center"/>
                 <TextBox x:Name="TelefonTextBox"
                          Grid.Row="2"
                          Grid.Column="1"
-                         Margin="0,4,0,4"
+                         Margin="0,4"
                          IsReadOnly="True"/>
 
                 <TextBlock Grid.Column="3" Text="E-Mail:" VerticalAlignment="Center"/>
                 <TextBox x:Name="EmailTextBox"
                          Grid.Column="4"
-                         Margin="0,4,0,4"
+                         Margin="0,4"
                          IsReadOnly="True"/>
 
                 <TextBlock Grid.Row="1"
                            Grid.Column="3"
-                           Text="Hinweis:"
+                           Text="Dokumente:"
                            VerticalAlignment="Center"/>
-                <TextBlock Grid.Row="1"
+
+                <TextBlock x:Name="DocumentCountTextBlock"
+                           Grid.Row="1"
                            Grid.Column="4"
-                           Text="Hier wird später die echte Dokumentenliste eingebunden."
+                           Text="0 Dokumente"
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource MutedTextBrush}"/>
             </Grid>
@@ -76,30 +78,92 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="12"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="12"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
                 <StackPanel Orientation="Horizontal">
-                    <Button Content="Neues Dokument"
+                    <Button Content="Datei hinzufügen"
                             Style="{StaticResource SuccessButtonStyle}"
                             Click="AddDocumentButton_Click"/>
+
+                    <Button Content="Öffnen"
+                            Margin="10,0,0,0"
+                            Click="OpenDocumentButton_Click"/>
+
+                    <Button Content="Bearbeiten"
+                            Margin="10,0,0,0"
+                            Click="EditDocumentButton_Click"/>
+
+                    <Button Content="Löschen"
+                            Margin="10,0,0,0"
+                            Click="DeleteDocumentButton_Click"/>
 
                     <Button Content="Zurück zur Suche"
                             Margin="10,0,0,0"
                             Click="BackButton_Click"/>
                 </StackPanel>
 
-                <DataGrid Grid.Row="2"
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="260"/>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Titel:"
+                               VerticalAlignment="Center"/>
+
+                    <TextBox x:Name="TitleTextBox"
+                             Grid.Column="1"
+                             Margin="0,4"/>
+
+                    <TextBlock Grid.Column="3"
+                               Text="Typ:"
+                               VerticalAlignment="Center"/>
+
+                    <ComboBox x:Name="DocumentTypeComboBox"
+                              Grid.Column="4"
+                              Margin="0,4">
+                        <ComboBoxItem Content="Befund"/>
+                        <ComboBoxItem Content="Labor"/>
+                        <ComboBoxItem Content="Arztbrief"/>
+                        <ComboBoxItem Content="AU"/>
+                        <ComboBoxItem Content="Überweisung"/>
+                        <ComboBoxItem Content="Rechnung"/>
+                        <ComboBoxItem Content="Sonstiges"/>
+                    </ComboBox>
+
+                    <TextBlock Grid.Column="6"
+                               Text="Beschreibung:"
+                               VerticalAlignment="Center"/>
+
+                    <TextBox x:Name="DescriptionTextBox"
+                             Grid.Column="7"
+                             Margin="0,4"/>
+                </Grid>
+
+                <DataGrid Grid.Row="4"
                           x:Name="DocumentsGrid"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           CanUserAddRows="False"
-                          CanUserDeleteRows="False">
+                          CanUserDeleteRows="False"
+                          SelectionChanged="DocumentsGrid_SelectionChanged"
+                          MouseDoubleClick="DocumentsGrid_MouseDoubleClick">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70"/>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
                         <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="220"/>
-                        <DataGridTextColumn Header="Typ" Binding="{Binding DocumentType}" Width="160"/>
-                        <DataGridTextColumn Header="Erstellt am" Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="180"/>
+                        <DataGridTextColumn Header="Typ" Binding="{Binding DocumentType}" Width="140"/>
+                        <DataGridTextColumn Header="Datei" Binding="{Binding FileName}" Width="240"/>
+                        <DataGridTextColumn Header="Beschreibung" Binding="{Binding Description}" Width="*"/>
+                        <DataGridTextColumn Header="Erstellt am" Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="160"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

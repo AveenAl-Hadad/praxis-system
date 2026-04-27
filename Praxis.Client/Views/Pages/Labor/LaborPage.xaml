@@ -13,7 +13,8 @@
         </Grid.RowDefinitions>
 
         <!-- Titel -->
-        <TextBlock Grid.Row="0"
+        <TextBlock x:Name="PageTitleTextBlock"
+                   Grid.Row="0"
                    Text="Labordaten importieren"
                    FontSize="28"
                    FontWeight="Bold"

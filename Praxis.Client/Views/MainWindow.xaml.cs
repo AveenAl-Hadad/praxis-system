@@ -353,11 +353,11 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Labor:
-                    AddSidebarButton("Labordaten importieren", (s, e) => LoadPage(_laborPage), true);
-                    AddSidebarButton("Laborbücher zuordnen", (s, e) => MessageBox.Show("Bereich 'Laborbücher zuordnen' folgt als Nächstes."));
-                    AddSidebarButton("Zugeordnete Laborberichte", (s, e) => MessageBox.Show("Bereich 'Zugeordnete Laborberichte' folgt als Nächstes."));
-                    AddSidebarButton("Labortagesliste", (s, e) => MessageBox.Show("Bereich 'Labortagesliste' folgt als Nächstes."));
-                    AddSidebarButton("Labore", (s, e) => MessageBox.Show("Bereich 'Labore' folgt als Nächstes."));
+                    AddSidebarButton("Labordaten importieren", async (s, e) => {LoadPage(_laborPage); await _laborPage.ShowImportAsync(); }, true);
+                    AddSidebarButton("Laborbücher zuordnen", async (s, e) =>{LoadPage(_laborPage); await _laborPage.ShowLaborBooksAsync();});
+                    AddSidebarButton("Zugeordnete Laborberichte", async (s, e) => {LoadPage(_laborPage);await _laborPage.ShowAssignedReportsAsync();});
+                    AddSidebarButton("Labortagesliste", async (s, e) =>{ LoadPage(_laborPage); await _laborPage.ShowDailyListAsync();});
+                    AddSidebarButton("Labore", async (s, e) =>{LoadPage(_laborPage);await _laborPage.ShowLabsAsync();});
                     break;
 
                 case BottomModule.Abrechnung:
@@ -737,10 +737,25 @@ namespace Praxis.Client.Views
 
             await OpenPatientAppointmentsPageAsync(_selectedPatient);
         }
+
+        //Patien Dokument
         public async Task<IEnumerable<PatientDocument>> GetDocumentsByPatientIdAsync(int patientId)
         {
             return await _documentService.GetDocumentsByPatientAsync(patientId);
         }
+        public async Task AddDocumentAsync(PatientDocument document)
+        {
+            await _documentService.AddDocumentAsync(document);
+        }
+        public async Task UpdateDocumentAsync(PatientDocument document)
+        {
+            await _documentService.UpdateDocumentAsync(document);
+        }
+        public async Task DeleteDocumentAsync(int documentId)
+        {
+            await _documentService.DeleteDocumentAsync(documentId);
+        }
+        //
         public async Task<IEnumerable<Appointment>> GetAppointmentsByPatientIdAsync(int patientId)
         {
             var allAppointments = await _appointmentService.GetAllAppointmentsAsync();

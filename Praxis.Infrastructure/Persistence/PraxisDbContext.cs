@@ -80,10 +80,33 @@ public class PraxisDbContext : DbContext
             .HasForeignKey(p => p.PatientId)
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<PatientDocument>()
-            .HasOne(d => d.Patient)
-            .WithMany(p => p.Documents)
-            .HasForeignKey(d => d.PatientId)
-            .OnDelete(DeleteBehavior.Cascade);
+           .HasOne(d => d.Patient)
+           .WithMany(p => p.Documents)
+           .HasForeignKey(d => d.PatientId)
+           .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PatientDocument>()
+            .Property(d => d.Title)
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<PatientDocument>()
+            .Property(d => d.DocumentType)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<PatientDocument>()
+            .Property(d => d.FileName)
+            .HasMaxLength(255);
+
+        modelBuilder.Entity<PatientDocument>()
+            .Property(d => d.FilePath)
+            .HasMaxLength(1000);
+
+        modelBuilder.Entity<PatientDocument>()
+            .Property(d => d.Description)
+            .HasMaxLength(1000);
+
+        modelBuilder.Entity<PatientDocument>()
+            .HasIndex(d => new { d.PatientId, d.CreatedAt });
         modelBuilder.Entity<DashboardTask>()
             .HasOne(t => t.Patient)
             .WithMany()
@@ -110,8 +133,8 @@ public class PraxisDbContext : DbContext
             .HasMaxLength(300);
 
         modelBuilder.Entity<Doctor>()
-    .Property(d => d.Title)
-    .HasMaxLength(50);
+            .Property(d => d.Title)
+            .HasMaxLength(50);
 
         modelBuilder.Entity<Doctor>()
             .Property(d => d.FirstName)

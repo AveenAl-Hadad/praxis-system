@@ -1,7 +1,7 @@
 ﻿using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
-
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -173,7 +173,75 @@ namespace Praxis.Client.Views.Pages.Labor
             LaborGrid.ItemsSource = null;
             UpdateStatusInfo(0, 0, "Vorschau zurückgesetzt");
         }
+        
+        // Neue
+        public async Task ShowImportAsync()
+        {
+            SetTitle("Labordaten importieren");
+            await LoadStoredDataAsync();
+        }
+
+        public async Task ShowLaborBooksAsync()
+        {
+            SetTitle("Laborbücher zuordnen");
+            LaborGrid.ItemsSource = await _laborService.GetAllAsync();
+            UpdateStatusInfo(0, 0, "Laborbücher / Zuordnung geladen");
+        }
+
+        public async Task ShowAssignedReportsAsync()
+        {
+            SetTitle("Zugeordnete Laborberichte");
+            var records = await _laborService.GetAllAsync();
+            LaborGrid.ItemsSource = records
+                .Where(x => x.Status == "Importiert" || x.Status == "Zugeordnet")
+                .ToList();
+
+            UpdateStatusInfo(0, 0, "Zugeordnete Laborberichte geladen");
+        }
+
+        public async Task ShowDailyListAsync()
+        {
+            SetTitle("Labortagesliste");
+
+            var today = DateTime.Today.ToString("dd.MM.yyyy");
+            var records = await _laborService.GetAllAsync();
+
+            LaborGrid.ItemsSource = records
+                .Where(x => !string.IsNullOrWhiteSpace(x.Erstellt) && x.Erstellt.StartsWith(today))
+                .ToList();
+
+            UpdateStatusInfo(0, 0, $"Labortagesliste für {today} geladen");
+        }
+
+        public async Task ShowLabsAsync()
+        {
+            SetTitle("Labore");
+
+            var records = await _laborService.GetAllAsync();
+
+            LaborGrid.ItemsSource = records
+                .GroupBy(x => x.Labor)
+                .Select(g => new LaborRecord
+                {
+                    Datei = $"{g.Count()} Bericht(e)",
+                    Labor = g.Key,
+                    Erstellt = "-",
+                    Betriebsstaette = "-",
+                    Bsnr = "-",
+                    Kundennummer = "-",
+                    Status = "Laborübersicht"
+                })
+                .ToList();
+
+            UpdateStatusInfo(0, 0, "Laborübersicht geladen");
+        }
+
+        private void SetTitle(string title)
+        {
+            PageTitleTextBlock.Text = title;
+        }
     }
+
 }
 
 
