@@ -101,7 +101,21 @@
                                 Margin="0,0,10,10"
                                 Click="ClearDirectoryButton_Click"
                                 Background="#E5E7EB"/>
-                    </WrapPanel>
+                        <Button Content="Patient zuordnen"
+                                Margin="0,0,10,10"
+                                Width="160"
+                                Height="36"
+                                Background="#E5E7EB"
+                                Click="AssignPatient_Click"/>
+
+                        <Button Content="Als Fehler markieren"
+                                Margin="0,0,10,10"
+                                Width="160"
+                                Height="36"
+                                Background="#E5E7EB"
+                                Click="MarkError_Click"/>
+                    </WrapPanel>        
+                                            
                 </StackPanel>
 
                 <!-- Rechts -->
@@ -160,6 +174,7 @@
                     <DataGridTextColumn Header="BSNR/BSID" Binding="{Binding Bsnr}" Width="120"/>
                     <DataGridTextColumn Header="Kundennummer" Binding="{Binding Kundennummer}" Width="140"/>
                     <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="180"/>
+                    <DataGridTextColumn Header="Patient" Binding="{Binding Patient.Nachname}" Width="150"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

@@ -180,14 +180,12 @@ namespace Praxis.Client.Views.Pages.Labor
             SetTitle("Labordaten importieren");
             await LoadStoredDataAsync();
         }
-
         public async Task ShowLaborBooksAsync()
         {
             SetTitle("Laborbücher zuordnen");
             LaborGrid.ItemsSource = await _laborService.GetAllAsync();
             UpdateStatusInfo(0, 0, "Laborbücher / Zuordnung geladen");
         }
-
         public async Task ShowAssignedReportsAsync()
         {
             SetTitle("Zugeordnete Laborberichte");
@@ -198,7 +196,6 @@ namespace Praxis.Client.Views.Pages.Labor
 
             UpdateStatusInfo(0, 0, "Zugeordnete Laborberichte geladen");
         }
-
         public async Task ShowDailyListAsync()
         {
             SetTitle("Labortagesliste");
@@ -212,7 +209,6 @@ namespace Praxis.Client.Views.Pages.Labor
 
             UpdateStatusInfo(0, 0, $"Labortagesliste für {today} geladen");
         }
-
         public async Task ShowLabsAsync()
         {
             SetTitle("Labore");
@@ -235,13 +231,48 @@ namespace Praxis.Client.Views.Pages.Labor
 
             UpdateStatusInfo(0, 0, "Laborübersicht geladen");
         }
-
         private void SetTitle(string title)
         {
             PageTitleTextBlock.Text = title;
         }
-    }
+        private async void AssignPatient_Click(object sender, RoutedEventArgs e)
+        {
+            if (LaborGrid.SelectedItem is not LaborRecord record)
+            {
+                MessageBox.Show("Bitte einen Datensatz auswählen.");
+                return;
+            }
 
+            if (System.Windows.Application.Current.MainWindow is not MainWindow main)
+                return;
+
+            var patients = (await main.GetPatientsAsync()).ToList();
+
+            var patient = patients.FirstOrDefault(); // später Dialog
+
+            if (patient == null)
+            {
+                MessageBox.Show("Kein Patient gefunden.");
+                return;
+            }
+
+            await _laborService.AssignToPatientAsync(record.Id, patient.Id);
+
+            await ShowLaborBooksAsync();
+        }
+        private async void MarkError_Click(object sender, RoutedEventArgs e)
+        {
+            if (LaborGrid.SelectedItem is not LaborRecord record)
+            {
+                MessageBox.Show("Bitte einen Datensatz auswählen.");
+                return;
+            }
+
+            await _laborService.SetStatusAsync(record.Id, "Fehler");
+
+            await ShowLaborBooksAsync();
+        }
+    }
 }
 
 

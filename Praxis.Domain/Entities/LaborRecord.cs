@@ -16,5 +16,9 @@ namespace Praxis.Domain.Entities
         public string Bsnr { get; set; }
         public string Kundennummer { get; set; }
         public string Status { get; set; }
+        public int? PatientId { get; set; }
+        public Patient? Patient { get; set; }       
+
+        public string? Notes { get; set; }
     }
 }

@@ -384,5 +384,18 @@ public class PraxisDbContext : DbContext
 
         modelBuilder.Entity<PatientMedicalRecordEntry>()
             .HasIndex(x => new { x.PatientId, x.EntryType, x.CreatedAt });
+        modelBuilder.Entity<LaborRecord>()
+            .HasOne(l => l.Patient)
+            .WithMany()
+            .HasForeignKey(l => l.PatientId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<LaborRecord>()
+            .Property(l => l.Status)
+            .HasMaxLength(50);
+
+        modelBuilder.Entity<LaborRecord>()
+            .Property(l => l.Notes)
+            .HasMaxLength(500);
     }
 }

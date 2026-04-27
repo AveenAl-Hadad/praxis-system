@@ -24,4 +24,24 @@ namespace Praxis.Infrastructure.Services;
             _context.LaborRecords.Add(record);
             await _context.SaveChangesAsync();
         }
+    public async Task AssignToPatientAsync(int laborId, int patientId)
+    {
+        var item = await _context.LaborRecords.FindAsync(laborId);
+        if (item == null) return;
+
+        item.PatientId = patientId;
+        item.Status = "Zugeordnet";
+
+        await _context.SaveChangesAsync();
     }
+
+    public async Task SetStatusAsync(int laborId, string status)
+    {
+        var item = await _context.LaborRecords.FindAsync(laborId);
+        if (item == null) return;
+
+        item.Status = status;
+
+        await _context.SaveChangesAsync();
+    }
+}
