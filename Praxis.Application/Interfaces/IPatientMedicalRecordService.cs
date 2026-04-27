@@ -16,4 +16,7 @@ public interface IPatientMedicalRecordService
     Task UpdateAsync(PatientMedicalRecordEntry entry);
 
     Task DeleteAsync(int id);
+
+    Task MarkEntriesAsInvoicedAsync(List<int> entryIds, int invoiceId);
+
 }

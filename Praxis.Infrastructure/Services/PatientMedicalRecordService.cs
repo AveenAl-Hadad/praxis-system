@@ -100,4 +100,18 @@ public class PatientMedicalRecordService : IPatientMedicalRecordService
 
         await _context.SaveChangesAsync();
     }
+    public async Task MarkEntriesAsInvoicedAsync(List<int> entryIds, int invoiceId)
+    {
+        var entries = await _context.PatientMedicalRecordEntries
+            .Where(x => entryIds.Contains(x.Id))
+            .ToListAsync();
+
+        foreach (var entry in entries)
+        {
+            entry.InvoiceId = invoiceId;
+            entry.UpdatedAt = DateTime.Now;
+        }
+
+        await _context.SaveChangesAsync();
+    }
 }

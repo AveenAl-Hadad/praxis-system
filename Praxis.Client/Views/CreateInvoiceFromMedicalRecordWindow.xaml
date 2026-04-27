@@ -52,6 +52,10 @@
                                     Binding="{Binding Title}"
                                     Width="220"
                                     IsReadOnly="True"/>
+                
+                <DataGridTextColumn Header="Rechnung"
+                                    Binding="{Binding InvoiceId}"
+                                    Width="80"/>
 
                 <DataGridTextColumn Header="Leistung"
                                     Binding="{Binding CatalogItemName}"
@@ -62,6 +66,7 @@
                                     Binding="{Binding Price, StringFormat=N2}"
                                     Width="100"
                                     IsReadOnly="True"/>
+              
             </DataGrid.Columns>
         </DataGrid>
 

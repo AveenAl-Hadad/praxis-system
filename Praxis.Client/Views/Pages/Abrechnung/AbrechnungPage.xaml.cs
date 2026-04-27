@@ -19,6 +19,7 @@ namespace Praxis.Client.Views.Pages.Abrechnung
         private readonly IInvoiceService _invoiceService;
         private readonly IInvoicePdfService _invoicePdfService;
         private readonly IBillingGenerationService _billingGenerationService;
+        private readonly IPatientMedicalRecordService _medicalRecordService;
         private Abrechnungsbeleg? _editingItem;
         private bool _isNewMode = false;
         private string _currentView = "Alle";
@@ -30,7 +31,8 @@ namespace Praxis.Client.Views.Pages.Abrechnung
                                  IAbrechnungService abrechnungService,
                                  IInvoiceService invoiceService,
                                  IInvoicePdfService invoicePdfService,
-                                 IBillingGenerationService billingGenerationService)
+                                 IBillingGenerationService billingGenerationService,
+                                 IPatientMedicalRecordService medicalRecordService)
         {
             InitializeComponent();
 
@@ -38,8 +40,10 @@ namespace Praxis.Client.Views.Pages.Abrechnung
             _invoiceService = invoiceService;
             _invoicePdfService = invoicePdfService;
             _billingGenerationService = billingGenerationService;
+            _medicalRecordService = medicalRecordService;
 
             _ = ShowOverviewAsync();
+           
         }
 
         public async Task ShowOverviewAsync()
@@ -521,6 +525,7 @@ namespace Praxis.Client.Views.Pages.Abrechnung
                     .CreateInvoiceFromMedicalRecordEntriesAsync(
                         dialog.SelectedPatient.Id,
                         dialog.SelectedEntryIds);
+                await _medicalRecordService.MarkEntriesAsInvoicedAsync(dialog.SelectedEntryIds, invoice.Id);
 
                 var beleg = new Abrechnungsbeleg
                 {

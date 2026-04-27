@@ -59,7 +59,7 @@ public partial class CreateInvoiceFromMedicalRecordWindow : Window
         var entries = await _medicalRecordService.GetByPatientAsync(patientId);
 
         foreach (var entry in entries
-                     .Where(x => x.CatalogItemId != null && x.CatalogItem != null)
+                     .Where(x => x.CatalogItemId != null && x.CatalogItem != null && x.InvoiceId == null)
                      .OrderByDescending(x => x.CreatedAt))
         {
             _rows.Add(new BillableMedicalRecordEntryRow
