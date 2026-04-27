@@ -14,6 +14,7 @@ namespace Praxis.Application.Interfaces
         Task AddAsync(LaborRecord record);
         Task AssignToPatientAsync(int laborId, int patientId);
         Task SetStatusAsync(int laborId, string status);
+        Task MarkAddedToMedicalRecordAsync(int laborId);
 
     }
 }

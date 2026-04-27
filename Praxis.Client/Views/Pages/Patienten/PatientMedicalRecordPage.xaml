@@ -153,6 +153,11 @@
                                 Width="120"
                                 Margin="0,0,8,0"
                                 Click="SaveButton_Click"/>
+                        
+                        <Button Content="Laborbericht öffnen"
+                                Width="150"
+                                Margin="0,0,8,0"
+                                Click="OpenLaborRecordButton_Click"/>
 
                         <Button Content="Löschen"
                                 Width="100"

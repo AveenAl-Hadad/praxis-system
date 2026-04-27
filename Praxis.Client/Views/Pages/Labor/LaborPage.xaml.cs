@@ -341,6 +341,9 @@ namespace Praxis.Client.Views.Pages.Labor
                 };
 
                 await medicalService.AddAsync(entry);
+                await _laborService.MarkAddedToMedicalRecordAsync(record.Id);
+                record.Status = "In Karteikarte";
+                LaborGrid.Items.Refresh();
 
                 MessageBox.Show(
                     "Laborbericht wurde erfolgreich in die Karteikarte übernommen.",

@@ -4,6 +4,8 @@ using System.Windows.Controls;
 using Praxis.Application.Interfaces;
 using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
+using Praxis.Client.Views;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Praxis.Client.Views.Pages.Patienten;
@@ -211,5 +213,56 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         return string.IsNullOrWhiteSpace(value)
             ? null
             : value.Trim();
+    }
+
+    private async void OpenLaborRecordButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedEntry == null)
+        {
+            MessageBox.Show("Bitte zuerst einen Karteikarten-Eintrag auswählen.");
+            return;
+        }
+
+        if (_selectedEntry.EntryType != MedicalRecordEntryType.Labor || _selectedEntry.LaborRecordId == null)
+        {
+            MessageBox.Show("Dieser Karteikarten-Eintrag ist kein verknüpfter Laborbericht.");
+            return;
+        }
+
+        if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+            return;
+
+        try
+        {
+            var laborService = mainWindow.ServiceProvider.GetRequiredService<ILaborService>();
+            var labor = await laborService.GetByIdAsync(_selectedEntry.LaborRecordId.Value);
+
+            if (labor == null)
+            {
+                MessageBox.Show("Der Laborbericht wurde nicht gefunden.");
+                return;
+            }
+
+            MessageBox.Show(
+                $"Laborbericht\n\n" +
+                $"Labor: {labor.Labor}\n" +
+                $"Datei: {labor.Datei}\n" +
+                $"Erstellt: {labor.Erstellt}\n" +
+                $"Betriebsstätte: {labor.Betriebsstaette}\n" +
+                $"BSNR/BSID: {labor.Bsnr}\n" +
+                $"Kundennummer: {labor.Kundennummer}\n" +
+                $"Status: {labor.Status}",
+                "Laborbericht",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Laborbericht konnte nicht geöffnet werden:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 }

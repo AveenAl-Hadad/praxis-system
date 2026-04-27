@@ -49,4 +49,15 @@ namespace Praxis.Infrastructure.Services;
 
         await _context.SaveChangesAsync();
     }
+    public async Task MarkAddedToMedicalRecordAsync(int laborId)
+    {
+        var item = await _context.LaborRecords.FindAsync(laborId);
+
+        if (item == null)
+            return;
+
+        item.Status = "In Karteikarte";
+
+        await _context.SaveChangesAsync();
+    }
 }
