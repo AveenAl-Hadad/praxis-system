@@ -90,6 +90,7 @@ namespace Praxis.Client.Views
         private readonly IRoomService _roomService;
         private readonly IAppointmentTypeService _appointmentTypeService;
         private readonly IDoctorService _doctorService;
+       
 
 
 
@@ -97,6 +98,7 @@ namespace Praxis.Client.Views
 
         private DispatcherTimer _sessionTimer;
         private DispatcherTimer _warningTimer;
+        public IServiceProvider ServiceProvider => _serviceProvider;
 
         private readonly TimeSpan _timeout = TimeSpan.FromMinutes(5);
         private readonly TimeSpan _warningTime = TimeSpan.FromMinutes(4);

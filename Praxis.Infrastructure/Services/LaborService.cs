@@ -18,8 +18,13 @@ namespace Praxis.Infrastructure.Services;
         {
             return await _context.LaborRecords.ToListAsync();
         }
-
-        public async Task AddAsync(LaborRecord record)
+    public async Task<LaborRecord?> GetByIdAsync(int laborId)
+    {
+        return await _context.LaborRecords
+            .Include(x => x.Patient)
+            .FirstOrDefaultAsync(x => x.Id == laborId);
+    }
+    public async Task AddAsync(LaborRecord record)
         {
             _context.LaborRecords.Add(record);
             await _context.SaveChangesAsync();

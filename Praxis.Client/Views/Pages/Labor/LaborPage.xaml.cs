@@ -1,5 +1,9 @@
 ﻿using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
+using Praxis.Domain.Constants;
+using Praxis.Client.Session;
+using Microsoft.Extensions.DependencyInjection;
+using Praxis.Client.Views;
 using Praxis.Infrastructure.Services;
 using System.Linq;
 using System;
@@ -9,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using MessageBox = System.Windows.MessageBox;
+
 
 namespace Praxis.Client.Views.Pages.Labor
 {
@@ -38,12 +43,12 @@ namespace Praxis.Client.Views.Pages.Labor
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            using var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            using var dialog = new FolderBrowserDialog();
             dialog.Description = "Labor-Import-Verzeichnis auswählen";
 
             var result = dialog.ShowDialog();
 
-            if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(dialog.SelectedPath))
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(dialog.SelectedPath))
             {
                 DirectoryTextBox.Text = dialog.SelectedPath;
             }
@@ -239,24 +244,30 @@ namespace Praxis.Client.Views.Pages.Labor
         {
             if (LaborGrid.SelectedItem is not LaborRecord record)
             {
-                MessageBox.Show("Bitte einen Datensatz auswählen.");
+                MessageBox.Show("Bitte einen Labordatensatz auswählen.");
                 return;
             }
 
-            if (System.Windows.Application.Current.MainWindow is not MainWindow main)
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                 return;
 
-            var patients = (await main.GetPatientsAsync()).ToList();
+            var patients = await mainWindow.GetPatientsAsync();
 
-            var patient = patients.FirstOrDefault(); // später Dialog
-
-            if (patient == null)
+            var dialog = new SelectPatientWindow(patients)
             {
-                MessageBox.Show("Kein Patient gefunden.");
-                return;
-            }
+                Owner = mainWindow
+            };
 
-            await _laborService.AssignToPatientAsync(record.Id, patient.Id);
+            if (dialog.ShowDialog() != true || dialog.SelectedPatient == null)
+                return;
+
+            await _laborService.AssignToPatientAsync(record.Id, dialog.SelectedPatient.Id);
+
+            MessageBox.Show(
+                $"Laborbericht wurde {dialog.SelectedPatient.FullName} zugeordnet.",
+                "Zuordnung gespeichert",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
 
             await ShowLaborBooksAsync();
         }
@@ -271,6 +282,80 @@ namespace Praxis.Client.Views.Pages.Labor
             await _laborService.SetStatusAsync(record.Id, "Fehler");
 
             await ShowLaborBooksAsync();
+        }
+        private async void AddToMedicalRecord_Click(object sender, RoutedEventArgs e)
+        {
+            if (LaborGrid.SelectedItem is not LaborRecord record)
+            {
+                MessageBox.Show("Bitte einen Laborbericht auswählen.");
+                return;
+            }
+
+            if (record.PatientId == null)
+            {
+                MessageBox.Show("Der Laborbericht ist noch keinem Patienten zugeordnet.");
+                return;
+            }
+
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+                return;
+
+            var medicalService = mainWindow.ServiceProvider
+                .GetRequiredService<IPatientMedicalRecordService>();
+
+            try
+            {
+                // 🔒 Prüfen ob schon vorhanden
+                var existing = await medicalService.GetByPatientAsync(record.PatientId.Value);
+
+                if (existing.Any(x => x.LaborRecordId == record.Id))
+                {
+                    MessageBox.Show("Dieser Laborbericht ist bereits in der Karteikarte vorhanden.");
+                    return;
+                }
+
+                var result = MessageBox.Show(
+                    "Laborbericht in Karteikarte übernehmen?",
+                    "Bestätigung",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+
+                var entry = new PatientMedicalRecordEntry
+                {
+                    PatientId = record.PatientId.Value,
+                    EntryType = MedicalRecordEntryType.Labor,
+                    Title = $"Laborbericht {record.Erstellt}",
+                    Text =
+                        $"Labor: {record.Labor}\n" +
+                        $"Datei: {record.Datei}\n" +
+                        $"Betriebsstätte: {record.Betriebsstaette}\n" +
+                        $"BSNR/BSID: {record.Bsnr}\n" +
+                        $"Kundennummer: {record.Kundennummer}\n" +
+                        $"Status: {record.Status}",
+                    LaborRecordId = record.Id,
+                    CreatedBy = UserSession.CurrentUser?.Username ?? "system",
+                    CreatedAt = DateTime.Now
+                };
+
+                await medicalService.AddAsync(entry);
+
+                MessageBox.Show(
+                    "Laborbericht wurde erfolgreich in die Karteikarte übernommen.",
+                    "Erfolg",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Fehler beim Übernehmen:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
     }
 }

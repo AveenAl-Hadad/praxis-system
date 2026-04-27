@@ -114,6 +114,12 @@
                                 Height="36"
                                 Background="#E5E7EB"
                                 Click="MarkError_Click"/>
+                        <Button Content="In Karteikarte übernehmen"
+                                Margin="0,0,10,10"
+                                Width="160"
+                                Height="36"
+                                Background="#E5E7EB"
+                                Click="AddToMedicalRecord_Click"/>
                     </WrapPanel>        
                                             
                 </StackPanel>
