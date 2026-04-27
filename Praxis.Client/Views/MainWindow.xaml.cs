@@ -363,9 +363,9 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Abrechnung:
-                    AddSidebarButton("Neue KV-Abrechnung", async (s, e) =>{LoadPage(_abrechnungPage);await _abrechnungPage.ShowNewKvAsync();}, true);
-                    AddSidebarButton("KV-Abrechnungen", async (s, e) =>{LoadPage(_abrechnungPage);await _abrechnungPage.ShowKvListAsync();});
-                    AddSidebarButton("Neue Privatabrechnung", async (s, e) =>{LoadPage(_abrechnungPage); await _abrechnungPage.ShowNewPrivateAsync(); });
+                    AddSidebarButton("Neue KV-Abrechnung", async (s, e) =>{LoadPage(_abrechnungPage);await _abrechnungPage.ShowKvAsync();}, true);
+                    AddSidebarButton("KV-Abrechnungen", async (s, e) =>{LoadPage(_abrechnungPage);await _abrechnungPage.ShowKvAsync();});
+                    AddSidebarButton("Neue Privatabrechnung", async (s, e) =>{LoadPage(_abrechnungPage); await _abrechnungPage.ShowPrivateAsync(); });
                     AddSidebarButton("Rechnungen", async (s, e) => {LoadPage(_abrechnungPage); await _abrechnungPage.ShowInvoicesAsync();});
                     AddSidebarButton("Mahnungen", async (s, e) =>{LoadPage(_abrechnungPage); await _abrechnungPage.ShowRemindersAsync();});
                     break;

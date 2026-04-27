@@ -16,6 +16,7 @@ namespace Praxis.Client.Views.Pages.Abrechnung
         private Abrechnungsbeleg? _editingItem;
         private bool _isNewMode = false;
         private string _currentView = "Alle";
+        private string _currentFilter = "Alle";
 
         public AbrechnungPage(IAbrechnungService abrechnungService)
         {
@@ -59,21 +60,48 @@ namespace Praxis.Client.Views.Pages.Abrechnung
         {
             _currentView = "Rechnung";
             PageTitleTextBlock.Text = "Rechnungen";
-            EditorBorder.Visibility = Visibility.Collapsed;
-            await LoadFilteredAsync("Rechnung");
+            await LoadDataAsync();
         }
 
         public async Task ShowRemindersAsync()
         {
             _currentView = "Mahnung";
             PageTitleTextBlock.Text = "Mahnungen";
-            EditorBorder.Visibility = Visibility.Collapsed;
-            await LoadFilteredAsync("Mahnung");
+            await LoadDataAsync();
+        }
+
+        public async Task ShowAllAsync()
+        {
+            _currentFilter = "Alle";
+            PageTitleTextBlock.Text = "Abrechnung";
+            await LoadDataAsync();
+        }
+
+        public async Task ShowKvAsync()
+        {
+            _currentFilter = "KV";
+            PageTitleTextBlock.Text = "KV-Abrechnungen";
+            await LoadDataAsync();
+        }
+
+        public async Task ShowPrivateAsync()
+        {
+            _currentFilter = "Privat";
+            PageTitleTextBlock.Text = "Privatabrechnungen";
+            await LoadDataAsync();
         }
 
         private async Task LoadDataAsync()
         {
             var items = await _abrechnungService.GetAllAsync();
+
+            if (_currentFilter != "Alle")
+            {
+                items = items
+                    .Where(x => x.Typ == _currentFilter)
+                    .ToList();
+            }
+
             AbrechnungGrid.ItemsSource = items
                 .OrderByDescending(x => x.Id)
                 .ToList();
