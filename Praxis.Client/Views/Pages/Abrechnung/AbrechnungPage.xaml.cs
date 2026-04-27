@@ -1,10 +1,12 @@
 ﻿using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
-using Praxis.Infrastructure.Services;
 using System;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Praxis.Client.Views.Pages.Abrechnung
 {
@@ -13,44 +15,124 @@ namespace Praxis.Client.Views.Pages.Abrechnung
         private readonly IAbrechnungService _abrechnungService;
         private Abrechnungsbeleg? _editingItem;
         private bool _isNewMode = false;
+        private string _currentView = "Alle";
 
         public AbrechnungPage(IAbrechnungService abrechnungService)
         {
             InitializeComponent();
             _abrechnungService = abrechnungService;
-            _ = LoadDataAsync();
+            _ = ShowOverviewAsync();
+        }
+
+        public async Task ShowOverviewAsync()
+        {
+            _currentView = "Alle";
+            PageTitleTextBlock.Text = "Abrechnung";
+            await LoadDataAsync();
+        }
+
+        public async Task ShowNewKvAsync()
+        {
+            _currentView = "KV";
+            PageTitleTextBlock.Text = "Neue KV-Abrechnung";
+            await LoadFilteredAsync("KV");
+            OpenNewEditor("KV");
+        }
+
+        public async Task ShowKvListAsync()
+        {
+            _currentView = "KV";
+            PageTitleTextBlock.Text = "KV-Abrechnungen";
+            EditorBorder.Visibility = Visibility.Collapsed;
+            await LoadFilteredAsync("KV");
+        }
+
+        public async Task ShowNewPrivateAsync()
+        {
+            _currentView = "Privat";
+            PageTitleTextBlock.Text = "Neue Privatabrechnung";
+            await LoadFilteredAsync("Privat");
+            OpenNewEditor("Privat");
+        }
+
+        public async Task ShowInvoicesAsync()
+        {
+            _currentView = "Rechnung";
+            PageTitleTextBlock.Text = "Rechnungen";
+            EditorBorder.Visibility = Visibility.Collapsed;
+            await LoadFilteredAsync("Rechnung");
+        }
+
+        public async Task ShowRemindersAsync()
+        {
+            _currentView = "Mahnung";
+            PageTitleTextBlock.Text = "Mahnungen";
+            EditorBorder.Visibility = Visibility.Collapsed;
+            await LoadFilteredAsync("Mahnung");
         }
 
         private async Task LoadDataAsync()
         {
-            AbrechnungGrid.ItemsSource = await _abrechnungService.GetAllAsync();
+            var items = await _abrechnungService.GetAllAsync();
+            AbrechnungGrid.ItemsSource = items
+                .OrderByDescending(x => x.Id)
+                .ToList();
         }
 
-        private void NewButton_Click(object sender, RoutedEventArgs e)
+        private async Task LoadFilteredAsync(string typ)
+        {
+            var items = await _abrechnungService.GetAllAsync();
+
+            AbrechnungGrid.ItemsSource = items
+                .Where(x => string.Equals(x.Typ, typ, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(x => x.Id)
+                .ToList();
+        }
+
+        private void OpenNewEditor(string typ)
         {
             _editingItem = null;
             _isNewMode = true;
 
-            TypTextBox.Text = "KV";
-            ZeitraumTextBox.Text = "";
-            FaelleTextBox.Text = "";
-            BetragTextBox.Text = "";
+            TypTextBox.Text = typ;
+            ZeitraumTextBox.Text = GetDefaultZeitraum(typ);
+            FaelleTextBox.Text = "0";
+            BetragTextBox.Text = "0,00";
             StatusTextBox.Text = "Neu";
             AktionTextBox.Text = "Erstellt";
 
-            EditorTitleTextBlock.Text = "Neue Abrechnung";
+            EditorTitleTextBlock.Text = typ == "Privat"
+                ? "Neue Privatabrechnung"
+                : typ == "KV"
+                    ? "Neue KV-Abrechnung"
+                    : "Neue Abrechnung";
+
             EditorBorder.Visibility = Visibility.Visible;
+        }
+
+        private static string GetDefaultZeitraum(string typ)
+        {
+            var today = DateTime.Today;
+
+            if (typ == "KV")
+            {
+                var quarter = ((today.Month - 1) / 3) + 1;
+                return $"{today.Year}-Q{quarter}";
+            }
+
+            return today.ToString("MM/yyyy");
+        }
+
+        private void NewButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenNewEditor(_currentView == "Alle" ? "KV" : _currentView);
         }
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
             if (AbrechnungGrid.SelectedItem is not Abrechnungsbeleg selected)
             {
-                System.Windows.MessageBox.Show(
-                    "Bitte zuerst eine Abrechnung auswählen.",
-                    "Hinweis",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                MessageBox.Show("Bitte zuerst eine Abrechnung auswählen.");
                 return;
             }
 
@@ -60,7 +142,7 @@ namespace Praxis.Client.Views.Pages.Abrechnung
             TypTextBox.Text = selected.Typ;
             ZeitraumTextBox.Text = selected.Zeitraum;
             FaelleTextBox.Text = selected.Faelle.ToString();
-            BetragTextBox.Text = selected.Betrag.ToString();
+            BetragTextBox.Text = selected.Betrag.ToString("N2", CultureInfo.CurrentCulture);
             StatusTextBox.Text = selected.Status;
             AktionTextBox.Text = selected.Aktion;
 
@@ -72,15 +154,11 @@ namespace Praxis.Client.Views.Pages.Abrechnung
         {
             if (AbrechnungGrid.SelectedItem is not Abrechnungsbeleg selected)
             {
-                System.Windows.MessageBox.Show(
-                    "Bitte zuerst eine Abrechnung auswählen.",
-                    "Hinweis",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                MessageBox.Show("Bitte zuerst eine Abrechnung auswählen.");
                 return;
             }
 
-            var result = System.Windows.MessageBox.Show(
+            var result = MessageBox.Show(
                 "Möchtest du diesen Eintrag wirklich löschen?",
                 "Löschen",
                 MessageBoxButton.YesNo,
@@ -90,7 +168,7 @@ namespace Praxis.Client.Views.Pages.Abrechnung
                 return;
 
             await _abrechnungService.DeleteAsync(selected.Id);
-            await LoadDataAsync();
+            await ReloadCurrentViewAsync();
         }
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -99,19 +177,19 @@ namespace Praxis.Client.Views.Pages.Abrechnung
             {
                 if (string.IsNullOrWhiteSpace(TypTextBox.Text))
                 {
-                    System.Windows.MessageBox.Show("Bitte Typ eingeben.");
+                    MessageBox.Show("Bitte Typ eingeben.");
                     return;
                 }
 
                 if (!int.TryParse(FaelleTextBox.Text, out int faelle))
                 {
-                    System.Windows.MessageBox.Show("Anzahl Fälle ist ungültig.");
+                    MessageBox.Show("Anzahl Fälle ist ungültig.");
                     return;
                 }
 
-                if (!decimal.TryParse(BetragTextBox.Text, out decimal betrag))
+                if (!decimal.TryParse(BetragTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out decimal betrag))
                 {
-                    System.Windows.MessageBox.Show("Betrag ist ungültig.");
+                    MessageBox.Show("Betrag ist ungültig.");
                     return;
                 }
 
@@ -143,21 +221,35 @@ namespace Praxis.Client.Views.Pages.Abrechnung
 
                 ClearEditor();
                 EditorBorder.Visibility = Visibility.Collapsed;
-                await LoadDataAsync();
+                await ReloadCurrentViewAsync();
 
-                System.Windows.MessageBox.Show(
-                    "Abrechnung wurde gespeichert.",
-                    "Erfolg",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                MessageBox.Show("Abrechnung wurde gespeichert.");
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(
-                    $"Fehler beim Speichern: {ex.Message}",
-                    "Fehler",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                MessageBox.Show($"Fehler beim Speichern:\n{ex.Message}");
+            }
+        }
+
+        private async Task ReloadCurrentViewAsync()
+        {
+            switch (_currentView)
+            {
+                case "KV":
+                    await LoadFilteredAsync("KV");
+                    break;
+                case "Privat":
+                    await LoadFilteredAsync("Privat");
+                    break;
+                case "Rechnung":
+                    await LoadFilteredAsync("Rechnung");
+                    break;
+                case "Mahnung":
+                    await LoadFilteredAsync("Mahnung");
+                    break;
+                default:
+                    await LoadDataAsync();
+                    break;
             }
         }
 

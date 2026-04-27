@@ -15,7 +15,8 @@
         </Grid.RowDefinitions>
 
         <!-- Titel -->
-        <TextBlock Grid.Row="0"
+        <TextBlock x:Name="PageTitleTextBlock"
+                   Grid.Row="0"
                    Text="Abrechnung"
                    FontSize="28"
                    FontWeight="Bold"
