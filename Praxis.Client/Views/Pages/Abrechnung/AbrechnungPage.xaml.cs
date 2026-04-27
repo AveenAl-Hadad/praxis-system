@@ -271,5 +271,52 @@ namespace Praxis.Client.Views.Pages.Abrechnung
             StatusTextBox.Text = "";
             AktionTextBox.Text = "";
         }
+
+        private async void MarkOpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            await ChangeStatusAsync("Offen", "Als offen markiert");
+        }
+
+        private async void MarkPaidButton_Click(object sender, RoutedEventArgs e)
+        {
+            await ChangeStatusAsync("Bezahlt", "Als bezahlt markiert");
+        }
+
+        private async void MarkReminderButton_Click(object sender, RoutedEventArgs e)
+        {
+            await ChangeTypeAndStatusAsync("Mahnung", "Offen", "Mahnung erstellt");
+        }
+
+        private async Task ChangeStatusAsync(string status, string action)
+        {
+            if (AbrechnungGrid.SelectedItem is not Abrechnungsbeleg selected)
+            {
+                MessageBox.Show("Bitte zuerst einen Eintrag auswählen.");
+                return;
+            }
+
+            selected.Status = status;
+            selected.Aktion = action;
+
+            await _abrechnungService.UpdateAsync(selected);
+            await ReloadCurrentViewAsync();
+        }
+
+        private async Task ChangeTypeAndStatusAsync(string typ, string status, string action)
+        {
+            if (AbrechnungGrid.SelectedItem is not Abrechnungsbeleg selected)
+            {
+                MessageBox.Show("Bitte zuerst einen Eintrag auswählen.");
+                return;
+            }
+
+            selected.Typ = typ;
+            selected.Status = status;
+            selected.Aktion = action;
+
+            await _abrechnungService.UpdateAsync(selected);
+            await LoadDataAsync();
+        }
+       
     }
 }
