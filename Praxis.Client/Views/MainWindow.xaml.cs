@@ -133,7 +133,10 @@ namespace Praxis.Client.Views
                              IPatientDiagnosisService patientDiagnosisService,
                              IPatientMedicationService patientMedicationService,
                              IPracticeSettingsService practiceSettingsService,
-                             IAppointmentMedicalEntryService appointmentMedicalEntryService
+                             IAppointmentMedicalEntryService appointmentMedicalEntryService,
+                             IInvoiceService invoiceService,
+                             IInvoicePdfService invoicePdfService,
+                             IBillingGenerationService billingGenerationService
                              )
         {
             InitializeComponent();
@@ -156,7 +159,10 @@ namespace Praxis.Client.Views
             _roomService = roomService;
 
             _laborPage = new LaborPage(_laborService);
-            _abrechnungPage = new AbrechnungPage(_abrechnungService);
+            _abrechnungPage = new AbrechnungPage(   _abrechnungService,
+                                                    invoiceService,
+                                                    invoicePdfService,
+                                                    billingGenerationService);
             _waitingRoomPage = new WaitingRoomPage(_appointmentService);
             _roomsPage = new RoomsPage(_roomService);
             _doctorsPage = new DoctorsPage(doctorService, _roomService, appointmentTypeService);

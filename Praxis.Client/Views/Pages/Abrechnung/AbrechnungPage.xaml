@@ -101,7 +101,7 @@
             </UniformGrid>
         </Grid>
 
-            <!-- Aktionsbuttons rechts -->
+            <!-- Buttons-->
             <Border Grid.Row="4"
                      Background="White"
                      BorderBrush="#D1D5DB"
@@ -143,6 +143,21 @@
                              Click="MarkReminderButton_Click"
                              Background="#F59E0B"
                              Foreground="White"/>
+                    <Button Content="PDF"
+                            Width="90"
+                            Height="40"
+                            Margin="0,0,10,0"
+                            Click="ExportPdfButton_Click"
+                            Background="#4F46E5"
+                            Foreground="White"/>
+
+                    <Button Content="Aus Termin"
+                            Width="110"
+                            Height="40"
+                            Margin="0,0,10,0"
+                            Click="CreateFromAppointmentButton_Click"
+                            Background="#0F766E"
+                            Foreground="White"/>
 
                     <Button Content="Löschen"
                              Width="90"

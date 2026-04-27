@@ -1,18 +1,23 @@
 ﻿using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
 using System;
+using Microsoft.Win32;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using MessageBox = System.Windows.MessageBox;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace Praxis.Client.Views.Pages.Abrechnung
 {
     public partial class AbrechnungPage : System.Windows.Controls.UserControl
     {
         private readonly IAbrechnungService _abrechnungService;
+        private readonly IInvoiceService _invoiceService;
+        private readonly IInvoicePdfService _invoicePdfService;
+        private readonly IBillingGenerationService _billingGenerationService;
         private Abrechnungsbeleg? _editingItem;
         private bool _isNewMode = false;
         private string _currentView = "Alle";
@@ -20,10 +25,19 @@ namespace Praxis.Client.Views.Pages.Abrechnung
        
         private bool _isNew = true;
 
-        public AbrechnungPage(IAbrechnungService abrechnungService)
+        public AbrechnungPage(
+                                 IAbrechnungService abrechnungService,
+                                 IInvoiceService invoiceService,
+                                 IInvoicePdfService invoicePdfService,
+                                 IBillingGenerationService billingGenerationService)
         {
             InitializeComponent();
+
             _abrechnungService = abrechnungService;
+            _invoiceService = invoiceService;
+            _invoicePdfService = invoicePdfService;
+            _billingGenerationService = billingGenerationService;
+
             _ = ShowOverviewAsync();
         }
 
@@ -375,7 +389,116 @@ namespace Praxis.Client.Views.Pages.Abrechnung
 
             return $"{today.Year}-Q{quarter}";
         }
-        
+
+        //PDF-Export Methode einfügen
+        private async void ExportPdfButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (AbrechnungGrid.SelectedItem is not Abrechnungsbeleg beleg)
+            {
+                MessageBox.Show("Bitte zuerst eine Abrechnung auswählen.");
+                return;
+            }
+
+            var invoices = await _invoiceService.GetAllInvoicesAsync();
+
+            var invoice = invoices
+                .OrderByDescending(x => x.InvoiceDate)
+                .FirstOrDefault(x =>
+                    x.InvoiceNumber == beleg.Aktion ||
+                    x.InvoiceNumber.Contains(beleg.Zeitraum) ||
+                    x.Patient != null);
+
+            if (invoice == null)
+            {
+                MessageBox.Show(
+                    "Zu diesem Abrechnungseintrag wurde keine technische Rechnung gefunden.\n\nErstelle zuerst eine Rechnung aus einem Termin.",
+                    "Keine Rechnung",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            var dialog = new SaveFileDialog
+            {
+                Title = "Rechnung als PDF speichern",
+                Filter = "PDF-Datei (*.pdf)|*.pdf",
+                FileName = $"{invoice.InvoiceNumber}.pdf"
+            };
+
+            if (dialog.ShowDialog() != true)
+                return;
+
+            try
+            {
+                _invoicePdfService.ExportInvoiceToPdf(invoice, dialog.FileName);
+
+                MessageBox.Show(
+                    "PDF wurde exportiert.",
+                    "PDF",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"PDF konnte nicht erstellt werden:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        //Rechnung aus Termin erstellen
+        private async void CreateFromAppointmentButton_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentIdText = Microsoft.VisualBasic.Interaction.InputBox(
+                "Termin-ID eingeben:",
+                "Rechnung aus Termin",
+                "");
+
+            if (!int.TryParse(appointmentIdText, out var appointmentId))
+            {
+                MessageBox.Show("Termin-ID ist ungültig.");
+                return;
+            }
+
+            try
+            {
+                var invoice = await _billingGenerationService.CreateInvoiceFromAppointmentAsync(appointmentId);
+
+                var beleg = new Abrechnungsbeleg
+                {
+                    Typ = "Rechnung",
+                    Zeitraum = invoice.InvoiceDate.ToString("MM/yyyy"),
+                    Faelle = 1,
+                    Betrag = invoice.TotalAmount,
+                    Status = "Offen",
+                    Aktion = invoice.InvoiceNumber
+                };
+
+                await _abrechnungService.AddAsync(beleg);
+
+                _currentFilter = "Rechnung";
+                PageTitleTextBlock.Text = "Rechnungen";
+
+                await LoadDataAsync();
+
+                MessageBox.Show(
+                    $"Rechnung wurde erstellt:\n{invoice.InvoiceNumber}",
+                    "Rechnung erstellt",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Rechnung konnte nicht erstellt werden:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
 
     }
 }
