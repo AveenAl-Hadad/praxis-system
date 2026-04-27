@@ -6,7 +6,9 @@ using Praxis.Domain.Constants;
 using Praxis.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Praxis.Client.Views;
+using Microsoft.Win32;
 using MessageBox = System.Windows.MessageBox;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace Praxis.Client.Views.Pages.Patienten;
 
@@ -249,4 +251,71 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
 
         await mainWindow.OpenLaborRecordPageAsync(_selectedEntry.LaborRecordId.Value);
     }
+    private async void OpenInvoiceButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedEntry == null)
+        {
+            MessageBox.Show("Bitte zuerst einen Karteikarten-Eintrag auswählen.");
+            return;
+        }
+
+        if (_selectedEntry.InvoiceId == null)
+        {
+            MessageBox.Show("Dieser Karteikarten-Eintrag ist noch nicht abgerechnet.");
+            return;
+        }
+
+        if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+            return;
+
+        try
+        {
+            var invoiceService = mainWindow.ServiceProvider.GetRequiredService<IInvoiceService>();
+            var pdfService = mainWindow.ServiceProvider.GetRequiredService<IInvoicePdfService>();
+
+            var invoice = await invoiceService.GetInvoiceByIdAsync(_selectedEntry.InvoiceId.Value);
+
+            if (invoice == null)
+            {
+                MessageBox.Show("Rechnung wurde nicht gefunden.");
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Rechnung gefunden:\n\n" +
+                $"Nummer: {invoice.InvoiceNumber}\n" +
+                $"Datum: {invoice.InvoiceDate:dd.MM.yyyy}\n" +
+                $"Betrag: {invoice.TotalAmount:N2} €\n\n" +
+                $"Als PDF exportieren?",
+                "Rechnung",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            var dialog = new SaveFileDialog
+            {
+                Title = "Rechnung als PDF speichern",
+                Filter = "PDF-Datei (*.pdf)|*.pdf",
+                FileName = $"{invoice.InvoiceNumber}.pdf"
+            };
+
+            if (dialog.ShowDialog() != true)
+                return;
+
+            pdfService.ExportInvoiceToPdf(invoice, dialog.FileName);
+
+            MessageBox.Show("PDF wurde exportiert.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Rechnung konnte nicht geöffnet werden:\n{ex.Message}",
+                "Fehler",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
 }

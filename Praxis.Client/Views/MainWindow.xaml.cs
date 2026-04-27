@@ -137,7 +137,7 @@ namespace Praxis.Client.Views
                              IInvoiceService invoiceService,
                              IInvoicePdfService invoicePdfService,
                              IBillingGenerationService billingGenerationService,
-                             IPatientMedicalRecordService medicalRecordService,
+                             IPatientMedicalRecordService medicalRecordService
                              )
         {
             InitializeComponent();
