@@ -40,4 +40,10 @@ public class PatientMedicalRecordEntry
     public DateTime? UpdatedAt { get; set; }
 
     public bool IsDeleted { get; set; }
+
+    public string InvoiceDisplay =>
+    Invoice?.InvoiceNumber ?? "Keine";
+
+    public string BillingStatusDisplay =>
+        InvoiceId.HasValue ? "Ja" : "Nein";
 }

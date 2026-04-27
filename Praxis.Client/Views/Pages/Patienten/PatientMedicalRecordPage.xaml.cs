@@ -19,6 +19,8 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
 
     private Patient? _currentPatient;
     private PatientMedicalRecordEntry? _selectedEntry;
+    private readonly List<PatientMedicalRecordEntry> _allEntries = new();
+    private const string AllFilterText = "Alle";
 
     public PatientMedicalRecordPage(IPatientMedicalRecordService medicalRecordService)
     {
@@ -29,6 +31,13 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         EntriesGrid.ItemsSource = _entries;
         EntryTypeComboBox.ItemsSource = Enum.GetValues(typeof(MedicalRecordEntryType));
         EntryTypeComboBox.SelectedItem = MedicalRecordEntryType.Notiz;
+        var filterItems = new List<object> { AllFilterText };
+        filterItems.AddRange(Enum.GetValues(typeof(MedicalRecordEntryType)).Cast<object>());
+
+        FilterTypeComboBox.ItemsSource = filterItems;
+        FilterTypeComboBox.SelectedItem = AllFilterText;
+
+        UpdateButtonStates();
     }
 
     public async Task LoadPatientAsync(Patient patient)
@@ -54,11 +63,14 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         try
         {
             _entries.Clear();
+            _allEntries.Clear();
 
             var entries = await _medicalRecordService.GetByPatientAsync(patientId);
 
             foreach (var entry in entries)
-                _entries.Add(entry);
+                _allEntries.Add(entry);
+
+            ApplyFilter();
         }
         catch (Exception ex)
         {
@@ -69,7 +81,28 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
                 MessageBoxImage.Error);
         }
     }
+    private void FilterTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        ApplyFilter();
+    }
 
+    private void ApplyFilter()
+    {
+        _entries.Clear();
+
+        IEnumerable<PatientMedicalRecordEntry> filtered = _allEntries;
+
+        if (FilterTypeComboBox.SelectedItem is MedicalRecordEntryType selectedType)
+        {
+            filtered = filtered.Where(x => x.EntryType == selectedType);
+        }
+
+        foreach (var entry in filtered.OrderByDescending(x => x.CreatedAt))
+            _entries.Add(entry);
+
+        EntriesGrid.SelectedItem = null;
+        ClearForm();
+    }
     public async Task LoadPatientAndSelectLaborEntryAsync(Patient patient, int laborRecordId)
     {
         await LoadPatientAsync(patient);
@@ -98,6 +131,8 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         IcdCodeTextBox.Text = entry.IcdCode ?? string.Empty;
         IcdTextTextBox.Text = entry.IcdText ?? string.Empty;
         CreatedByTextBox.Text = entry.CreatedBy;
+        UpdateButtonStates();
+
     }
 
     private void NewButton_Click(object sender, RoutedEventArgs e)
@@ -213,6 +248,22 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         }
     }
 
+    private void UpdateButtonStates()
+    {
+        var hasSelection = _selectedEntry != null;
+
+        DeleteButton.IsEnabled = hasSelection;
+
+        OpenLaborRecordButton.IsEnabled =
+            hasSelection &&
+            _selectedEntry!.EntryType == MedicalRecordEntryType.Labor &&
+            _selectedEntry.LaborRecordId.HasValue;
+
+        OpenInvoiceButton.IsEnabled =
+            hasSelection &&
+            _selectedEntry!.InvoiceId.HasValue;
+    }
+
     private void ClearForm()
     {
         _selectedEntry = null;
@@ -223,6 +274,7 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         IcdCodeTextBox.Clear();
         IcdTextTextBox.Clear();
         CreatedByTextBox.Clear();
+        UpdateButtonStates();
     }
 
     private static string? NullIfEmpty(string value)
