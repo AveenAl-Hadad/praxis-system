@@ -256,7 +256,34 @@ namespace Praxis.Client.Views.Pages.Labor
                 UpdateStatusInfo(0, 0, "Laborbericht wurde nicht gefunden");
             }
         }
+        private async void OpenMedicalRecord_Click(object sender, RoutedEventArgs e)
+        {
+            if (LaborGrid.SelectedItem is not LaborRecord record)
+            {
+                MessageBox.Show("Bitte einen Laborbericht auswählen.");
+                return;
+            }
 
+            if (record.PatientId == null)
+            {
+                MessageBox.Show("Dieser Laborbericht ist keinem Patienten zugeordnet.");
+                return;
+            }
+
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+                return;
+
+            var patients = await mainWindow.GetPatientsAsync();
+            var patient = patients.FirstOrDefault(x => x.Id == record.PatientId.Value);
+
+            if (patient == null)
+            {
+                MessageBox.Show("Patient wurde nicht gefunden.");
+                return;
+            }
+
+            await mainWindow.OpenPatientMedicalRecordLaborEntryAsync(patient, record.Id);
+        }
         private void SetTitle(string title)
         {
             PageTitleTextBlock.Text = title;
@@ -282,15 +309,71 @@ namespace Praxis.Client.Views.Pages.Labor
             if (dialog.ShowDialog() != true || dialog.SelectedPatient == null)
                 return;
 
-            await _laborService.AssignToPatientAsync(record.Id, dialog.SelectedPatient.Id);
+            var patient = dialog.SelectedPatient;
+
+            await _laborService.AssignToPatientAsync(record.Id, patient.Id);
+
+            record.PatientId = patient.Id;
+            record.Patient = patient;
+            record.Status = "Zugeordnet";
+
+            var result = MessageBox.Show(
+                "Laborbericht wurde zugeordnet.\n\nSoll er direkt in die Karteikarte übernommen werden?",
+                "Karteikarte",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                await AddLaborRecordToMedicalRecordAsync(record);
+            }
+
+            LaborGrid.Items.Refresh();
 
             MessageBox.Show(
-                $"Laborbericht wurde {dialog.SelectedPatient.FullName} zugeordnet.",
+                $"Laborbericht wurde {patient.FullName} zugeordnet.",
                 "Zuordnung gespeichert",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+        }
+        private async Task AddLaborRecordToMedicalRecordAsync(LaborRecord record)
+        {
+            if (record.PatientId == null)
+                return;
 
-            await ShowLaborBooksAsync();
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
+                return;
+
+            var medicalService = mainWindow.ServiceProvider
+                .GetRequiredService<IPatientMedicalRecordService>();
+
+            var existingEntries = await medicalService.GetByPatientAsync(record.PatientId.Value);
+
+            if (existingEntries.Any(x => x.LaborRecordId == record.Id))
+                return;
+
+            var entry = new PatientMedicalRecordEntry
+            {
+                PatientId = record.PatientId.Value,
+                EntryType = MedicalRecordEntryType.Labor,
+                Title = $"Laborbericht {record.Erstellt}",
+                Text =
+                    $"Labor: {record.Labor}\n" +
+                    $"Datei: {record.Datei}\n" +
+                    $"Betriebsstätte: {record.Betriebsstaette}\n" +
+                    $"BSNR/BSID: {record.Bsnr}\n" +
+                    $"Kundennummer: {record.Kundennummer}\n" +
+                    $"Status: {record.Status}",
+                LaborRecordId = record.Id,
+                CreatedBy = UserSession.CurrentUser?.Username ?? "system",
+                CreatedAt = DateTime.Now
+            };
+
+            await medicalService.AddAsync(entry);
+
+            await _laborService.MarkAddedToMedicalRecordAsync(record.Id);
+
+            record.Status = "In Karteikarte";
         }
         private async void MarkError_Click(object sender, RoutedEventArgs e)
         {
@@ -362,7 +445,7 @@ namespace Praxis.Client.Views.Pages.Labor
                 };
 
                 await medicalService.AddAsync(entry);
-                await _laborService.MarkAddedToMedicalRecordAsync(record.Id);
+                await AddLaborRecordToMedicalRecordAsync(record);
                 record.Status = "In Karteikarte";
                 LaborGrid.Items.Refresh();
 

@@ -68,6 +68,21 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         }
     }
 
+    public async Task LoadPatientAndSelectLaborEntryAsync(Patient patient, int laborRecordId)
+    {
+        await LoadPatientAsync(patient);
+
+        var entry = _entries.FirstOrDefault(x =>
+            x.EntryType == MedicalRecordEntryType.Labor &&
+            x.LaborRecordId == laborRecordId);
+
+        if (entry != null)
+        {
+            EntriesGrid.SelectedItem = entry;
+            EntriesGrid.ScrollIntoView(entry);
+        }
+    }
+
     private void EntriesGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (EntriesGrid.SelectedItem is not PatientMedicalRecordEntry entry)

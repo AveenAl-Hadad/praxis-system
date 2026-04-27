@@ -746,6 +746,14 @@ namespace Praxis.Client.Views
             LoadPage(_laborPage);
             await _laborPage.ShowLaborRecordAsync(laborRecordId);
         }
+        public async Task OpenPatientMedicalRecordLaborEntryAsync(Patient patient, int laborRecordId)
+        {
+            var page = _serviceProvider.GetRequiredService<PatientMedicalRecordPage>();
+
+            LoadPage(page);
+
+            await page.LoadPatientAndSelectLaborEntryAsync(patient, laborRecordId);
+        }
 
         //Patien Dokument
         public async Task<IEnumerable<PatientDocument>> GetDocumentsByPatientIdAsync(int patientId)

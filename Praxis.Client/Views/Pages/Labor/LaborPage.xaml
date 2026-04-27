@@ -120,6 +120,12 @@
                                 Height="36"
                                 Background="#E5E7EB"
                                 Click="AddToMedicalRecord_Click"/>
+                        <Button Content="Karteikarte öffnen"
+                                Margin="0,0,10,10"
+                                Width="160"
+                                Height="36"
+                                Background="#E5E7EB"
+                                Click="OpenMedicalRecord_Click"/>
                     </WrapPanel>        
                                             
                 </StackPanel>
