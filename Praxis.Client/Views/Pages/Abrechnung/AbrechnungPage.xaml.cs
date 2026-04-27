@@ -7,8 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-
-using Praxis.Client.Views;
 using MessageBox = System.Windows.MessageBox;
 using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using Microsoft.Extensions.DependencyInjection;
@@ -452,6 +450,56 @@ namespace Praxis.Client.Views.Pages.Abrechnung
         }
 
         //Rechnung aus Termin erstellen
+        private async void CreateFromAppointmentButton_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentIdText = Microsoft.VisualBasic.Interaction.InputBox(
+                "Termin-ID eingeben:",
+                "Rechnung aus Termin",
+                "");
+
+            if (!int.TryParse(appointmentIdText, out var appointmentId))
+            {
+                MessageBox.Show("Termin-ID ist ungültig.");
+                return;
+            }
+
+            try
+            {
+                var invoice = await _billingGenerationService.CreateInvoiceFromAppointmentAsync(appointmentId);
+
+                var beleg = new Abrechnungsbeleg
+                {
+                    Typ = "Rechnung",
+                    Zeitraum = invoice.InvoiceDate.ToString("MM/yyyy"),
+                    Faelle = 1,
+                    Betrag = invoice.TotalAmount,
+                    Status = "Offen",
+                    Aktion = invoice.InvoiceNumber
+                };
+
+                await _abrechnungService.AddAsync(beleg);
+
+                _currentFilter = "Rechnung";
+                PageTitleTextBlock.Text = "Rechnungen";
+
+                await LoadDataAsync();
+
+                MessageBox.Show(
+                    $"Rechnung wurde erstellt:\n{invoice.InvoiceNumber}",
+                    "Rechnung erstellt",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Rechnung konnte nicht erstellt werden:\n{ex.Message}",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         private async void CreateFromMedicalRecordButton_Click(object sender, RoutedEventArgs e)
         {
             if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
@@ -506,7 +554,6 @@ namespace Praxis.Client.Views.Pages.Abrechnung
                     MessageBoxImage.Error);
             }
         }
-
 
     }
 }
