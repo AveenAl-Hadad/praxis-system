@@ -236,6 +236,27 @@ namespace Praxis.Client.Views.Pages.Labor
 
             UpdateStatusInfo(0, 0, "Laborübersicht geladen");
         }
+        public async Task ShowLaborRecordAsync(int laborRecordId)
+        {
+            SetTitle("Laborbericht");
+
+            var records = await _laborService.GetAllAsync();
+            LaborGrid.ItemsSource = records;
+
+            var selected = records.FirstOrDefault(x => x.Id == laborRecordId);
+
+            if (selected != null)
+            {
+                LaborGrid.SelectedItem = selected;
+                LaborGrid.ScrollIntoView(selected);
+                UpdateStatusInfo(0, 0, "Laborbericht geöffnet");
+            }
+            else
+            {
+                UpdateStatusInfo(0, 0, "Laborbericht wurde nicht gefunden");
+            }
+        }
+
         private void SetTitle(string title)
         {
             PageTitleTextBlock.Text = title;

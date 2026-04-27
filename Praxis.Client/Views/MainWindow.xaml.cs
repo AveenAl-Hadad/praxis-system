@@ -740,6 +740,13 @@ namespace Praxis.Client.Views
             await OpenPatientAppointmentsPageAsync(_selectedPatient);
         }
 
+        public async Task OpenLaborRecordPageAsync(int laborRecordId)
+        {
+            SwitchModule(BottomModule.Labor);
+            LoadPage(_laborPage);
+            await _laborPage.ShowLaborRecordAsync(laborRecordId);
+        }
+
         //Patien Dokument
         public async Task<IEnumerable<PatientDocument>> GetDocumentsByPatientIdAsync(int patientId)
         {
@@ -1054,17 +1061,17 @@ namespace Praxis.Client.Views
         #endregion
 
         private async void OpenCatalogCategory(string category)
-{
-    try
-    {
-        LoadPage(_catalogsPage);
-        await _catalogsPage.SelectCategoryAsync(category);
-    }
-    catch (Exception ex)
-    {
-        MessageBox.Show(ex.ToString(), "Katalog Fehler");
-    }
-}
+        {
+            try
+            {
+                LoadPage(_catalogsPage);
+                await _catalogsPage.SelectCategoryAsync(category);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Katalog Fehler");
+            }
+        }
 
 
     }

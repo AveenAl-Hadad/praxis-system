@@ -232,37 +232,6 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
             return;
 
-        try
-        {
-            var laborService = mainWindow.ServiceProvider.GetRequiredService<ILaborService>();
-            var labor = await laborService.GetByIdAsync(_selectedEntry.LaborRecordId.Value);
-
-            if (labor == null)
-            {
-                MessageBox.Show("Der Laborbericht wurde nicht gefunden.");
-                return;
-            }
-
-            MessageBox.Show(
-                $"Laborbericht\n\n" +
-                $"Labor: {labor.Labor}\n" +
-                $"Datei: {labor.Datei}\n" +
-                $"Erstellt: {labor.Erstellt}\n" +
-                $"Betriebsstätte: {labor.Betriebsstaette}\n" +
-                $"BSNR/BSID: {labor.Bsnr}\n" +
-                $"Kundennummer: {labor.Kundennummer}\n" +
-                $"Status: {labor.Status}",
-                "Laborbericht",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(
-                $"Laborbericht konnte nicht geöffnet werden:\n{ex.Message}",
-                "Fehler",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
+        await mainWindow.OpenLaborRecordPageAsync(_selectedEntry.LaborRecordId.Value);
     }
 }
