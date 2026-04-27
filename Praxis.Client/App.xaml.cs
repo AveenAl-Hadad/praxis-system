@@ -88,6 +88,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<IPatientMedicalRecordService, PatientMedicalRecordService>();
                 services.AddTransient<IInvoiceNumberService, InvoiceNumberService>();
 
+                services.AddTransient<CreateInvoiceFromMedicalRecordWindow>();
                 services.AddTransient<PatientMedicalRecordPage>();
                 services.AddTransient<MainWindow>();
                 services.AddTransient<LoginWindow>();

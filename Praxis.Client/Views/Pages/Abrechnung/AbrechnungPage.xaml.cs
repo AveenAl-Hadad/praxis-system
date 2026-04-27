@@ -7,8 +7,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+
+using Praxis.Client.Views;
 using MessageBox = System.Windows.MessageBox;
 using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Praxis.Client.Views.Pages.Abrechnung
 {
@@ -449,22 +452,27 @@ namespace Praxis.Client.Views.Pages.Abrechnung
         }
 
         //Rechnung aus Termin erstellen
-        private async void CreateFromAppointmentButton_Click(object sender, RoutedEventArgs e)
+        private async void CreateFromMedicalRecordButton_Click(object sender, RoutedEventArgs e)
         {
-            var appointmentIdText = Microsoft.VisualBasic.Interaction.InputBox(
-                "Termin-ID eingeben:",
-                "Rechnung aus Termin",
-                "");
-
-            if (!int.TryParse(appointmentIdText, out var appointmentId))
-            {
-                MessageBox.Show("Termin-ID ist ungültig.");
+            if (System.Windows.Application.Current.MainWindow is not MainWindow mainWindow)
                 return;
-            }
 
             try
             {
-                var invoice = await _billingGenerationService.CreateInvoiceFromAppointmentAsync(appointmentId);
+                var dialog = mainWindow.ServiceProvider.GetRequiredService<CreateInvoiceFromMedicalRecordWindow>();
+                dialog.Owner = mainWindow;
+
+                if (dialog.ShowDialog() != true ||
+                    dialog.SelectedPatient == null ||
+                    dialog.SelectedEntryIds.Count == 0)
+                {
+                    return;
+                }
+
+                var invoice = await _billingGenerationService
+                    .CreateInvoiceFromMedicalRecordEntriesAsync(
+                        dialog.SelectedPatient.Id,
+                        dialog.SelectedEntryIds);
 
                 var beleg = new Abrechnungsbeleg
                 {
@@ -484,7 +492,7 @@ namespace Praxis.Client.Views.Pages.Abrechnung
                 await LoadDataAsync();
 
                 MessageBox.Show(
-                    $"Rechnung wurde erstellt:\n{invoice.InvoiceNumber}",
+                    $"Rechnung wurde aus Karteikarte erstellt:\n{invoice.InvoiceNumber}",
                     "Rechnung erstellt",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
