@@ -34,10 +34,8 @@ namespace Praxis.Client.Views.Pages.Abrechnung
 
         public async Task ShowNewKvAsync()
         {
-            _currentView = "KV";
-            PageTitleTextBlock.Text = "Neue KV-Abrechnung";
-            await LoadFilteredAsync("KV");
-            OpenNewEditor("KV");
+            StartNewAbrechnung("KV");
+            await LoadDataAsync();
         }
 
         public async Task ShowKvListAsync()
@@ -50,12 +48,10 @@ namespace Praxis.Client.Views.Pages.Abrechnung
 
         public async Task ShowNewPrivateAsync()
         {
-            _currentView = "Privat";
-            PageTitleTextBlock.Text = "Neue Privatabrechnung";
-            await LoadFilteredAsync("Privat");
-            OpenNewEditor("Privat");
-        }
+            StartNewAbrechnung("Privat");
+            await LoadDataAsync();
 
+        }
         public async Task ShowInvoicesAsync()
         {
             _currentView = "Rechnung";
@@ -345,6 +341,37 @@ namespace Praxis.Client.Views.Pages.Abrechnung
             await _abrechnungService.UpdateAsync(selected);
             await LoadDataAsync();
         }
-       
+
+        //Neue KV-Abrechnung“ und „Neue Privatabrechnung
+        private void StartNewAbrechnung(string typ)
+        {
+            _currentFilter = typ;
+
+            PageTitleTextBlock.Text = typ == "KV"
+                ? "Neue KV-Abrechnung"
+                : "Neue Privatabrechnung";
+
+            TypTextBox.Text = typ;
+            ZeitraumTextBox.Text = typ == "KV"
+                ? GetCurrentQuarter()
+                : DateTime.Today.ToString("MM/yyyy");
+
+            FaelleTextBox.Text = "0";
+            BetragTextBox.Text = "0,00";
+            StatusTextBox.Text = "Offen";
+            AktionTextBox.Text = "Neu erstellt";
+
+            AbrechnungGrid.SelectedItem = null;
+        }
+        //Hilfsmethode ergänzen
+        private static string GetCurrentQuarter()
+        {
+            var today = DateTime.Today;
+            var quarter = ((today.Month - 1) / 3) + 1;
+
+            return $"{today.Year}-Q{quarter}";
+        }
+        
+
     }
 }
