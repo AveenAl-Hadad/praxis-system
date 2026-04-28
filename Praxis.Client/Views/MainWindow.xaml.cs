@@ -10,6 +10,7 @@ using Praxis.Client.Session;
 using Praxis.Client.Views.Pages;
 using Praxis.Client.Views.Pages.Patienten;
 using Praxis.Client.Views.Pages.Labor;
+using System.Linq;
 
 using Praxis.Client.Views.Pages.UserManagement;
 using Praxis.Domain.Constants;
@@ -95,6 +96,7 @@ namespace Praxis.Client.Views
         private readonly IDoctorService _doctorService;
 
         private readonly IPracticeMessageService _messageService;
+        
 
 
 
@@ -874,6 +876,9 @@ namespace Praxis.Client.Views
         }
         public async Task<IEnumerable<PracticeNotice>> GetActivePracticeNoticesAsync()
         {
+            if (_practiceNoticeService == null)
+                return Enumerable.Empty<PracticeNotice>();
+
             return await _practiceNoticeService.GetActiveNoticesAsync();
         }
         public async Task AddDashboardTaskAsync(DashboardTask task)
