@@ -11,6 +11,7 @@ using Praxis.Client.Views.Pages;
 using Praxis.Client.Views.Pages.Patienten;
 using Praxis.Client.Views.Pages.Labor;
 using System.Linq;
+using System.Windows.Threading;
 
 using Praxis.Client.Views.Pages.UserManagement;
 using Praxis.Domain.Constants;
@@ -23,7 +24,7 @@ using Praxis.Client.Security;
 
 using MessageBox = System.Windows.MessageBox;
 using Button = System.Windows.Controls.Button;
-using System.Windows.Threading;
+
 using Praxis.Application.Interfaces;
 using MouseEventHandler = System.Windows.Input.MouseEventHandler;
 using KeyEventHandler = System.Windows.Input.KeyEventHandler;
@@ -112,6 +113,10 @@ namespace Praxis.Client.Views
         //private readonly TimeSpan _timeout = TimeSpan.FromSeconds(30);
         //private readonly TimeSpan _warningTime = TimeSpan.FromSeconds(20);
 
+        private DispatcherTimer? _messageRefreshTimer;
+       
+
+
         #endregion
         #region Konstrakture
         public MainWindow(
@@ -152,6 +157,22 @@ namespace Praxis.Client.Views
                              )
         {
             InitializeComponent();
+            _messageRefreshTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(5)
+            };
+
+            _messageRefreshTimer.Tick += async (s, e) =>
+            {
+                if (_currentModule == BottomModule.Nachrichten)
+                {
+                    await _messagesPage.RefreshAsync();
+                    RefreshSidebarForCurrentModule();
+                }
+            };
+
+            _messageRefreshTimer.Start();
+
 
             _patientService = patientService;
             _appointmentService = appointmentService;
@@ -210,6 +231,8 @@ namespace Praxis.Client.Views
             StartSessionTimer();
            
         }
+
+       
         #endregion
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -452,10 +475,10 @@ namespace Praxis.Client.Views
 
                 case BottomModule.Nachrichten:
 
-                    var unreadCount = await GetUnreadMessagesCountAsync();
+                    var unreadCount = await _messageService.GetUnreadCountAsync("MFA");
 
                     var inboxText = unreadCount > 0
-                        ? $"Posteingang ({unreadCount})"
+                        ? $"🔴 Posteingang ({unreadCount})"
                         : "Posteingang";
 
                     AddSidebarButton(inboxText, async (s, e) =>
@@ -464,8 +487,8 @@ namespace Praxis.Client.Views
                         _messagesPage.ShowInbox();
                         await _messagesPage.RefreshAsync();
 
-                        await RefreshSidebarAsync(); // 🔥 wichtig
-                    });
+                        RefreshSidebarForCurrentModule();
+                    }, true);
 
                     AddSidebarButton("Neue Nachricht", async (s, e) =>
                     {
@@ -607,7 +630,10 @@ namespace Praxis.Client.Views
                 MessageBoxImage.Information);
         }
 
-
+        private void RefreshSidebarForCurrentModule()
+        {
+            BuildSidebarAsync(_currentModule);
+        }
         #endregion
 
         #region Bottom Navigation
@@ -1178,7 +1204,14 @@ namespace Praxis.Client.Views
         {
             return await _messageService.GetUnreadCountAsync("MFA");
         }
+        private async Task<string> GetMessagesButtonTextAsync()
+        {
+            var unreadCount = await _messageService.GetUnreadCountAsync("MFA");
 
+            return unreadCount > 0
+                ? $"🔴 Nachrichten ({unreadCount})"
+                : "Nachrichten";
+        }
 
     }
 }

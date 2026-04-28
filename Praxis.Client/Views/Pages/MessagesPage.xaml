@@ -1,6 +1,24 @@
 ﻿<UserControl x:Class="Praxis.Client.Views.Pages.MessagesPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="ImportantMessageRowStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Priority}" Value="Wichtig">
+                    <Setter Property="Background" Value="#FFF3CD"/>
+                </DataTrigger>
+
+                <DataTrigger Binding="{Binding Priority}" Value="Dringend">
+                    <Setter Property="Background" Value="#F8D7DA"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+
+                <DataTrigger Binding="{Binding IsRead}" Value="False">
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -24,6 +42,7 @@
 
                     <DataGrid x:Name="InboxGrid"
                               AutoGenerateColumns="False"
+                              RowStyle="{StaticResource ImportantMessageRowStyle}"
                               SelectionChanged="InboxGrid_SelectionChanged">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Von" Binding="{Binding Sender}" Width="120"/>

@@ -10,4 +10,5 @@ public interface IPracticeMessageService
     Task MarkAsReadAsync(int id);
     Task DeleteAsync(int id);
     Task<int> GetUnreadCountAsync(string recipient);
+   
 }

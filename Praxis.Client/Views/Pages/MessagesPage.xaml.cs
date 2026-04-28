@@ -5,7 +5,7 @@ using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
 using MessageBox = System.Windows.MessageBox;
 using PrintDialog = System.Windows.Controls.PrintDialog;
-using System.Windows.Documents;
+
 using Microsoft.Win32;
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
