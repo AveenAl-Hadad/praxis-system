@@ -142,12 +142,14 @@
                             Click="Send_Click"/>
                 </Grid>
             </TabItem>
-            
+
             <TabItem Header="Externe Nachrichten">
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="130"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Externe Nachrichten"
@@ -155,15 +157,52 @@
                                FontWeight="Bold"
                                Margin="0,0,0,8"/>
 
-                    <DataGrid Grid.Row="1"
-                              x:Name="ExternalMessagesGrid"
-                              AutoGenerateColumns="False">
+                    <DataGrid x:Name="ExternalMessagesGrid"
+                              Grid.Row="1"
+                              AutoGenerateColumns="False"
+                              SelectionChanged="ExternalMessagesGrid_SelectionChanged">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Absender" Binding="{Binding Sender}" Width="160"/>
+                            <DataGridTextColumn Header="Absender" Binding="{Binding SenderName}" Width="150"/>
+                            <DataGridTextColumn Header="E-Mail" Binding="{Binding SenderEmail}" Width="180"/>
                             <DataGridTextColumn Header="Betreff" Binding="{Binding Subject}" Width="*"/>
-                            <DataGridTextColumn Header="Datum" Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="160"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                            <DataGridCheckBoxColumn Header="Gelesen" Binding="{Binding IsRead}" Width="80"/>
+                            <DataGridTextColumn Header="Datum" Binding="{Binding ReceivedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="160"/>
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <TextBox x:Name="ExternalMessageBodyText"
+                             Grid.Row="2"
+                             Margin="0,8,0,8"
+                             IsReadOnly="True"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"/>
+
+                    <StackPanel Grid.Row="3" Orientation="Horizontal">
+                        <Button Content="Test-Nachricht erstellen"
+                                Width="170"
+                                Height="32"
+                                Margin="0,0,8,0"
+                                Click="CreateExternalTestMessage_Click"/>
+
+                        <Button Content="Als gelesen"
+                                Width="120"
+                                Height="32"
+                                Margin="0,0,8,0"
+                                Click="MarkExternalRead_Click"/>
+
+                        <Button Content="Bearbeitet"
+                                Width="120"
+                                Height="32"
+                                Margin="0,0,8,0"
+                                Click="MarkExternalProcessed_Click"/>
+
+                        <Button Content="Löschen"
+                                Width="120"
+                                Height="32"
+                                Click="DeleteExternalMessage_Click"/>
+                    </StackPanel>
                 </Grid>
             </TabItem>
 

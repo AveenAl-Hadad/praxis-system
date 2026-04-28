@@ -36,7 +36,7 @@ public class PraxisDbContext : DbContext
     public DbSet<PatientMedicalRecordEntry> PatientMedicalRecordEntries => Set<PatientMedicalRecordEntry>();
     public DbSet<PracticeMessage> PracticeMessages => Set<PracticeMessage>();
     public DbSet<DoctorLetter> DoctorLetters => Set<DoctorLetter>();
-
+    public DbSet<ExternalMessage> ExternalMessages => Set<ExternalMessage>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -444,6 +444,27 @@ public class PraxisDbContext : DbContext
             .HasMaxLength(100);
 
         modelBuilder.Entity<DoctorLetter>()
+            .HasOne(x => x.Patient)
+            .WithMany()
+            .HasForeignKey(x => x.PatientId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<ExternalMessage>()
+            .Property(x => x.SenderName)
+            .HasMaxLength(150);
+
+        modelBuilder.Entity<ExternalMessage>()
+            .Property(x => x.SenderEmail)
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<ExternalMessage>()
+            .Property(x => x.Subject)
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<ExternalMessage>()
+            .Property(x => x.Status)
+            .HasMaxLength(50);
+
+        modelBuilder.Entity<ExternalMessage>()
             .HasOne(x => x.Patient)
             .WithMany()
             .HasForeignKey(x => x.PatientId)

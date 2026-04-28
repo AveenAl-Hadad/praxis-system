@@ -15,6 +15,7 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
     private readonly IPatientService _patientService;
     private readonly IPracticeNoticeService _noticeService;
     private readonly IDoctorLetterService _doctorLetterService;
+    private readonly IExternalMessageService _externalMessageService;
 
     private const string CurrentUser = "MFA";
 
@@ -22,7 +23,8 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         IPracticeMessageService messageService,
         IPatientService patientService,
         IPracticeNoticeService noticeService,
-        IDoctorLetterService doctorLetterService)
+        IDoctorLetterService doctorLetterService,
+        IExternalMessageService externalMessageService)
     {
         InitializeComponent();
 
@@ -33,6 +35,7 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         RecipientCombo.SelectedIndex = 0;
         PriorityCombo.SelectedIndex = 0;
         _doctorLetterService = doctorLetterService;
+        _externalMessageService = externalMessageService;
     }
 
     public async Task RefreshAsync()
@@ -186,23 +189,13 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         MessagesTabControl.SelectedIndex = 2;
     }
 
-    public void ShowExternalMessages()
-    {
-        MessagesTabControl.SelectedIndex = 3;
-    }
-
-    public async void ShowNotes()
+   public async void ShowNotes()
     {
         MessagesTabControl.SelectedIndex = 4;
         await RefreshNoticesAsync();
     }
 
-    public async void ShowDoctorLetters()
-    {
-        MessagesTabControl.SelectedIndex = 5;
-        await RefreshDoctorLettersAsync();
-    }
-
+    
     // Notiz
     private async void SaveNote_Click(object sender, RoutedEventArgs e)
     {
@@ -236,6 +229,11 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         await RefreshNoticesAsync();
 
         MessageBox.Show("Notiz wurde gespeichert.");
+    }
+    public async void ShowDoctorLetters()
+    {
+        MessagesTabControl.SelectedIndex = 5;
+        await RefreshDoctorLettersAsync();
     }
 
     private void NotesGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -377,5 +375,89 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         printDialog.PrintDocument(
             ((IDocumentPaginatorSource)document).DocumentPaginator,
             "Arztbrief");
+    }
+
+
+    //Nachricht External
+    private async Task RefreshExternalMessagesAsync()
+    {
+        ExternalMessagesGrid.ItemsSource = await _externalMessageService.GetAllAsync();
+    }
+
+    public async void ShowExternalMessages()
+    {
+        MessagesTabControl.SelectedIndex = 3;
+        await RefreshExternalMessagesAsync();
+    }
+
+    private async void ExternalMessagesGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ExternalMessagesGrid.SelectedItem is not ExternalMessage message)
+            return;
+
+        ExternalMessageBodyText.Text = message.Body;
+
+        if (!message.IsRead)
+        {
+            await _externalMessageService.MarkAsReadAsync(message.Id);
+            await RefreshExternalMessagesAsync();
+        }
+    }
+
+    private async void CreateExternalTestMessage_Click(object sender, RoutedEventArgs e)
+    {
+        var message = new ExternalMessage
+        {
+            SenderName = "Patient Online",
+            SenderEmail = "patient@example.de",
+            Subject = "Terminfrage",
+            Body = "Guten Tag, ich möchte gerne einen Termin vereinbaren.",
+            Status = "Neu",
+            IsRead = false
+        };
+
+        await _externalMessageService.AddAsync(message);
+        await RefreshExternalMessagesAsync();
+
+        MessageBox.Show("Test-Nachricht wurde erstellt.");
+    }
+
+    private async void MarkExternalRead_Click(object sender, RoutedEventArgs e)
+    {
+        if (ExternalMessagesGrid.SelectedItem is not ExternalMessage message)
+        {
+            MessageBox.Show("Bitte zuerst eine externe Nachricht auswählen.");
+            return;
+        }
+
+        await _externalMessageService.MarkAsReadAsync(message.Id);
+        await RefreshExternalMessagesAsync();
+    }
+
+    private async void MarkExternalProcessed_Click(object sender, RoutedEventArgs e)
+    {
+        if (ExternalMessagesGrid.SelectedItem is not ExternalMessage message)
+        {
+            MessageBox.Show("Bitte zuerst eine externe Nachricht auswählen.");
+            return;
+        }
+
+        await _externalMessageService.MarkAsProcessedAsync(message.Id);
+        await RefreshExternalMessagesAsync();
+    }
+
+    private async void DeleteExternalMessage_Click(object sender, RoutedEventArgs e)
+    {
+        if (ExternalMessagesGrid.SelectedItem is not ExternalMessage message)
+        {
+            MessageBox.Show("Bitte zuerst eine externe Nachricht auswählen.");
+            return;
+        }
+
+        await _externalMessageService.DeleteAsync(message.Id);
+
+        ExternalMessageBodyText.Clear();
+
+        await RefreshExternalMessagesAsync();
     }
 }
