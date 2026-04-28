@@ -63,4 +63,14 @@ public class ExternalMessageService : IExternalMessageService
         _db.ExternalMessages.Remove(message);
         await _db.SaveChangesAsync();
     }
+    public async Task AssignPatientAsync(int messageId, int patientId)
+    {
+        var message = await _db.ExternalMessages.FindAsync(messageId);
+
+        if (message == null)
+            return;
+
+        message.PatientId = patientId;
+        await _db.SaveChangesAsync();
+    }
 }

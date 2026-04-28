@@ -169,6 +169,7 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="130"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="150"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Externe Nachrichten"
@@ -183,6 +184,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Absender" Binding="{Binding SenderName}" Width="150"/>
                             <DataGridTextColumn Header="E-Mail" Binding="{Binding SenderEmail}" Width="180"/>
+                            <DataGridTextColumn Header="Patient" Binding="{Binding Patient.FullName}" Width="180"/>
                             <DataGridTextColumn Header="Betreff" Binding="{Binding Subject}" Width="*"/>
                             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
                             <DataGridCheckBoxColumn Header="Gelesen" Binding="{Binding IsRead}" Width="80"/>
@@ -199,17 +201,23 @@
                              VerticalScrollBarVisibility="Auto"/>
 
                     <StackPanel Grid.Row="3" Orientation="Horizontal">
-                        <Button Content="Test-Nachricht erstellen"
-                                Width="170"
+                        <Button Content="Antwort erstellen"
+                                Width="140"
                                 Height="32"
                                 Margin="0,0,8,0"
-                                Click="CreateExternalTestMessage_Click"/>
+                                Click="CreateExternalReply_Click"/>
 
-                        <Button Content="Als gelesen"
-                                Width="120"
+                        <Button Content="Intern umwandeln"
+                                Width="140"
                                 Height="32"
                                 Margin="0,0,8,0"
-                                Click="MarkExternalRead_Click"/>
+                                Click="ConvertExternalToInternal_Click"/>
+
+                        <Button Content="Patient zuordnen"
+                                Width="130"
+                                Height="32"
+                                Margin="0,0,8,0"
+                                Click="AssignPatientToExternal_Click"/>
 
                         <Button Content="Bearbeitet"
                                 Width="120"
@@ -222,10 +230,60 @@
                                 Height="32"
                                 Click="DeleteExternalMessage_Click"/>
                     </StackPanel>
-                </Grid>
-            </TabItem>
 
-            <TabItem Header="Notizen">
+                    <Grid Grid.Row="4" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <GroupBox Header="Antwort">
+                            <Grid Margin="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBox x:Name="ExternalReplySubjectText"
+                                         Height="28"
+                                         Margin="0,0,0,8"/>
+
+                                <TextBox x:Name="ExternalReplyBodyText"
+                                         Grid.Row="1"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto"/>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Grid.Column="1" Header="Patientensuche" Margin="8,0,0,0">
+                            <Grid Margin="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBox x:Name="ExternalPatientSearchText"
+                                             Width="190"
+                                             Margin="0,0,6,0"/>
+
+                                    <Button Content="Suchen"
+                                            Width="80"
+                                            Click="SearchExternalPatient_Click"/>
+                                </StackPanel>
+
+                                <ComboBox x:Name="ExternalPatientCombo"
+                                          Grid.Row="1"
+                                          Margin="0,8,0,0"
+                                          DisplayMemberPath="FullName"/>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+                </Grid>
+                </TabItem>
+
+                <TabItem Header="Notizen">
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

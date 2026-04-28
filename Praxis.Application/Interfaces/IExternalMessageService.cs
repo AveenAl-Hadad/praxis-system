@@ -9,4 +9,5 @@ public interface IExternalMessageService
     Task MarkAsReadAsync(int id);
     Task MarkAsProcessedAsync(int id);
     Task DeleteAsync(int id);
+    Task AssignPatientAsync(int messageId, int patientId);
 }

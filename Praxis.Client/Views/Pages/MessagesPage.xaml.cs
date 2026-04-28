@@ -449,6 +449,28 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
             return;
 
         ExternalMessageBodyText.Text = message.Body;
+        ExternalReplySubjectText.Text = $"Re: {message.Subject}";
+
+        if (message.Patient != null)
+        {
+            ExternalPatientSearchText.Text = message.Patient.FullName;
+            ExternalPatientCombo.ItemsSource = new List<Patient> { message.Patient };
+            ExternalPatientCombo.SelectedIndex = 0;
+        }
+        else
+        {
+            ExternalPatientSearchText.Text = message.SenderEmail;
+            var patients = await _patientService.SearchPatientsAsync(message.SenderEmail);
+
+            ExternalPatientCombo.ItemsSource = patients;
+
+            if (patients.Count == 1)
+            {
+                ExternalPatientCombo.SelectedIndex = 0;
+                await _externalMessageService.AssignPatientAsync(message.Id, patients[0].Id);
+                await RefreshExternalMessagesAsync();
+            }
+        }
 
         if (!message.IsRead)
         {
@@ -510,6 +532,98 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         await _externalMessageService.DeleteAsync(message.Id);
 
         ExternalMessageBodyText.Clear();
+
+        await RefreshExternalMessagesAsync();
+    }
+
+    private async void CreateExternalReply_Click(object sender, RoutedEventArgs e)
+    {
+        if (ExternalMessagesGrid.SelectedItem is not ExternalMessage message)
+        {
+            MessageBox.Show("Bitte zuerst eine externe Nachricht auswählen.");
+            return;
+        }
+
+        ExternalReplySubjectText.Text = $"Re: {message.Subject}";
+        ExternalReplyBodyText.Text =
+            $"Guten Tag {message.SenderName},\n\n" +
+            $"vielen Dank für Ihre Nachricht.\n\n" +
+            $"Mit freundlichen Grüßen\nIhre Praxis";
+
+        await _externalMessageService.MarkAsReadAsync(message.Id);
+        await RefreshExternalMessagesAsync();
+    }
+
+    private async void ConvertExternalToInternal_Click(object sender, RoutedEventArgs e)
+    {
+        if (ExternalMessagesGrid.SelectedItem is not ExternalMessage external)
+        {
+            MessageBox.Show("Bitte zuerst eine externe Nachricht auswählen.");
+            return;
+        }
+
+        var internalMessage = new PracticeMessage
+        {
+            Sender = "Extern",
+            Recipient = "MFA",
+            Priority = external.Status == "Neu" ? "Wichtig" : "Normal",
+            Subject = $"Extern: {external.Subject}",
+            Body =
+                $"Absender: {external.SenderName}\n" +
+                $"E-Mail: {external.SenderEmail}\n\n" +
+                external.Body,
+            PatientId = external.PatientId
+        };
+
+        await _messageService.SendAsync(internalMessage);
+        await _externalMessageService.MarkAsProcessedAsync(external.Id);
+
+        MessageBox.Show("Externe Nachricht wurde in interne Nachricht umgewandelt.");
+
+        await RefreshAsync();
+        await RefreshExternalMessagesAsync();
+    }
+
+    private async void SearchExternalPatient_Click(object sender, RoutedEventArgs e)
+    {
+        var search = ExternalPatientSearchText.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            MessageBox.Show("Bitte Patientennamen, E-Mail oder Telefonnummer eingeben.");
+            return;
+        }
+
+        var patients = await _patientService.SearchPatientsAsync(search);
+
+        ExternalPatientCombo.ItemsSource = patients;
+
+        if (patients.Count == 0)
+        {
+            MessageBox.Show("Kein Patient gefunden.");
+            return;
+        }
+
+        ExternalPatientCombo.SelectedIndex = 0;
+    }
+
+    private async void AssignPatientToExternal_Click(object sender, RoutedEventArgs e)
+    {
+        if (ExternalMessagesGrid.SelectedItem is not ExternalMessage message)
+        {
+            MessageBox.Show("Bitte zuerst eine externe Nachricht auswählen.");
+            return;
+        }
+
+        if (ExternalPatientCombo.SelectedItem is not Patient patient)
+        {
+            MessageBox.Show("Bitte zuerst Patient suchen und auswählen.");
+            return;
+        }
+
+        await _externalMessageService.AssignPatientAsync(message.Id, patient.Id);
+
+        MessageBox.Show("Patient wurde zugeordnet.");
 
         await RefreshExternalMessagesAsync();
     }
