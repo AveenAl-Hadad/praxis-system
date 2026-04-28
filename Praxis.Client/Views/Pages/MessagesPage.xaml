@@ -320,6 +320,11 @@
                                 Height="32"
                                 Margin="0,0,8,0"
                                 Click="PrintDoctorLetter_Click"/>
+                        <Button Content="PDF exportieren"
+                                Width="130"
+                                Height="32"
+                                Margin="0,0,8,0"
+                                Click="ExportDoctorLetterPdf_Click"/>
 
                         <Button Content="Löschen"
                                 Width="120"

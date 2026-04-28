@@ -6,6 +6,10 @@ using Praxis.Domain.Entities;
 using MessageBox = System.Windows.MessageBox;
 using PrintDialog = System.Windows.Controls.PrintDialog;
 using System.Windows.Documents;
+using Microsoft.Win32;
+using PdfSharpCore.Drawing;
+using PdfSharpCore.Pdf;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace Praxis.Client.Views.Pages;
 
@@ -508,5 +512,137 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         ExternalMessageBodyText.Clear();
 
         await RefreshExternalMessagesAsync();
+    }
+
+    // PdD Srztbrief
+    private void ExportDoctorLetterPdf_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(DoctorLetterSubjectText.Text) ||
+            string.IsNullOrWhiteSpace(DoctorLetterBodyText.Text))
+        {
+            MessageBox.Show("Bitte zuerst Arztbrief auswählen oder schreiben.");
+            return;
+        }
+
+        var saveDialog = new SaveFileDialog
+        {
+            Title = "Arztbrief als PDF speichern",
+            Filter = "PDF-Datei (*.pdf)|*.pdf",
+            FileName = $"Arztbrief_{DateTime.Now:yyyyMMdd_HHmm}.pdf"
+        };
+
+        if (saveDialog.ShowDialog() != true)
+            return;
+
+        var document = new PdfDocument();
+        document.Info.Title = DoctorLetterSubjectText.Text;
+
+        var page = document.AddPage();
+        var gfx = XGraphics.FromPdfPage(page);
+
+        var titleFont = new XFont("Arial", 18, XFontStyle.Bold);
+        var headerFont = new XFont("Arial", 12, XFontStyle.Bold);
+        var normalFont = new XFont("Arial", 11, XFontStyle.Regular);
+
+        double margin = 40;
+        double y = 50;
+        double lineHeight = 18;
+        double maxWidth = page.Width - margin * 2;
+
+        gfx.DrawString("Praxissoftware", titleFont, XBrushes.Black,
+            new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+
+        y += 35;
+
+        gfx.DrawString("Arztbrief", headerFont, XBrushes.Black,
+            new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+
+        y += 30;
+
+        gfx.DrawString($"Betreff: {DoctorLetterSubjectText.Text}", normalFont, XBrushes.Black,
+            new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+
+        y += lineHeight;
+
+        if (DoctorLetterPatientCombo.SelectedItem is Patient patient)
+        {
+            gfx.DrawString($"Patient: {patient.FullName}", normalFont, XBrushes.Black,
+                new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+
+            y += lineHeight;
+        }
+
+        gfx.DrawString($"Datum: {DateTime.Now:dd.MM.yyyy HH:mm}", normalFont, XBrushes.Black,
+            new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+
+        y += 35;
+
+        DrawWrappedText(
+            document,
+            ref page,
+            ref gfx,
+            DoctorLetterBodyText.Text,
+            normalFont,
+            margin,
+            ref y,
+            maxWidth,
+            lineHeight);
+
+        document.Save(saveDialog.FileName);
+
+        MessageBox.Show("PDF wurde erfolgreich gespeichert.");
+
+    }
+    // Hilfsmethode
+    private void DrawWrappedText(
+    PdfDocument document,
+    ref PdfPage page,
+    ref XGraphics gfx,
+    string text,
+    XFont font,
+    double margin,
+    ref double y,
+    double maxWidth,
+    double lineHeight)
+    {
+        var words = text.Replace("\r", "").Split(' ');
+        var line = "";
+
+        foreach (var word in words)
+        {
+            var testLine = string.IsNullOrWhiteSpace(line)
+                ? word
+                : line + " " + word;
+
+            var size = gfx.MeasureString(testLine, font);
+
+            if (size.Width > maxWidth)
+            {
+                gfx.DrawString(line, font, XBrushes.Black,
+                    new XRect(margin, y, maxWidth, lineHeight),
+                    XStringFormats.TopLeft);
+
+                y += lineHeight;
+                line = word;
+
+                if (y > page.Height - 60)
+                {
+                    page = document.AddPage();
+                    gfx = XGraphics.FromPdfPage(page);
+                    y = 50;
+                }
+            }
+            else
+            {
+                line = testLine;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(line))
+        {
+            gfx.DrawString(line, font, XBrushes.Black,
+                new XRect(margin, y, maxWidth, lineHeight),
+                XStringFormats.TopLeft);
+        }
     }
 }
