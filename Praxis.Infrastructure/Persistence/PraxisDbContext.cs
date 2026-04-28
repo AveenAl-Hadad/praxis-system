@@ -34,8 +34,9 @@ public class PraxisDbContext : DbContext
     public DbSet<AppointmentMedicalEntry> AppointmentMedicalEntries => Set<AppointmentMedicalEntry>();
     public DbSet<PatientCase> PatientCases => Set<PatientCase>();
     public DbSet<PatientMedicalRecordEntry> PatientMedicalRecordEntries => Set<PatientMedicalRecordEntry>();
-    public DbSet<PracticeMessage> PracticeMessages => Set<PracticeMessage>();   
-   
+    public DbSet<PracticeMessage> PracticeMessages => Set<PracticeMessage>();
+    public DbSet<DoctorLetter> DoctorLetters => Set<DoctorLetter>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -430,6 +431,19 @@ public class PraxisDbContext : DbContext
             .HasMaxLength(30);
 
         modelBuilder.Entity<PracticeMessage>()
+            .HasOne(x => x.Patient)
+            .WithMany()
+            .HasForeignKey(x => x.PatientId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<DoctorLetter>()
+            .Property(x => x.Subject)
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<DoctorLetter>()
+            .Property(x => x.CreatedBy)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<DoctorLetter>()
             .HasOne(x => x.Patient)
             .WithMany()
             .HasForeignKey(x => x.PatientId)

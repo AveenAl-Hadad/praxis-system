@@ -1,8 +1,11 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using Praxis.Application.Interfaces;
 using Praxis.Domain.Entities;
 using MessageBox = System.Windows.MessageBox;
+using PrintDialog = System.Windows.Controls.PrintDialog;
+using System.Windows.Documents;
 
 namespace Praxis.Client.Views.Pages;
 
@@ -11,13 +14,15 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
     private readonly IPracticeMessageService _messageService;
     private readonly IPatientService _patientService;
     private readonly IPracticeNoticeService _noticeService;
+    private readonly IDoctorLetterService _doctorLetterService;
 
     private const string CurrentUser = "MFA";
 
     public MessagesPage(
         IPracticeMessageService messageService,
         IPatientService patientService,
-        IPracticeNoticeService noticeService)
+        IPracticeNoticeService noticeService,
+        IDoctorLetterService doctorLetterService)
     {
         InitializeComponent();
 
@@ -27,6 +32,7 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
 
         RecipientCombo.SelectedIndex = 0;
         PriorityCombo.SelectedIndex = 0;
+        _doctorLetterService = doctorLetterService;
     }
 
     public async Task RefreshAsync()
@@ -191,11 +197,13 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         await RefreshNoticesAsync();
     }
 
-    public void ShowDoctorLetters()
+    public async void ShowDoctorLetters()
     {
         MessagesTabControl.SelectedIndex = 5;
+        await RefreshDoctorLettersAsync();
     }
 
+    // Notiz
     private async void SaveNote_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(NoteTitleText.Text))
@@ -264,7 +272,15 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         await RefreshNoticesAsync();
     }
 
-    private void SaveDoctorLetter_Click(object sender, RoutedEventArgs e)
+
+    //Arzt Brief
+
+    private async Task RefreshDoctorLettersAsync()
+    {
+        DoctorLettersGrid.ItemsSource = await _doctorLetterService.GetAllAsync();
+    }
+
+    private async void SaveDoctorLetter_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(DoctorLetterSubjectText.Text))
         {
@@ -278,9 +294,88 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
             return;
         }
 
-        MessageBox.Show("Arztbrief wurde gespeichert. Datenbank-Speicherung bauen wir im nächsten Schritt.");
+        var letter = new DoctorLetter
+        {
+            Subject = DoctorLetterSubjectText.Text.Trim(),
+            Body = DoctorLetterBodyText.Text.Trim(),
+            CreatedBy = CurrentUser
+        };
+
+        await _doctorLetterService.AddAsync(letter);
 
         DoctorLetterSubjectText.Clear();
         DoctorLetterBodyText.Clear();
+
+        await RefreshDoctorLettersAsync();
+
+        MessageBox.Show("Arztbrief wurde gespeichert.");
+    }
+
+    private void DoctorLettersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (DoctorLettersGrid.SelectedItem is not DoctorLetter letter)
+            return;
+
+        DoctorLetterSubjectText.Text = letter.Subject;
+        DoctorLetterBodyText.Text = letter.Body;
+    }
+
+    private async void DeleteDoctorLetter_Click(object sender, RoutedEventArgs e)
+    {
+        if (DoctorLettersGrid.SelectedItem is not DoctorLetter letter)
+        {
+            MessageBox.Show("Bitte zuerst einen Arztbrief auswählen.");
+            return;
+        }
+
+        await _doctorLetterService.DeleteAsync(letter.Id);
+
+        DoctorLetterSubjectText.Clear();
+        DoctorLetterBodyText.Clear();
+
+        await RefreshDoctorLettersAsync();
+    }
+
+    private void PrintDoctorLetter_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(DoctorLetterSubjectText.Text) ||
+            string.IsNullOrWhiteSpace(DoctorLetterBodyText.Text))
+        {
+            MessageBox.Show("Bitte zuerst Arztbrief auswählen oder schreiben.");
+            return;
+        }
+
+        var printDialog = new PrintDialog();
+
+        if (printDialog.ShowDialog() != true)
+            return;
+
+        var document = new FlowDocument
+        {
+            PagePadding = new Thickness(50),
+            FontFamily = new System.Windows.Media.FontFamily("Segoe UI"),
+            FontSize = 13
+        };
+
+        document.Blocks.Add(new Paragraph(new Run("Praxissoftware"))
+        {
+            FontSize = 22,
+            FontWeight = FontWeights.Bold
+        });
+
+        document.Blocks.Add(new Paragraph(new Run("Arztbrief"))
+        {
+            FontSize = 18,
+            FontWeight = FontWeights.Bold
+        });
+
+        document.Blocks.Add(new Paragraph(new Run($"Betreff: {DoctorLetterSubjectText.Text}")));
+        document.Blocks.Add(new Paragraph(new Run($"Datum: {DateTime.Now:dd.MM.yyyy HH:mm}")));
+        document.Blocks.Add(new Paragraph(new Run(" ")));
+        document.Blocks.Add(new Paragraph(new Run(DoctorLetterBodyText.Text)));
+
+        printDialog.PrintDocument(
+            ((IDocumentPaginatorSource)document).DocumentPaginator,
+            "Arztbrief");
     }
 }

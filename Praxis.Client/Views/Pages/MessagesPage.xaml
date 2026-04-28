@@ -232,6 +232,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="180"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Arztbrief erstellen"
@@ -250,13 +251,35 @@
                              AcceptsReturn="True"
                              VerticalScrollBarVisibility="Auto"/>
 
-                    <Button Grid.Row="3"
-                            Content="Arztbrief speichern"
-                            Width="160"
-                            Height="32"
-                            Margin="0,8,0,0"
-                            HorizontalAlignment="Left"
-                            Click="SaveDoctorLetter_Click"/>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,8">
+                        <Button Content="Speichern"
+                                Width="120"
+                                Height="32"
+                                Margin="0,0,8,0"
+                                Click="SaveDoctorLetter_Click"/>
+
+                        <Button Content="Drucken"
+                                Width="120"
+                                Height="32"
+                                Margin="0,0,8,0"
+                                Click="PrintDoctorLetter_Click"/>
+
+                        <Button Content="Löschen"
+                                Width="120"
+                                Height="32"
+                                Click="DeleteDoctorLetter_Click"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="DoctorLettersGrid"
+                              Grid.Row="4"
+                              AutoGenerateColumns="False"
+                              SelectionChanged="DoctorLettersGrid_SelectionChanged">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Betreff" Binding="{Binding Subject}" Width="*"/>
+                            <DataGridTextColumn Header="Erstellt von" Binding="{Binding CreatedBy}" Width="120"/>
+                            <DataGridTextColumn Header="Datum" Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="160"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </Grid>
             </TabItem>
 
