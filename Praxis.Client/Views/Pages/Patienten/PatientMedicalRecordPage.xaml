@@ -110,23 +110,18 @@
                                  Visibility="Collapsed"
                                  BorderThickness="0"
                                  Background="Transparent">
-
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-
                                     <StackPanel Margin="0,0,0,16">
 
-                                        <!-- DATUM -->
                                         <TextBlock Text="{Binding Date, StringFormat=dd.MM.yyyy}"
                                                    FontWeight="Bold"
                                                    FontSize="14"
-                                                   Margin="0,0,0,6"/>
+                                                   Margin="0,0,0,6"/>               
 
-                                        <!-- EINTRÄGE -->
                                         <ItemsControl ItemsSource="{Binding Entries}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-
                                                     <Border Background="{Binding EntryType, Converter={StaticResource EntryTypeColorConverter}}"
                                                             CornerRadius="10"
                                                             Padding="8"
@@ -135,10 +130,10 @@
                                                             MouseLeftButtonUp="TimelineEntry_Click">
 
                                                         <StackPanel>
-
                                                             <StackPanel Orientation="Horizontal">
                                                                 <TextBlock Text="{Binding EntryType, Converter={StaticResource EntryTypeIconConverter}}"
-                                                                            Margin="0,0,6,0"/>
+                                                                             Margin="0,0,6,0"/>
+
                                                                 <TextBlock Text="{Binding EntryType}"
                                                                             FontWeight="SemiBold"/>
                                                             </StackPanel>
@@ -151,24 +146,18 @@
                                                                        TextWrapping="Wrap"
                                                                        Foreground="Gray"
                                                                        MaxHeight="60"/>
-
                                                         </StackPanel>
-
                                                     </Border>
-
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
 
                                     </StackPanel>
-
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
-
                         </ListBox>
                     </Grid>
-                </Border>
-                
+                </Border>                
 
                 <!-- Rechts: Formular -->
                 <Border Grid.Column="2"

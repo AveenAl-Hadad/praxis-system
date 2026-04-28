@@ -11,6 +11,8 @@ using System.Linq;
 using MessageBox = System.Windows.MessageBox;
 using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using System.Windows.Media.Animation;
+using System.Windows.Media;
+using Brushes = System.Windows.Media.Brushes;
 
 namespace Praxis.Client.Views.Pages.Patienten;
 
@@ -25,6 +27,8 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
     private const string AllFilterText = "Alle";
 
     private bool _showTimeline;
+
+    public PatientMedicalRecordEntry? SelectedTimelineEntry { get; set; }
 
     public PatientMedicalRecordPage(IPatientMedicalRecordService medicalRecordService)
     {
@@ -434,10 +438,9 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         if (border.DataContext is not PatientMedicalRecordEntry entry)
             return;
 
-        // Auswahl setzen
+        SelectedTimelineEntry = entry;
         _selectedEntry = entry;
 
-        // Formular rechts füllen (gleich wie Grid)
         EntryTypeComboBox.SelectedItem = entry.EntryType;
         TitleTextBox.Text = entry.Title;
         TextTextBox.Text = entry.Text;
@@ -445,8 +448,40 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         IcdTextTextBox.Text = entry.IcdText ?? "";
         CreatedByTextBox.Text = entry.CreatedBy;
 
+        UpdateTimelineHighlight();
         UpdateButtonStates();
-    }  
+    }
+    private void UpdateTimelineHighlight()
+    {
+        ResetBorders(TimelineList);
+    }
+
+    private void ResetBorders(DependencyObject parent)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+
+            if (child is Border border &&
+                border.DataContext is PatientMedicalRecordEntry entry)
+            {
+                if (SelectedTimelineEntry != null && entry.Id == SelectedTimelineEntry.Id)
+                {
+                    border.Background = Brushes.DodgerBlue;
+                    border.BorderBrush = Brushes.RoyalBlue;
+                    border.BorderThickness = new Thickness(2);
+                }
+                else
+                {
+                    border.ClearValue(Border.BackgroundProperty);
+                    border.ClearValue(Border.BorderBrushProperty);
+                    border.ClearValue(Border.BorderThicknessProperty);
+                }
+            }
+
+            ResetBorders(child);
+        }
+    }
 
 }
 public class TimelineGroup
