@@ -14,7 +14,11 @@ public class PracticeNotice
 
     public bool IsPinned { get; set; } = false;
     public bool IsActive { get; set; } = true;
+    public string CreatedBy { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? VisibleUntil { get; set; }
+
+    public int? PatientId { get; set; }
+    public Patient? Patient { get; set; }
 }

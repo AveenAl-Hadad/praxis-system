@@ -122,6 +122,19 @@ public class PraxisDbContext : DbContext
         modelBuilder.Entity<PracticeNotice>()
             .Property(n => n.Title)
             .HasMaxLength(200);
+        modelBuilder.Entity<PracticeNotice>()
+            .Property(x => x.Category)
+            .HasMaxLength(50);
+
+        modelBuilder.Entity<PracticeNotice>()
+            .Property(x => x.CreatedBy)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<PracticeNotice>()
+            .HasOne(x => x.Patient)
+            .WithMany()
+            .HasForeignKey(x => x.PatientId)
+            .OnDelete(DeleteBehavior.SetNull);
         modelBuilder.Entity<Room>()
             .HasIndex(r => r.Name)
             .IsUnique();

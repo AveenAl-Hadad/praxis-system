@@ -171,8 +171,9 @@
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="170"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Praxis-Notizen"
@@ -180,19 +181,47 @@
                                FontWeight="Bold"
                                Margin="0,0,0,8"/>
 
-                    <TextBox x:Name="NoteText"
-                             Grid.Row="1"
-                             TextWrapping="Wrap"
-                             AcceptsReturn="True"
-                             VerticalScrollBarVisibility="Auto"/>
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
-                    <Button Grid.Row="2"
-                            Content="Notiz speichern"
-                            Width="140"
-                            Height="32"
-                            Margin="0,8,0,0"
-                            HorizontalAlignment="Left"
-                            Click="SaveNote_Click"/>
+                        <TextBox x:Name="NoteTitleText"
+                                 Height="28"
+                                 Margin="0,0,0,8"
+                                 Text=""/>
+
+                        <TextBox x:Name="NoteText"
+                                 Grid.Row="1"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"/>
+                    </Grid>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,8">
+                        <Button Content="Notiz speichern"
+                                Width="140"
+                                Height="32"
+                                Margin="0,0,8,0"
+                                Click="SaveNote_Click"/>
+
+                        <Button Content="Notiz löschen"
+                                Width="120"
+                                Height="32"
+                                Click="DeleteNote_Click"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="NotesGrid"
+                              Grid.Row="3"
+                              AutoGenerateColumns="False"
+                              SelectionChanged="NotesGrid_SelectionChanged">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Titel" Binding="{Binding Title}" Width="*"/>
+                            <DataGridTextColumn Header="Erstellt von" Binding="{Binding CreatedBy}" Width="120"/>
+                            <DataGridTextColumn Header="Datum" Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="160"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </Grid>
             </TabItem>
 

@@ -10,17 +10,20 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
 {
     private readonly IPracticeMessageService _messageService;
     private readonly IPatientService _patientService;
+    private readonly IPracticeNoticeService _noticeService;
 
     private const string CurrentUser = "MFA";
 
     public MessagesPage(
-                        IPracticeMessageService messageService,
-                        IPatientService patientService)
+        IPracticeMessageService messageService,
+        IPatientService patientService,
+        IPracticeNoticeService noticeService)
     {
         InitializeComponent();
 
         _messageService = messageService;
         _patientService = patientService;
+        _noticeService = noticeService;
 
         RecipientCombo.SelectedIndex = 0;
         PriorityCombo.SelectedIndex = 0;
@@ -30,6 +33,11 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
     {
         InboxGrid.ItemsSource = await _messageService.GetInboxAsync(CurrentUser);
         SentGrid.ItemsSource = await _messageService.GetSentAsync(CurrentUser);
+    }
+
+    private async Task RefreshNoticesAsync()
+    {
+        NotesGrid.ItemsSource = await _noticeService.GetActiveNoticesAsync();
     }
 
     private async void Send_Click(object sender, RoutedEventArgs e)
@@ -177,9 +185,10 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         MessagesTabControl.SelectedIndex = 3;
     }
 
-    public void ShowNotes()
+    public async void ShowNotes()
     {
         MessagesTabControl.SelectedIndex = 4;
+        await RefreshNoticesAsync();
     }
 
     public void ShowDoctorLetters()
@@ -187,16 +196,72 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         MessagesTabControl.SelectedIndex = 5;
     }
 
-    private void SaveNote_Click(object sender, RoutedEventArgs e)
+    private async void SaveNote_Click(object sender, RoutedEventArgs e)
     {
+        if (string.IsNullOrWhiteSpace(NoteTitleText.Text))
+        {
+            MessageBox.Show("Bitte Titel eingeben.");
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(NoteText.Text))
         {
             MessageBox.Show("Bitte Notiz eingeben.");
             return;
         }
 
-        MessageBox.Show("Notiz wurde gespeichert. Datenbank-Speicherung bauen wir im nächsten Schritt.");
+        var notice = new PracticeNotice
+        {
+            Title = NoteTitleText.Text.Trim(),
+            Content = NoteText.Text.Trim(),
+            Category = "Info",
+            IsPinned = false,
+            IsActive = true,
+            CreatedBy = CurrentUser
+        };
+
+        await _noticeService.AddNoticeAsync(notice);
+
+        NoteTitleText.Clear();
         NoteText.Clear();
+
+        await RefreshNoticesAsync();
+
+        MessageBox.Show("Notiz wurde gespeichert.");
+    }
+
+    private void NotesGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (NotesGrid.SelectedItem is not PracticeNotice notice)
+            return;
+
+        NoteTitleText.Text = notice.Title;
+        NoteText.Text = notice.Content;
+    }
+
+    private async void DeleteNote_Click(object sender, RoutedEventArgs e)
+    {
+        if (NotesGrid.SelectedItem is not PracticeNotice notice)
+        {
+            MessageBox.Show("Bitte zuerst eine Notiz auswählen.");
+            return;
+        }
+
+        var result = MessageBox.Show(
+            "Möchtest du diese Notiz wirklich löschen?",
+            "Notiz löschen",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        await _noticeService.DeleteNoticeAsync(notice.Id);
+
+        NoteTitleText.Clear();
+        NoteText.Clear();
+
+        await RefreshNoticesAsync();
     }
 
     private void SaveDoctorLetter_Click(object sender, RoutedEventArgs e)

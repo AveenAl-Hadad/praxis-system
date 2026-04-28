@@ -1,7 +1,7 @@
 ﻿using Praxis.Domain.Entities;
 
-namespace Praxis.Application.Interfaces
-{ 
+namespace Praxis.Application.Interfaces;
+
 public interface IPracticeNoticeService
 {
     Task<List<PracticeNotice>> GetActiveNoticesAsync();
@@ -9,5 +9,4 @@ public interface IPracticeNoticeService
     Task UpdateNoticeAsync(PracticeNotice notice);
     Task DeactivateNoticeAsync(int noticeId);
     Task DeleteNoticeAsync(int noticeId);
-    }
 }

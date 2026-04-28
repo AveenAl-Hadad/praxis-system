@@ -142,8 +142,7 @@ namespace Praxis.Client.Views
                              IBillingGenerationService billingGenerationService,
                              IPatientMedicalRecordService medicalRecordService,
                              IReportsService reportsService,
-                             IPracticeMessageService messageService
-
+                             IPracticeMessageService messageService                 
                              )
         {
             InitializeComponent();
@@ -161,6 +160,7 @@ namespace Praxis.Client.Views
             _abrechnungService = abrechnungService;
             _dashboardTaskService = dashboardTaskService;
             _practiceNoticeService = practiceNoticeService;
+            
             _dashboardLayoutService = dashboardLayoutService;
 
             _roomService = roomService;
@@ -194,7 +194,7 @@ namespace Praxis.Client.Views
                                                     patientMedicationService,
                                                     practiceSettingsService);
             _reportsPage = new ReportsPage(reportsService);
-            _messagesPage = new MessagesPage(messageService, patientService);
+            _messagesPage = new MessagesPage(messageService, patientService, practiceNoticeService);
             StartSessionTimer();
            
         }
