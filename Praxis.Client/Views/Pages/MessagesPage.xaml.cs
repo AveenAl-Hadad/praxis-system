@@ -292,15 +292,25 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
             return;
         }
 
+        int? patientId = null;
+
+        if (DoctorLetterPatientCombo.SelectedItem is Patient selectedPatient)
+        {
+            patientId = selectedPatient.Id;
+        }
+
         var letter = new DoctorLetter
         {
             Subject = DoctorLetterSubjectText.Text.Trim(),
             Body = DoctorLetterBodyText.Text.Trim(),
-            CreatedBy = CurrentUser
+            CreatedBy = CurrentUser,
+            PatientId = patientId
         };
 
         await _doctorLetterService.AddAsync(letter);
 
+        DoctorLetterPatientSearchText.Clear();
+        DoctorLetterPatientCombo.ItemsSource = null;
         DoctorLetterSubjectText.Clear();
         DoctorLetterBodyText.Clear();
 
@@ -316,6 +326,18 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
 
         DoctorLetterSubjectText.Text = letter.Subject;
         DoctorLetterBodyText.Text = letter.Body;
+
+        if (letter.Patient != null)
+        {
+            DoctorLetterPatientSearchText.Text = letter.Patient.FullName;
+            DoctorLetterPatientCombo.ItemsSource = new List<Patient> { letter.Patient };
+            DoctorLetterPatientCombo.SelectedIndex = 0;
+        }
+        else
+        {
+            DoctorLetterPatientSearchText.Clear();
+            DoctorLetterPatientCombo.ItemsSource = null;
+        }
     }
 
     private async void DeleteDoctorLetter_Click(object sender, RoutedEventArgs e)
@@ -368,6 +390,10 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         });
 
         document.Blocks.Add(new Paragraph(new Run($"Betreff: {DoctorLetterSubjectText.Text}")));
+        if (DoctorLetterPatientCombo.SelectedItem is Patient printPatient)
+        {
+            document.Blocks.Add(new Paragraph(new Run($"Patient: {printPatient.FullName}")));
+        }
         document.Blocks.Add(new Paragraph(new Run($"Datum: {DateTime.Now:dd.MM.yyyy HH:mm}")));
         document.Blocks.Add(new Paragraph(new Run(" ")));
         document.Blocks.Add(new Paragraph(new Run(DoctorLetterBodyText.Text)));
@@ -375,6 +401,29 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         printDialog.PrintDocument(
             ((IDocumentPaginatorSource)document).DocumentPaginator,
             "Arztbrief");
+    }
+    //Such methode
+    private async void SearchDoctorLetterPatient_Click(object sender, RoutedEventArgs e)
+    {
+        var search = DoctorLetterPatientSearchText.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            MessageBox.Show("Bitte Name, E-Mail oder Telefonnummer eingeben.");
+            return;
+        }
+
+        var patients = await _patientService.SearchPatientsAsync(search);
+
+        DoctorLetterPatientCombo.ItemsSource = patients;
+
+        if (patients.Count == 0)
+        {
+            MessageBox.Show("Kein Patient gefunden.");
+            return;
+        }
+
+        DoctorLetterPatientCombo.SelectedIndex = 0;
     }
 
 

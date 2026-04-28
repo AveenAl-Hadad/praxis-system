@@ -269,6 +269,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="180"/>
@@ -280,17 +281,34 @@
                                Margin="0,0,0,8"/>
 
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="Patient:" Width="90" VerticalAlignment="Center"/>
+
+                        <TextBox x:Name="DoctorLetterPatientSearchText"
+                                 Width="180"
+                                 Margin="0,0,6,0"/>
+
+                        <Button Content="Suchen"
+                                Width="80"
+                                Margin="0,0,6,0"
+                                Click="SearchDoctorLetterPatient_Click"/>
+
+                        <ComboBox x:Name="DoctorLetterPatientCombo"
+                                  Width="260"
+                                  DisplayMemberPath="FullName"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock Text="Betreff:" Width="90" VerticalAlignment="Center"/>
                         <TextBox x:Name="DoctorLetterSubjectText" Width="420"/>
                     </StackPanel>
 
                     <TextBox x:Name="DoctorLetterBodyText"
-                             Grid.Row="2"
+                             Grid.Row="3"
                              TextWrapping="Wrap"
                              AcceptsReturn="True"
                              VerticalScrollBarVisibility="Auto"/>
 
-                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,8">
+                    <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,8,0,8">
                         <Button Content="Speichern"
                                 Width="120"
                                 Height="32"
@@ -310,11 +328,12 @@
                     </StackPanel>
 
                     <DataGrid x:Name="DoctorLettersGrid"
-                              Grid.Row="4"
+                              Grid.Row="5"
                               AutoGenerateColumns="False"
                               SelectionChanged="DoctorLettersGrid_SelectionChanged">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Betreff" Binding="{Binding Subject}" Width="*"/>
+                            <DataGridTextColumn Header="Patient" Binding="{Binding Patient.FullName}" Width="180"/>
                             <DataGridTextColumn Header="Erstellt von" Binding="{Binding CreatedBy}" Width="120"/>
                             <DataGridTextColumn Header="Datum" Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="160"/>
                         </DataGrid.Columns>
