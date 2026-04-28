@@ -395,6 +395,7 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
     {
         ApplyFilter();
     }
+    
     // Timeline
     private void ToggleTimelineButton_Click(object sender, RoutedEventArgs e)
     {
@@ -414,8 +415,7 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
             TimelineList.Visibility = Visibility.Collapsed;
             ToggleTimelineButton.Content = "Timeline";
         }
-    }
- 
+    } 
     private void LoadTimeline()
     {
         var grouped = _entries
@@ -448,14 +448,15 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         IcdTextTextBox.Text = entry.IcdText ?? "";
         CreatedByTextBox.Text = entry.CreatedBy;
 
-        UpdateTimelineHighlight();
         UpdateButtonStates();
+        UpdateTimelineHighlight();
+
+        border.BringIntoView();
     }
     private void UpdateTimelineHighlight()
     {
         ResetBorders(TimelineList);
     }
-
     private void ResetBorders(DependencyObject parent)
     {
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
@@ -482,6 +483,63 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
             ResetBorders(child);
         }
     }
+    private void TimelineEntry_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (sender is not Border border)
+            return;
+
+        if (border.DataContext is PatientMedicalRecordEntry entry &&
+            SelectedTimelineEntry != null &&
+            entry.Id == SelectedTimelineEntry.Id)
+            return;
+
+        border.BorderBrush = Brushes.DodgerBlue;
+        border.BorderThickness = new Thickness(1);
+    }
+    private void TimelineEntry_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        UpdateTimelineHighlight();
+    }
+    private async void TimelineEntry_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ClickCount < 2)
+            return;
+
+        if (sender is not Border border)
+            return;
+
+        if (border.DataContext is not PatientMedicalRecordEntry entry)
+            return;
+
+        _selectedEntry = entry;
+        SelectedTimelineEntry = entry;
+
+        EntryTypeComboBox.SelectedItem = entry.EntryType;
+        TitleTextBox.Text = entry.Title;
+        TextTextBox.Text = entry.Text;
+        IcdCodeTextBox.Text = entry.IcdCode ?? "";
+        IcdTextTextBox.Text = entry.IcdText ?? "";
+        CreatedByTextBox.Text = entry.CreatedBy;
+
+        UpdateButtonStates();
+        UpdateTimelineHighlight();
+
+        if (entry.EntryType == MedicalRecordEntryType.Labor && entry.LaborRecordId.HasValue)
+        {
+            OpenLaborRecordButton_Click(sender, new RoutedEventArgs());
+            return;
+        }
+
+        if (entry.InvoiceId.HasValue)
+        {
+            OpenInvoiceButton_Click(sender, new RoutedEventArgs());
+            return;
+        }
+
+        await Task.CompletedTask;
+    }
+
+
 
 }
 public class TimelineGroup
