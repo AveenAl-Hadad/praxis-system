@@ -10,6 +10,7 @@ using Microsoft.Win32;
 using System.Linq;
 using MessageBox = System.Windows.MessageBox;
 using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
+using System.Windows.Media.Animation;
 
 namespace Praxis.Client.Views.Pages.Patienten;
 
@@ -390,7 +391,7 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
     {
         ApplyFilter();
     }
-
+    // Timeline
     private void ToggleTimelineButton_Click(object sender, RoutedEventArgs e)
     {
         _showTimeline = !_showTimeline;
@@ -401,7 +402,7 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
             TimelineList.Visibility = Visibility.Visible;
             ToggleTimelineButton.Content = "Tabelle";
 
-            TimelineList.ItemsSource = _entries; // wichtig!
+            LoadTimeline();
         }
         else
         {
@@ -410,13 +411,46 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
             ToggleTimelineButton.Content = "Timeline";
         }
     }
+ 
     private void LoadTimeline()
     {
-        var grouped = _allEntries
+        var grouped = _entries
             .OrderByDescending(x => x.CreatedAt)
+            .GroupBy(x => x.CreatedAt.Date)
+            .Select(g => new TimelineGroup
+            {
+                Date = g.Key,
+                Entries = g.ToList()
+            })
             .ToList();
 
         TimelineList.ItemsSource = grouped;
     }
+    private void TimelineEntry_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is not Border border)
+            return;
 
+        if (border.DataContext is not PatientMedicalRecordEntry entry)
+            return;
+
+        // Auswahl setzen
+        _selectedEntry = entry;
+
+        // Formular rechts füllen (gleich wie Grid)
+        EntryTypeComboBox.SelectedItem = entry.EntryType;
+        TitleTextBox.Text = entry.Title;
+        TextTextBox.Text = entry.Text;
+        IcdCodeTextBox.Text = entry.IcdCode ?? "";
+        IcdTextTextBox.Text = entry.IcdText ?? "";
+        CreatedByTextBox.Text = entry.CreatedBy;
+
+        UpdateButtonStates();
+    }  
+
+}
+public class TimelineGroup
+{
+    public DateTime Date { get; set; }
+    public List<PatientMedicalRecordEntry> Entries { get; set; } = new();
 }
