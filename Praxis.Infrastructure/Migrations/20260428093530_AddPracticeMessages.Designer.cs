@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Praxis.Infrastructure.Persistence;
 
@@ -10,9 +11,11 @@ using Praxis.Infrastructure.Persistence;
 namespace Praxis.Infrastructure.Migrations
 {
     [DbContext(typeof(PraxisDbContext))]
-    partial class PraxisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428093530_AddPracticeMessages")]
+    partial class AddPracticeMessages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.26");

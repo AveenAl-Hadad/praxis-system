@@ -19,6 +19,7 @@ using Praxis.Client.Views.Pages.Abrechnung;
 using Praxis.Client.Views.Pages.Kataloge;
 using Praxis.Client.Security;
 
+
 using MessageBox = System.Windows.MessageBox;
 using Button = System.Windows.Controls.Button;
 using System.Windows.Threading;
@@ -58,8 +59,9 @@ namespace Praxis.Client.Views
         private readonly CatalogsPage _catalogsPage;
 
 
-        private readonly ReportsPage _reportsPage = new ReportsPage();
-        private readonly MessagesPage _messagesPage = new MessagesPage();
+        private readonly ReportsPage _reportsPage;
+        private readonly MessagesPage _messagesPage;
+
         private readonly DashboardPage _dashboardPage = new DashboardPage();
         private readonly PatientSearchPage _patientSearchPage = new PatientSearchPage();
         private readonly PatientCreatePage _patientCreatePage = new PatientCreatePage();
@@ -69,6 +71,7 @@ namespace Praxis.Client.Views
         private readonly EditUserPage _editUserPage = new EditUserPage();
         private readonly PatientDeletePage _patientDeletePage = new PatientDeletePage();
         private readonly PatientDocumentsPage _patientDocumentsPage = new PatientDocumentsPage();
+    
 
         private readonly SettingsPage _settingsPage;
 
@@ -137,7 +140,10 @@ namespace Praxis.Client.Views
                              IInvoiceService invoiceService,
                              IInvoicePdfService invoicePdfService,
                              IBillingGenerationService billingGenerationService,
-                             IPatientMedicalRecordService medicalRecordService
+                             IPatientMedicalRecordService medicalRecordService,
+                             IReportsService reportsService,
+                             IPracticeMessageService messageService
+
                              )
         {
             InitializeComponent();
@@ -187,6 +193,8 @@ namespace Praxis.Client.Views
                                                     patientDiagnosisService,
                                                     patientMedicationService,
                                                     practiceSettingsService);
+            _reportsPage = new ReportsPage(reportsService);
+            _messagesPage = new MessagesPage(messageService);
             StartSessionTimer();
            
         }
@@ -244,10 +252,12 @@ namespace Praxis.Client.Views
 
                 case BottomModule.Auswertungen:
                     LoadPage(_reportsPage);
+                    _ = _reportsPage.RefreshAsync();
                     break;
 
                 case BottomModule.Nachrichten:
                     LoadPage(_messagesPage);
+                    _ = _messagesPage.RefreshAsync();
                     break;
 
                 case BottomModule.Kataloge:
@@ -379,7 +389,7 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Auswertungen:
-                    AddSidebarButton("Checkliste", (s, e) => LoadPage(_reportsPage), true);
+                    AddSidebarButton("Übersicht", async (s, e) =>{LoadPage(_reportsPage); await _reportsPage.RefreshAsync();}, true);
                     AddSidebarButton("Patienten ohne Karte", DummySidebarClick);
                     AddSidebarButton("Leistungsziffern-Statistik", DummySidebarClick);
                     AddSidebarButton("Diagnose-Statistik", DummySidebarClick);
