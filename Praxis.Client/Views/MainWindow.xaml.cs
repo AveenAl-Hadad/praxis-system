@@ -397,50 +397,22 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Nachrichten:
-                    AddSidebarButton("Neue Nachricht", (s, e) => LoadPage(_messagesPage), true);
-                    AddSidebarButton("Interne Nachrichten", DummySidebarClick);
-                    AddSidebarButton("Externe Nachrichten", DummySidebarClick);
-                    AddSidebarButton("Notizen", DummySidebarClick);
-                    AddSidebarButton("Arztbriefe", DummySidebarClick);
+                    AddSidebarButton("Neue Nachricht", async (s, e) => {LoadPage(_messagesPage);_messagesPage.ShowNewMessage(); await _messagesPage.RefreshAsync(); }, true);
+                    AddSidebarButton("Posteingang", async (s, e) => { LoadPage(_messagesPage); _messagesPage.ShowInbox(); await _messagesPage.RefreshAsync();});
+                    AddSidebarButton("Gesendet", async (s, e) => {LoadPage(_messagesPage); _messagesPage.ShowSent(); await _messagesPage.RefreshAsync();});
+                    AddSidebarButton("Interne Nachrichten", async (s, e) => { LoadPage(_messagesPage); _messagesPage.ShowInbox();await _messagesPage.RefreshAsync(); });
+                    AddSidebarButton("Externe Nachrichten", async (s, e) => { LoadPage(_messagesPage); _messagesPage.ShowExternalMessages(); await _messagesPage.RefreshAsync(); });
+                    AddSidebarButton("Notizen", (s, e) =>{ LoadPage(_messagesPage); _messagesPage.ShowNotes(); });
+                    AddSidebarButton("Arztbriefe", (s, e) => {LoadPage(_messagesPage); _messagesPage.ShowDoctorLetters();});
                     break;
 
                 case BottomModule.Kataloge:
-                    AddSidebarButton("Katalogübersicht", async (s, e) =>
-                    {
-                        LoadPage(_catalogsPage);
-                        await _catalogsPage.ShowOverviewAsync();
-                    }, true);
-
-                    AddSidebarButton("Diagnosen / ICD", async (s, e) =>
-                    {
-                        LoadPage(_catalogsPage);
-                        await _catalogsPage.SelectCategoryAsync("Diagnosen / ICD");
-                    });
-
-                    AddSidebarButton("Leistungen / GOÄ / EBM", async (s, e) =>
-                    {
-                        LoadPage(_catalogsPage);
-                        await _catalogsPage.SelectCategoryAsync("Leistungen / GOÄ / EBM");
-                    });
-
-                    AddSidebarButton("Medikamente", async (s, e) =>
-                    {
-                        LoadPage(_catalogsPage);
-                        await _catalogsPage.SelectCategoryAsync("Medikamente");
-                    });
-
-                    AddSidebarButton("Formulare", async (s, e) =>
-                    {
-                        LoadPage(_catalogsPage);
-                        await _catalogsPage.SelectCategoryAsync("Formulare");
-                    });
-
-                    AddSidebarButton("Dokumentvorlagen", async (s, e) =>
-                    {
-                        LoadPage(_catalogsPage);
-                        await _catalogsPage.SelectCategoryAsync("Dokumentvorlagen");
-                    });
-                    break;
+                    AddSidebarButton("Katalogübersicht", async (s, e) => { LoadPage(_catalogsPage);await _catalogsPage.ShowOverviewAsync(); }, true);
+                    AddSidebarButton("Diagnosen / ICD", async (s, e) => { LoadPage(_catalogsPage); await _catalogsPage.SelectCategoryAsync("Diagnosen / ICD");});
+                    AddSidebarButton("Leistungen / GOÄ / EBM", async (s, e) =>{ LoadPage(_catalogsPage);await _catalogsPage.SelectCategoryAsync("Leistungen / GOÄ / EBM");});
+                    AddSidebarButton("Medikamente", async (s, e) =>{ LoadPage(_catalogsPage); await _catalogsPage.SelectCategoryAsync("Medikamente");});
+                    AddSidebarButton("Formulare", async (s, e) => { LoadPage(_catalogsPage); await _catalogsPage.SelectCategoryAsync("Formulare"); });
+                    AddSidebarButton("Dokumentvorlagen", async (s, e) =>{ LoadPage(_catalogsPage); await _catalogsPage.SelectCategoryAsync("Dokumentvorlagen"); });                    break;
 
                 case BottomModule.Einrichtung:
                     if (PermissionHelper.CanManageUsers)

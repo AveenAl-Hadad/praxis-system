@@ -157,4 +157,65 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         PatientCombo.SelectedIndex = 0;
     }
 
+    public void ShowInbox()
+    {
+        MessagesTabControl.SelectedIndex = 0;
+    }
+
+    public void ShowSent()
+    {
+        MessagesTabControl.SelectedIndex = 1;
+    }
+
+    public void ShowNewMessage()
+    {
+        MessagesTabControl.SelectedIndex = 2;
+    }
+
+    public void ShowExternalMessages()
+    {
+        MessagesTabControl.SelectedIndex = 3;
+    }
+
+    public void ShowNotes()
+    {
+        MessagesTabControl.SelectedIndex = 4;
+    }
+
+    public void ShowDoctorLetters()
+    {
+        MessagesTabControl.SelectedIndex = 5;
+    }
+
+    private void SaveNote_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(NoteText.Text))
+        {
+            MessageBox.Show("Bitte Notiz eingeben.");
+            return;
+        }
+
+        MessageBox.Show("Notiz wurde gespeichert. Datenbank-Speicherung bauen wir im nächsten Schritt.");
+        NoteText.Clear();
+    }
+
+    private void SaveDoctorLetter_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(DoctorLetterSubjectText.Text))
+        {
+            MessageBox.Show("Bitte Betreff eingeben.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(DoctorLetterBodyText.Text))
+        {
+            MessageBox.Show("Bitte Text für Arztbrief eingeben.");
+            return;
+        }
+
+        MessageBox.Show("Arztbrief wurde gespeichert. Datenbank-Speicherung bauen wir im nächsten Schritt.");
+
+        DoctorLetterSubjectText.Clear();
+        DoctorLetterBodyText.Clear();
+    }
 }

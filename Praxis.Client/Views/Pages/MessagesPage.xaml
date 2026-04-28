@@ -13,7 +13,7 @@
                    FontWeight="Bold"
                    Margin="0,0,0,12"/>
 
-        <TabControl Grid.Row="1">
+        <TabControl x:Name="MessagesTabControl" Grid.Row="1">
 
             <TabItem Header="Posteingang">
                 <Grid>
@@ -142,7 +142,96 @@
                             Click="Send_Click"/>
                 </Grid>
             </TabItem>
+            
+            <TabItem Header="Externe Nachrichten">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Externe Nachrichten"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Margin="0,0,0,8"/>
+
+                    <DataGrid Grid.Row="1"
+                              x:Name="ExternalMessagesGrid"
+                              AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Absender" Binding="{Binding Sender}" Width="160"/>
+                            <DataGridTextColumn Header="Betreff" Binding="{Binding Subject}" Width="*"/>
+                            <DataGridTextColumn Header="Datum" Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="160"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Notizen">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Praxis-Notizen"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Margin="0,0,0,8"/>
+
+                    <TextBox x:Name="NoteText"
+                             Grid.Row="1"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"/>
+
+                    <Button Grid.Row="2"
+                            Content="Notiz speichern"
+                            Width="140"
+                            Height="32"
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Left"
+                            Click="SaveNote_Click"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Arztbriefe">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Arztbrief erstellen"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Margin="0,0,0,8"/>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="Betreff:" Width="90" VerticalAlignment="Center"/>
+                        <TextBox x:Name="DoctorLetterSubjectText" Width="420"/>
+                    </StackPanel>
+
+                    <TextBox x:Name="DoctorLetterBodyText"
+                             Grid.Row="2"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"/>
+
+                    <Button Grid.Row="3"
+                            Content="Arztbrief speichern"
+                            Width="160"
+                            Height="32"
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Left"
+                            Click="SaveDoctorLetter_Click"/>
+                </Grid>
+            </TabItem>
 
         </TabControl>
+        
     </Grid>
 </UserControl>
