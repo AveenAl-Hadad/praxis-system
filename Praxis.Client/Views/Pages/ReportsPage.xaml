@@ -1,6 +1,7 @@
 ﻿<UserControl x:Class="Praxis.Client.Views.Pages.ReportsPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF">
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -68,7 +69,7 @@
         </UniformGrid>
 
         <!-- Tabellen -->
-        <TabControl Grid.Row="3">
+        <TabControl  x:Name="ReportsTabControl"  Grid.Row="3">
 
             <TabItem Header="Diagnosen">
                 <DataGrid x:Name="DiagnosisGrid" AutoGenerateColumns="False">
@@ -96,6 +97,23 @@
                         <DataGridTextColumn Header="Anzahl" Binding="{Binding Count}" Width="120"/>
                     </DataGrid.Columns>
                 </DataGrid>
+            </TabItem>
+            
+            <TabItem Header="Diagramme">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <GroupBox Header="Diagnosen" Margin="0,0,0,8">
+                        <lvc:CartesianChart x:Name="DiagnosisChart"/>
+                    </GroupBox>
+
+                    <GroupBox Grid.Row="1" Header="Umsatz" Margin="0,8,0,0">
+                        <lvc:CartesianChart x:Name="RevenueChart"/>
+                    </GroupBox>
+                </Grid>
             </TabItem>
 
         </TabControl>

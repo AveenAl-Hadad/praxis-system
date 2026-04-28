@@ -29,9 +29,11 @@ public class ReportsService : IReportsService
             InvoiceCount = await _db.Invoices
                 .CountAsync(i => i.InvoiceDate >= from && i.InvoiceDate <= to),
 
-            Revenue = await _db.Invoices
-                .Where(i => i.InvoiceDate >= from && i.InvoiceDate <= to)
-                .SumAsync(i => (decimal?)i.TotalAmount) ?? 0
+            Revenue = (await _db.Invoices
+                                        .Where(i => i.InvoiceDate >= from && i.InvoiceDate <= to)
+                                        .Select(i => i.TotalAmount)
+                                        .ToListAsync())
+                                        .Sum()
         };
     }
 
@@ -52,8 +54,13 @@ public class ReportsService : IReportsService
 
     public async Task<List<ReportRow>> GetInvoiceStatsAsync(DateTime from, DateTime to)
     {
-        return await _db.Invoices
+        to = to.Date.AddDays(1).AddTicks(-1);
+
+        var invoices = await _db.Invoices
             .Where(i => i.InvoiceDate >= from && i.InvoiceDate <= to)
+            .ToListAsync();
+
+        return invoices
             .GroupBy(i => i.InvoiceDate.Date)
             .Select(g => new ReportRow
             {
@@ -62,9 +69,8 @@ public class ReportsService : IReportsService
                 Amount = g.Sum(x => x.TotalAmount)
             })
             .OrderBy(x => x.Name)
-            .ToListAsync();
+            .ToList();
     }
-
     public async Task<List<ReportRow>> GetAppointmentStatsAsync(DateTime from, DateTime to)
     {
         return await _db.Appointments

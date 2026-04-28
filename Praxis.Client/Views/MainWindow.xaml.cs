@@ -399,11 +399,36 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Auswertungen:
-                    AddSidebarButton("Übersicht", async (s, e) =>{LoadPage(_reportsPage); await _reportsPage.RefreshAsync();}, true);
-                    AddSidebarButton("Patienten ohne Karte", DummySidebarClick);
-                    AddSidebarButton("Leistungsziffern-Statistik", DummySidebarClick);
-                    AddSidebarButton("Diagnose-Statistik", DummySidebarClick);
-                    AddSidebarButton("Patienten-Statistik", DummySidebarClick);
+                    AddSidebarButton("Übersicht", (s, e) =>
+                    {
+                        LoadPage(_reportsPage);
+                        _reportsPage.ShowOverview();
+                    }, true);
+
+                    AddSidebarButton("Diagnose-Statistik", (s, e) =>
+                    {
+                        LoadPage(_reportsPage);
+                        _reportsPage.ShowDiagnosisStats();
+                    });
+
+                    AddSidebarButton("Rechnungs-Statistik", (s, e) =>
+                    {
+                        LoadPage(_reportsPage);
+                        _reportsPage.ShowInvoiceStats();
+                    });
+
+                    AddSidebarButton("Termin-Statistik", (s, e) =>
+                    {
+                        LoadPage(_reportsPage);
+                        _reportsPage.ShowAppointmentStats();
+                    });
+
+                    AddSidebarButton("Diagramme", (s, e) =>
+                    {
+                        LoadPage(_reportsPage);
+                        _reportsPage.ShowCharts();
+                    });
+
                     break;
 
                 case BottomModule.Nachrichten:
