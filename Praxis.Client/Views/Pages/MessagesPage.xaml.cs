@@ -92,4 +92,41 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
             await RefreshAsync();
         }
     }
+
+    private async void MarkRead_Click(object sender, RoutedEventArgs e)
+    {
+        if (InboxGrid.SelectedItem is not PracticeMessage message)
+        {
+            MessageBox.Show("Bitte zuerst eine Nachricht auswählen.");
+            return;
+        }
+
+        await _messageService.MarkAsReadAsync(message.Id);
+        await RefreshAsync();
+    }
+
+    private async void DeleteMessage_Click(object sender, RoutedEventArgs e)
+    {
+        if (InboxGrid.SelectedItem is not PracticeMessage message)
+        {
+            MessageBox.Show("Bitte zuerst eine Nachricht auswählen.");
+            return;
+        }
+
+        var result = MessageBox.Show(
+            "Möchtest du diese Nachricht wirklich löschen?",
+            "Nachricht löschen",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        await _messageService.DeleteAsync(message.Id);
+
+        InboxBodyText.Clear();
+
+        await RefreshAsync();
+    }
+
 }

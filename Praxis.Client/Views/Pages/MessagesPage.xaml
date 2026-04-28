@@ -30,16 +30,36 @@
                             <DataGridTextColumn Header="Betreff" Binding="{Binding Subject}" Width="*"/>
                             <DataGridTextColumn Header="Priorität" Binding="{Binding Priority}" Width="100"/>
                             <DataGridCheckBoxColumn Header="Gelesen" Binding="{Binding IsRead}" Width="80"/>
-                            <DataGridTextColumn Header="Datum" Binding="{Binding CreatedAt}" Width="150"/>
+                            <DataGridTextColumn Header="Datum" Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="150"/>
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <TextBox x:Name="InboxBodyText"
-                             Grid.Row="1"
-                             Margin="0,8,0,0"
-                             IsReadOnly="True"
-                             TextWrapping="Wrap"
-                             AcceptsReturn="True"/>
+                    <Grid Grid.Row="1" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="InboxBodyText"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"/>
+
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <Button Content="Als gelesen"
+                                    Width="120"
+                                    Height="30"
+                                    Margin="0,0,0,8"
+                                    Click="MarkRead_Click"/>
+
+                            <Button Content="Löschen"
+                                    Width="120"
+                                    Height="30"
+                                    Click="DeleteMessage_Click"/>
+                        </StackPanel>
+                    </Grid>
+
                 </Grid>
             </TabItem>
 
@@ -49,7 +69,7 @@
                         <DataGridTextColumn Header="An" Binding="{Binding Recipient}" Width="120"/>
                         <DataGridTextColumn Header="Betreff" Binding="{Binding Subject}" Width="*"/>
                         <DataGridTextColumn Header="Priorität" Binding="{Binding Priority}" Width="100"/>
-                        <DataGridTextColumn Header="Datum" Binding="{Binding CreatedAt}" Width="150"/>
+                        <DataGridTextColumn Header="Datum" Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="150"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
@@ -88,8 +108,9 @@
                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock Text="Patient-ID:" Width="90" VerticalAlignment="Center"/>
                         <TextBox x:Name="PatientIdText" Width="220"/>
+                        <TextBlock Text="optional" Margin="8,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
-
+                    
                     <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock Text="Betreff:" Width="90" VerticalAlignment="Center"/>
                         <TextBox x:Name="SubjectText" Width="420"/>
