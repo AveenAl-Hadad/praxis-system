@@ -541,42 +541,82 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         var gfx = XGraphics.FromPdfPage(page);
 
         var titleFont = new XFont("Arial", 18, XFontStyle.Bold);
-        var headerFont = new XFont("Arial", 12, XFontStyle.Bold);
-        var normalFont = new XFont("Arial", 11, XFontStyle.Regular);
+        var subtitleFont = new XFont("Arial", 11, XFontStyle.Regular);
+        var headerFont = new XFont("Arial", 13, XFontStyle.Bold);
+        var normalFont = new XFont("Arial", 10, XFontStyle.Regular);
+        var smallFont = new XFont("Arial", 8, XFontStyle.Regular);
 
-        double margin = 40;
-        double y = 50;
-        double lineHeight = 18;
+        double margin = 45;
+        double y = 40;
+        double lineHeight = 16;
         double maxWidth = page.Width - margin * 2;
 
-        gfx.DrawString("Praxissoftware", titleFont, XBrushes.Black,
+        // Praxis-Briefkopf
+        gfx.DrawString("Praxis Musterarzt", titleFont, XBrushes.Black,
             new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+
+        y += 22;
+
+        gfx.DrawString("Dr. med. Max Mustermann · Facharzt für Allgemeinmedizin",
+            subtitleFont, XBrushes.Black,
+            new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+
+        y += 16;
+
+        gfx.DrawString("Musterstraße 12 · 12345 Musterstadt · Tel. 01234 / 56789 · praxis@example.de",
+            smallFont, XBrushes.Black,
+            new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+
+        y += 25;
+
+        gfx.DrawLine(XPens.Black, margin, y, page.Width - margin, y);
+        y += 30;
+
+        // Patientendaten
+        if (DoctorLetterPatientCombo.SelectedItem is Patient patient)
+        {
+            gfx.DrawString("Patient", headerFont, XBrushes.Black,
+                new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+
+            y += 20;
+
+            gfx.DrawString(patient.FullName, normalFont, XBrushes.Black,
+                new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+            y += lineHeight;
+
+            gfx.DrawString($"Geburtsdatum: {patient.Geburtsdatum:dd.MM.yyyy}", normalFont, XBrushes.Black,
+                new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+            y += lineHeight;
+
+            gfx.DrawString($"Telefon: {patient.Telefonnummer}", normalFont, XBrushes.Black,
+                new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+            y += lineHeight;
+
+            gfx.DrawString($"E-Mail: {patient.Email}", normalFont, XBrushes.Black,
+                new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+
+            y += 30;
+        }
+
+        // Datum rechts
+        gfx.DrawString($"Datum: {DateTime.Now:dd.MM.yyyy}",
+            normalFont,
+            XBrushes.Black,
+            new XRect(margin, y, maxWidth, lineHeight),
+            XStringFormats.TopRight);
 
         y += 35;
 
-        gfx.DrawString("Arztbrief", headerFont, XBrushes.Black,
-            new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
+        // Betreff
+        gfx.DrawString(DoctorLetterSubjectText.Text,
+            headerFont,
+            XBrushes.Black,
+            new XRect(margin, y, maxWidth, lineHeight),
+            XStringFormats.TopLeft);
 
         y += 30;
 
-        gfx.DrawString($"Betreff: {DoctorLetterSubjectText.Text}", normalFont, XBrushes.Black,
-            new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
-
-        y += lineHeight;
-
-        if (DoctorLetterPatientCombo.SelectedItem is Patient patient)
-        {
-            gfx.DrawString($"Patient: {patient.FullName}", normalFont, XBrushes.Black,
-                new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
-
-            y += lineHeight;
-        }
-
-        gfx.DrawString($"Datum: {DateTime.Now:dd.MM.yyyy HH:mm}", normalFont, XBrushes.Black,
-            new XRect(margin, y, maxWidth, lineHeight), XStringFormats.TopLeft);
-
-        y += 35;
-
+        // Text
         DrawWrappedText(
             document,
             ref page,
@@ -588,11 +628,36 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
             maxWidth,
             lineHeight);
 
+        y += 40;
+
+        gfx.DrawString("Mit freundlichen Grüßen",
+            normalFont,
+            XBrushes.Black,
+            new XRect(margin, y, maxWidth, lineHeight),
+            XStringFormats.TopLeft);
+
+        y += 35;
+
+        gfx.DrawString("Dr. med. Max Mustermann",
+            normalFont,
+            XBrushes.Black,
+            new XRect(margin, y, maxWidth, lineHeight),
+            XStringFormats.TopLeft);
+
+        // Fußzeile
+        gfx.DrawLine(XPens.LightGray, margin, page.Height - 45, page.Width - margin, page.Height - 45);
+
+        gfx.DrawString("Praxis Musterarzt · Musterstraße 12 · 12345 Musterstadt",
+            smallFont,
+            XBrushes.Gray,
+            new XRect(margin, page.Height - 35, maxWidth, lineHeight),
+            XStringFormats.TopCenter);
+
         document.Save(saveDialog.FileName);
 
-        MessageBox.Show("PDF wurde erfolgreich gespeichert.");
-
+        MessageBox.Show("PDF wurde erfolgreich exportiert.");
     }
+
     // Hilfsmethode
     private void DrawWrappedText(
     PdfDocument document,
@@ -605,44 +670,53 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
     double maxWidth,
     double lineHeight)
     {
-        var words = text.Replace("\r", "").Split(' ');
-        var line = "";
+        var paragraphs = text.Replace("\r", "").Split('\n');
 
-        foreach (var word in words)
+        foreach (var paragraph in paragraphs)
         {
-            var testLine = string.IsNullOrWhiteSpace(line)
-                ? word
-                : line + " " + word;
+            var words = paragraph.Split(' ');
+            var line = "";
 
-            var size = gfx.MeasureString(testLine, font);
+            foreach (var word in words)
+            {
+                var testLine = string.IsNullOrWhiteSpace(line)
+                    ? word
+                    : line + " " + word;
 
-            if (size.Width > maxWidth)
+                var size = gfx.MeasureString(testLine, font);
+
+                if (size.Width > maxWidth)
+                {
+                    gfx.DrawString(line, font, XBrushes.Black,
+                        new XRect(margin, y, maxWidth, lineHeight),
+                        XStringFormats.TopLeft);
+
+                    y += lineHeight;
+                    line = word;
+
+                    if (y > page.Height - 80)
+                    {
+                        page = document.AddPage();
+                        gfx = XGraphics.FromPdfPage(page);
+                        y = 50;
+                    }
+                }
+                else
+                {
+                    line = testLine;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(line))
             {
                 gfx.DrawString(line, font, XBrushes.Black,
                     new XRect(margin, y, maxWidth, lineHeight),
                     XStringFormats.TopLeft);
 
                 y += lineHeight;
-                line = word;
-
-                if (y > page.Height - 60)
-                {
-                    page = document.AddPage();
-                    gfx = XGraphics.FromPdfPage(page);
-                    y = 50;
-                }
             }
-            else
-            {
-                line = testLine;
-            }
-        }
 
-        if (!string.IsNullOrWhiteSpace(line))
-        {
-            gfx.DrawString(line, font, XBrushes.Black,
-                new XRect(margin, y, maxWidth, lineHeight),
-                XStringFormats.TopLeft);
+            y += 8;
         }
     }
 }
