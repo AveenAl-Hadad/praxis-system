@@ -46,4 +46,39 @@ public class PatientMedicalRecordEntry
 
     public string BillingStatusDisplay =>
         InvoiceId.HasValue ? "Ja" : "Nein";
+
+    public string EntryTypeDisplay => EntryType.ToString();
+
+    public string EntryTypeColor
+    {
+        get
+        {
+            return EntryType switch
+            {
+                Praxis.Domain.Constants.MedicalRecordEntryType.Anamnese => "#DBEAFE",
+                Praxis.Domain.Constants.MedicalRecordEntryType.Befund => "#DCFCE7",
+                Praxis.Domain.Constants.MedicalRecordEntryType.Diagnose => "#FEF3C7",
+                Praxis.Domain.Constants.MedicalRecordEntryType.Therapie => "#EDE9FE",
+                Praxis.Domain.Constants.MedicalRecordEntryType.Notiz => "#F3F4F6",
+                Praxis.Domain.Constants.MedicalRecordEntryType.Labor => "#CCFBF1",
+                Praxis.Domain.Constants.MedicalRecordEntryType.Dokument => "#E0E7FF",
+                Praxis.Domain.Constants.MedicalRecordEntryType.Abrechnung => "#FEE2E2",
+                _ => "#FFFFFF"
+            };
+        }
+    }
+    public string CreatedAtDisplay => CreatedAt.ToString("dd.MM.yyyy HH:mm");
+
+    public string ShortTextDisplay
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Text))
+                return string.Empty;
+
+            return Text.Length <= 120
+                ? Text
+                : Text.Substring(0, 120) + "...";
+        }
+    }
 }

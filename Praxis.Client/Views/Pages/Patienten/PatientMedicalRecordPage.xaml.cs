@@ -7,6 +7,7 @@ using Praxis.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Praxis.Client.Views;
 using Microsoft.Win32;
+using System.Linq;
 using MessageBox = System.Windows.MessageBox;
 using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
@@ -21,6 +22,8 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
     private PatientMedicalRecordEntry? _selectedEntry;
     private readonly List<PatientMedicalRecordEntry> _allEntries = new();
     private const string AllFilterText = "Alle";
+
+    private bool _showTimeline;
 
     public PatientMedicalRecordPage(IPatientMedicalRecordService medicalRecordService)
     {
@@ -95,6 +98,19 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
         if (FilterTypeComboBox.SelectedItem is MedicalRecordEntryType selectedType)
         {
             filtered = filtered.Where(x => x.EntryType == selectedType);
+        }
+
+        var search = SearchTextBox.Text?.Trim().ToLowerInvariant();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            filtered = filtered.Where(x =>
+                (x.Title ?? string.Empty).ToLowerInvariant().Contains(search) ||
+                (x.Text ?? string.Empty).ToLowerInvariant().Contains(search) ||
+                (x.IcdCode ?? string.Empty).ToLowerInvariant().Contains(search) ||
+                (x.IcdText ?? string.Empty).ToLowerInvariant().Contains(search) ||
+                x.EntryType.ToString().ToLowerInvariant().Contains(search) ||
+                (x.Invoice?.InvoiceNumber ?? string.Empty).ToLowerInvariant().Contains(search));
         }
 
         foreach (var entry in filtered.OrderByDescending(x => x.CreatedAt))
@@ -368,6 +384,39 @@ public partial class PatientMedicalRecordPage : System.Windows.Controls.UserCont
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
+    }
+
+    private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        ApplyFilter();
+    }
+
+    private void ToggleTimelineButton_Click(object sender, RoutedEventArgs e)
+    {
+        _showTimeline = !_showTimeline;
+
+        if (_showTimeline)
+        {
+            EntriesGrid.Visibility = Visibility.Collapsed;
+            TimelineList.Visibility = Visibility.Visible;
+            ToggleTimelineButton.Content = "Tabelle";
+
+            TimelineList.ItemsSource = _entries; // wichtig!
+        }
+        else
+        {
+            EntriesGrid.Visibility = Visibility.Visible;
+            TimelineList.Visibility = Visibility.Collapsed;
+            ToggleTimelineButton.Content = "Timeline";
+        }
+    }
+    private void LoadTimeline()
+    {
+        var grouped = _allEntries
+            .OrderByDescending(x => x.CreatedAt)
+            .ToList();
+
+        TimelineList.ItemsSource = grouped;
     }
 
 }
