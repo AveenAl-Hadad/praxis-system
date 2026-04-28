@@ -9,14 +9,18 @@ namespace Praxis.Client.Views.Pages;
 public partial class MessagesPage : System.Windows.Controls.UserControl
 {
     private readonly IPracticeMessageService _messageService;
+    private readonly IPatientService _patientService;
 
     private const string CurrentUser = "MFA";
 
-    public MessagesPage(IPracticeMessageService messageService)
+    public MessagesPage(
+                        IPracticeMessageService messageService,
+                        IPatientService patientService)
     {
         InitializeComponent();
 
         _messageService = messageService;
+        _patientService = patientService;
 
         RecipientCombo.SelectedIndex = 0;
         PriorityCombo.SelectedIndex = 0;
@@ -53,9 +57,9 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
 
         int? patientId = null;
 
-        if (int.TryParse(PatientIdText.Text, out var parsedPatientId))
+        if (PatientCombo.SelectedItem is Patient selectedPatient)
         {
-            patientId = parsedPatientId;
+            patientId = selectedPatient.Id;
         }
 
         var message = new PracticeMessage
@@ -72,7 +76,8 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
 
         SubjectText.Clear();
         BodyText.Clear();
-        PatientIdText.Clear();
+        PatientSearchText.Clear();
+        PatientCombo.ItemsSource = null;
 
         MessageBox.Show("Nachricht wurde gesendet.");
 
@@ -127,6 +132,29 @@ public partial class MessagesPage : System.Windows.Controls.UserControl
         InboxBodyText.Clear();
 
         await RefreshAsync();
+    }
+
+    private async void SearchPatient_Click(object sender, RoutedEventArgs e)
+    {
+        var search = PatientSearchText.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            MessageBox.Show("Bitte Name, E-Mail oder Telefonnummer eingeben.");
+            return;
+        }
+
+        var patients = await _patientService.SearchPatientsAsync(search);
+
+        PatientCombo.ItemsSource = patients;
+
+        if (patients.Count == 0)
+        {
+            MessageBox.Show("Kein Patient gefunden.");
+            return;
+        }
+
+        PatientCombo.SelectedIndex = 0;
     }
 
 }

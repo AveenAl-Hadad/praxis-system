@@ -9,5 +9,7 @@ public interface IPatientService
     Task UpdatePatientAsync(Patient patient);
     Task DeletePatientAsync(int id, string userName);
     Task ToggleActiveAsync(int id);
-}
+
+   Task<List<Patient>> SearchPatientsAsync(string searchTerm);
+    }
 }

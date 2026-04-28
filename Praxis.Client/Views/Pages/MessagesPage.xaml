@@ -106,11 +106,22 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock Text="Patient-ID:" Width="90" VerticalAlignment="Center"/>
-                        <TextBox x:Name="PatientIdText" Width="220"/>
-                        <TextBlock Text="optional" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Patient:" Width="90" VerticalAlignment="Center"/>
+
+                        <TextBox x:Name="PatientSearchText"
+                                 Width="180"
+                                 Margin="0,0,6,0"/>
+
+                        <Button Content="Suchen"
+                                Width="80"
+                                Margin="0,0,6,0"
+                                Click="SearchPatient_Click"/>
+
+                        <ComboBox x:Name="PatientCombo"
+                                  Width="260"
+                                  DisplayMemberPath="FullName"/>
                     </StackPanel>
-                    
+
                     <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock Text="Betreff:" Width="90" VerticalAlignment="Center"/>
                         <TextBox x:Name="SubjectText" Width="420"/>

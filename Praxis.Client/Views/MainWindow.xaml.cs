@@ -194,7 +194,7 @@ namespace Praxis.Client.Views
                                                     patientMedicationService,
                                                     practiceSettingsService);
             _reportsPage = new ReportsPage(reportsService);
-            _messagesPage = new MessagesPage(messageService);
+            _messagesPage = new MessagesPage(messageService, patientService);
             StartSessionTimer();
            
         }
