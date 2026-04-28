@@ -84,4 +84,50 @@ public class ReportsService : IReportsService
             .OrderByDescending(x => x.Count)
             .ToListAsync();
     }
+    public async Task<List<Patient>> GetPatientsWithoutCardAsync()
+    {
+        return await _db.Patients
+            .Where(p => string.IsNullOrWhiteSpace(p.Versichertennummer))
+            .OrderBy(p => p.Nachname)
+            .ThenBy(p => p.Vorname)
+            .ToListAsync();
+    }
+
+    public async Task<List<ReportRow>> GetServiceCodeStatsAsync(DateTime from, DateTime to)
+    {
+        to = to.Date.AddDays(1).AddTicks(-1);
+
+        var items = await _db.InvoiceItems
+            .Include(x => x.Invoice)
+            .Where(x => x.Invoice != null &&
+                        x.Invoice.InvoiceDate >= from &&
+                        x.Invoice.InvoiceDate <= to)
+            .ToListAsync();
+
+        return items
+            .GroupBy(x => string.IsNullOrWhiteSpace(x.Code) ? x.Description : x.Code)
+            .Select(g => new ReportRow
+            {
+                Name = g.Key,
+                Count = g.Count(),
+                Amount = g.Sum(x => x.TotalPrice)
+            })
+            .OrderByDescending(x => x.Count)
+            .ToList();
+    }
+
+    public async Task<List<ReportRow>> GetPatientStatsAsync()
+    {
+        var patients = await _db.Patients.ToListAsync();
+
+        return patients
+            .GroupBy(p => string.IsNullOrWhiteSpace(p.Versicherung) ? "Ohne Versicherung" : p.Versicherung)
+            .Select(g => new ReportRow
+            {
+                Name = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ToList();
+    }
 }

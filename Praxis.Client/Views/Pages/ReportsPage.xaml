@@ -26,6 +26,9 @@
             <DatePicker x:Name="ToDatePicker" Width="140" Margin="6,0,12,0"/>
 
             <Button Content="Aktualisieren" Width="130" Click="Refresh_Click"/>
+            <Button Content="PDF Export" Width="110" Margin="8,0,0,0" Click="ExportPdf_Click"/>
+            <Button Content="Excel Export" Width="110" Margin="8,0,0,0" Click="ExportExcel_Click"/>
+            
         </StackPanel>
 
         <!-- Kennzahlen -->
@@ -114,6 +117,37 @@
                         <lvc:CartesianChart x:Name="RevenueChart"/>
                     </GroupBox>
                 </Grid>
+            </TabItem>
+            
+            <TabItem Header="Patienten ohne Karte">
+                <DataGrid x:Name="PatientsWithoutCardGrid" AutoGenerateColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" Width="150"/>
+                        <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" Width="150"/>
+                        <DataGridTextColumn Header="Geburtsdatum" Binding="{Binding Geburtsdatum, StringFormat=dd.MM.yyyy}" Width="130"/>
+                        <DataGridTextColumn Header="Telefon" Binding="{Binding Telefonnummer}" Width="150"/>
+                        <DataGridTextColumn Header="E-Mail" Binding="{Binding Email}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Leistungsziffern">
+                <DataGrid x:Name="ServiceCodeGrid" AutoGenerateColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Ziffer / Leistung" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Anzahl" Binding="{Binding Count}" Width="120"/>
+                        <DataGridTextColumn Header="Betrag" Binding="{Binding Amount}" Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Patienten-Statistik">
+                <DataGrid x:Name="PatientStatsGrid" AutoGenerateColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Versicherung" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Anzahl" Binding="{Binding Count}" Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
             </TabItem>
 
         </TabControl>

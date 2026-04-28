@@ -406,6 +406,23 @@ namespace Praxis.Client.Views
                         LoadPage(_reportsPage);
                         _reportsPage.ShowOverview();
                     }, true);
+                    AddSidebarButton("Patienten ohne Karte", (s, e) =>
+                    {
+                        LoadPage(_reportsPage);
+                        _reportsPage.ShowPatientsWithoutCard();
+                    });
+
+                    AddSidebarButton("Leistungsziffern-Statistik", (s, e) =>
+                    {
+                        LoadPage(_reportsPage);
+                        _reportsPage.ShowServiceCodeStats();
+                    });
+
+                    AddSidebarButton("Patienten-Statistik", (s, e) =>
+                    {
+                        LoadPage(_reportsPage);
+                        _reportsPage.ShowPatientStats();
+                    });
 
                     AddSidebarButton("Diagnose-Statistik", (s, e) =>
                     {
