@@ -31,7 +31,11 @@ public class PracticeMessageService : IPracticeMessageService
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
     }
-
+    public async Task<int> GetUnreadCountAsync(string recipient)
+    {
+        return await _db.PracticeMessages
+            .CountAsync(x => x.Recipient == recipient && !x.IsRead);
+    }
     public async Task SendAsync(PracticeMessage message)
     {
         message.CreatedAt = DateTime.Now;

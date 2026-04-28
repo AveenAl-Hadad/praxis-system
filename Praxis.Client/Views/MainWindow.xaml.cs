@@ -93,7 +93,9 @@ namespace Praxis.Client.Views
         private readonly IRoomService _roomService;
         private readonly IAppointmentTypeService _appointmentTypeService;
         private readonly IDoctorService _doctorService;
-       
+
+        private readonly IPracticeMessageService _messageService;
+
 
 
 
@@ -162,7 +164,8 @@ namespace Praxis.Client.Views
             _abrechnungService = abrechnungService;
             _dashboardTaskService = dashboardTaskService;
             _practiceNoticeService = practiceNoticeService;
-            
+            _messageService = messageService;
+
             _dashboardLayoutService = dashboardLayoutService;
 
             _roomService = roomService;
@@ -240,7 +243,7 @@ namespace Praxis.Client.Views
         private void SwitchModule(BottomModule module)
         {
             _currentModule = module;
-            BuildSidebar(module);
+            BuildSidebarAsync(module);
 
             switch (module)
             {
@@ -352,7 +355,7 @@ namespace Praxis.Client.Views
             //return UserSession.HasRole(Roles.Administrator) || UserSession.HasRole("Admin");
             return PermissionHelper.IsAdmin;           
         }
-        private void BuildSidebar(BottomModule module)
+        private async Task BuildSidebarAsync(BottomModule module)
         {
             if (DynamicSidebarPanel == null)
                 return;
@@ -404,13 +407,55 @@ namespace Praxis.Client.Views
                     break;
 
                 case BottomModule.Nachrichten:
-                    AddSidebarButton("Neue Nachricht", async (s, e) => {LoadPage(_messagesPage);_messagesPage.ShowNewMessage(); await _messagesPage.RefreshAsync(); }, true);
-                    AddSidebarButton("Posteingang", async (s, e) => { LoadPage(_messagesPage); _messagesPage.ShowInbox(); await _messagesPage.RefreshAsync();});
-                    AddSidebarButton("Gesendet", async (s, e) => {LoadPage(_messagesPage); _messagesPage.ShowSent(); await _messagesPage.RefreshAsync();});
-                    AddSidebarButton("Interne Nachrichten", async (s, e) => { LoadPage(_messagesPage); _messagesPage.ShowInbox();await _messagesPage.RefreshAsync(); });
-                    AddSidebarButton("Externe Nachrichten", async (s, e) => { LoadPage(_messagesPage); _messagesPage.ShowExternalMessages(); await _messagesPage.RefreshAsync(); });
-                    AddSidebarButton("Notizen", (s, e) =>{ LoadPage(_messagesPage); _messagesPage.ShowNotes(); });
-                    AddSidebarButton("Arztbriefe", (s, e) => {LoadPage(_messagesPage); _messagesPage.ShowDoctorLetters();});
+
+                    var unreadCount = await GetUnreadMessagesCountAsync();
+
+                    var inboxText = unreadCount > 0
+                        ? $"Posteingang ({unreadCount})"
+                        : "Posteingang";
+
+                    AddSidebarButton(inboxText, async (s, e) =>
+                    {
+                        LoadPage(_messagesPage);
+                        _messagesPage.ShowInbox();
+                        await _messagesPage.RefreshAsync();
+
+                        await RefreshSidebarAsync(); // 🔥 wichtig
+                    });
+
+                    AddSidebarButton("Neue Nachricht", async (s, e) =>
+                    {
+                        LoadPage(_messagesPage);
+                        _messagesPage.ShowNewMessage();
+                        await _messagesPage.RefreshAsync();
+                    }, true);
+
+                    AddSidebarButton("Gesendet", async (s, e) =>
+                    {
+                        LoadPage(_messagesPage);
+                        _messagesPage.ShowSent();
+                        await _messagesPage.RefreshAsync();
+                    });
+
+                    AddSidebarButton("Externe Nachrichten", async (s, e) =>
+                    {
+                        LoadPage(_messagesPage);
+                        _messagesPage.ShowExternalMessages();
+                        await _messagesPage.RefreshAsync();
+                    });
+
+                    AddSidebarButton("Notizen", (s, e) =>
+                    {
+                        LoadPage(_messagesPage);
+                        _messagesPage.ShowNotes();
+                    });
+
+                    AddSidebarButton("Arztbriefe", (s, e) =>
+                    {
+                        LoadPage(_messagesPage);
+                        _messagesPage.ShowDoctorLetters();
+                    });
+
                     break;
 
                 case BottomModule.Kataloge:
@@ -447,6 +492,10 @@ namespace Praxis.Client.Views
                     AddSidebarButton("Restore", RestoreBackup_Click);
                     break;
             }
+        }
+        private async Task RefreshSidebarAsync()
+        {
+            SwitchModule(BottomModule.Nachrichten);
         }
         private void OpenOnlineBooking_Click(object sender, RoutedEventArgs e)
         {
@@ -1076,6 +1125,11 @@ namespace Praxis.Client.Views
             {
                 MessageBox.Show(ex.ToString(), "Katalog Fehler");
             }
+        }
+
+        private async Task<int> GetUnreadMessagesCountAsync()
+        {
+            return await _messageService.GetUnreadCountAsync("MFA");
         }
 
 
