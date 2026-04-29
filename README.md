@@ -1,10 +1,10 @@
-# 🏥 Praxis System
+# Praxis System
 
 Ein modular aufgebautes Praxisverwaltungssystem auf Basis von .NET zur digitalen Organisation von Patienten, Terminen und Abrechnungsprozessen.
 Das System ist als mehrschichtige Anwendung konzipiert und trennt klar zwischen Benutzeroberfläche, Geschäftslogik und Datenzugriff.
 
 ---
-### 🎯 Ziel des Projekts
+### Ziel des Projekts
 
 Dieses Projekt dient der Entwicklung einer strukturierten und skalierbaren Softwarelösung für Arztpraxen oder medizinische Einrichtungen, mit Fokus auf:
 - effiziente Patientenverwaltung
@@ -14,20 +14,20 @@ Dieses Projekt dient der Entwicklung einer strukturierten und skalierbaren Softw
 
 ---
 
-## ✨ Features
+##  Features
 
-* 👤 Patientenverwaltung
-* 📅 Terminplanung & Kalender
-* 🧾 Abrechnung & Rechnungsstellung
-* 💊 Medikamenten- & Diagnosenverwaltung
-* 📄 Dokumentenmanagement (z. B. Arztbriefe, PDFs)
-* 📊 Dashboard & Berichte
-* 🔐 Benutzer- & Authentifizierungssystem
-* 🔔 Erinnerungen & Benachrichtigungen
+*  Patientenverwaltung
+*  Terminplanung & Kalender
+*  Abrechnung & Rechnungsstellung
+*  Medikamenten- & Diagnosenverwaltung
+*  Dokumentenmanagement (z. B. Arztbriefe, PDFs)
+*  Dashboard & Berichte
+*  Benutzer- & Authentifizierungssystem
+*  Erinnerungen & Benachrichtigungen
 
 ---
 
-## 🏗️ Projektstruktur
+## Projektstruktur
 
 Das Projekt ist in mehrere Layer aufgeteilt (Clean Architecture):
 
@@ -45,7 +45,7 @@ Das Projekt ist in mehrere Layer aufgeteilt (Clean Architecture):
 
 ---
 
-## 🚀 Installation & Start
+## Installation & Start
 
 ### Voraussetzungen
 
@@ -66,11 +66,11 @@ Dann in Visual Studio:
 
 * Lösung öffnen
 * Startprojekt auswählen (`Praxis.Client`)
-* ▶️ Starten
+   Starten
 
 ---
 
-## ⚙️ Konfiguration
+## Konfiguration
 
 Die Konfiguration erfolgt über:
 
@@ -85,7 +85,7 @@ Hier kannst du z. B. anpassen:
 * Logging
 ---
 
-## 🛠️ Technische Details
+## Technische Details
 
 * Sprache: C#
 * Framework: .NET
@@ -95,32 +95,32 @@ Hier kannst du z. B. anpassen:
 ** Dependency Injection (vorbereitet durch Interfaces)
 ** Erweiterbarkeit durch modulare Services
 ---
-## ⚙️ Kernfunktionen
+##  Kernfunktionen
 
-👤 Patientenverwaltung
+ Patientenverwaltung
 Anlegen, Bearbeiten und Löschen von Patienten
 Speicherung relevanter Stammdaten
 
-📅 Terminmanagement
+ Terminmanagement
 Erstellung und Verwaltung von Terminen
 Zuordnung zu Patienten
 Übersicht über geplante Termine
 
-💰 Abrechnungssystem
+ Abrechnungssystem
 Erstellung von Rechnungen
 Verknüpfung mit Patienten und Leistungen
 
-📄 Dokumentenmanagement
+ Dokumentenmanagement
 Verwaltung von Dateien (z. B. PDFs)
 Zuordnung zu Patientenakten
 
-📊 Dashboard
+ Dashboard
 Übersicht über wichtige Praxiskennzahlen
 Aggregation von Daten aus verschiedenen Services
 
 ---
 
-## 🧠 Architektur
+##  Architektur
 
 Das System folgt einer **schichtenbasierten Architektur**:
 
@@ -130,7 +130,7 @@ Das System folgt einer **schichtenbasierten Architektur**:
 
 ---
 
-## 🧪 Tests
+##  Tests
 
 Für zentrale Services der Anwendung existieren Unit Tests im Projekt `Praxis.Tests`.
 
@@ -151,7 +151,7 @@ dotnet test PraxisSystem.sln
 
 ---
 
-## 📸 Screenshots
+##  Screenshots
 
 ### Benutzeranmeldung 
 ![Anmeldung] (screenshots/Benutzeranmeldung.jpg)
@@ -194,7 +194,7 @@ dotnet test PraxisSystem.sln
 
 ---
 
-## 🤝 Mitwirken
+##  Mitwirken
 
 Beiträge sind willkommen!
 
@@ -205,13 +205,13 @@ Beiträge sind willkommen!
 
 ---
 
-## 📄 Lizenz
+##  Lizenz
 
 Alle Rechte vorbehalten. Die Nutzung, Vervielfältigung oder Weitergabe dieses Codes ist ohne ausdrückliche Genehmigung nicht gestattet.
 
 ---
 
-## 👨‍💻 Autor
+##  Autor
 
 * Aveen Al-Hadad
 
