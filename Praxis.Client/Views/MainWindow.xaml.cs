@@ -118,6 +118,7 @@ namespace Praxis.Client.Views
 
 
         #endregion
+
         #region Konstrakture
         public MainWindow(
                              IPatientService patientService,
@@ -157,6 +158,7 @@ namespace Praxis.Client.Views
                              )
         {
             InitializeComponent();
+
             _messageRefreshTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(5)
@@ -232,15 +234,18 @@ namespace Praxis.Client.Views
            
         }
 
-       
+      
         #endregion
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             UpdateLoggedInUserDisplay();
             try
             {
                 SwitchModule(BottomModule.Patienten);
                 SetInitialBottomButton();
+                await RefreshBottomStatusAsync();
+
             }
             catch (Exception ex)
             {
@@ -636,6 +641,72 @@ namespace Praxis.Client.Views
         }
         #endregion
 
+        #region Header Gehezu
+        //Header Gehe zu
+        //Event einbauen
+        private void QuickSearchBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                HandleQuickSearch(QuickSearchBox.Text);
+            }
+        }
+        // Logik einbauen
+        private void HandleQuickSearch(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return;
+
+            input = input.Trim().ToLower();
+
+            // Patienten
+            if (input.Contains("pat") || input.Contains("max"))
+            {
+                _ = OpenPatientSearchWithTextAsync(input);
+                return;
+            }
+
+
+            // Termine
+            if (input.Contains("termin"))
+            {
+                SwitchModule(BottomModule.Patienten);
+                _ = OpenSelectedPatientAppointmentsPageAsync();
+                return;
+            }
+
+            // Abrechnung
+            if (input.Contains("rechnung"))
+            {
+                SwitchModule(BottomModule.Abrechnung);
+                return;
+            }
+
+            // Nachrichten
+            if (input.Contains("nachricht"))
+            {
+                SwitchModule(BottomModule.Nachrichten);
+                return;
+            }
+
+            // Auswertung
+            if (input.Contains("stat") || input.Contains("auswertung"))
+            {
+                SwitchModule(BottomModule.Auswertungen);
+                return;
+            }
+
+            _ = OpenPatientSearchWithTextAsync(input);
+        }
+        private async Task OpenPatientSearchWithTextAsync(string searchText)
+        {
+            SwitchModule(BottomModule.Patienten);
+
+            LoadPage(_patientSearchPage);
+            await _patientSearchPage.SetSearchAsync(searchText);
+        }
+        #endregion
+
         #region Bottom Navigation
 
         private void SetActiveBottomButton(Button btn)
@@ -700,6 +771,32 @@ namespace Praxis.Client.Views
             SetActiveBottomButton((Button)sender);
             SwitchModule(BottomModule.Einstellungen);
         }
+        private async void OpenCatalogCategory(string category)
+        {
+            try
+            {
+                LoadPage(_catalogsPage);
+                await _catalogsPage.SelectCategoryAsync(category);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Katalog Fehler");
+            }
+        }
+
+        private async Task<int> GetUnreadMessagesCountAsync()
+        {
+            return await _messageService.GetUnreadCountAsync("MFA");
+        }
+        private async Task<string> GetMessagesButtonTextAsync()
+        {
+            var unreadCount = await _messageService.GetUnreadCountAsync("MFA");
+
+            return unreadCount > 0
+                ? $"🔴 Nachrichten ({unreadCount})"
+                : "Nachrichten";
+        }
+
 
         #endregion
 
@@ -927,6 +1024,7 @@ namespace Praxis.Client.Views
         public async Task AddDashboardTaskAsync(DashboardTask task)
         {
             await _dashboardTaskService.AddTaskAsync(task);
+            await RefreshBottomStatusAsync();
         }
         public async Task AddPracticeNoticeAsync(PracticeNotice notice)
         {
@@ -939,6 +1037,7 @@ namespace Praxis.Client.Views
         public async Task MarkDashboardTaskAsDoneAsync(int taskId)
         {
             await _dashboardTaskService.MarkAsDoneAsync(taskId);
+            await RefreshBottomStatusAsync();
         }
         public async Task<IEnumerable<DashboardTask>> GetAllDashboardTasksAsync()
         {
@@ -959,6 +1058,7 @@ namespace Praxis.Client.Views
         public async Task DeleteDashboardTaskAsync(int taskId)
         {
             await _dashboardTaskService.DeleteTaskAsync(taskId);
+            await RefreshBottomStatusAsync();
         }
 
         public async Task MoveDashboardTaskToOpenAsync(int taskId)
@@ -1187,31 +1287,44 @@ namespace Praxis.Client.Views
 
         #endregion
 
-        private async void OpenCatalogCategory(string category)
+        #region Footer
+        private async Task RefreshBottomStatusAsync()
         {
-            try
-            {
-                LoadPage(_catalogsPage);
-                await _catalogsPage.SelectCategoryAsync(category);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), "Katalog Fehler");
-            }
+            var tasks = (await GetOpenDashboardTasksAsync()).ToList();
+
+            var openCount = tasks.Count;
+            var overdueCount = tasks.Count(t =>
+                t.DueDate != null &&
+                t.DueDate.Value.Date < DateTime.Today);
+
+            OpenTasksButton.Content = openCount.ToString();
+            OverdueTasksButton.Content = overdueCount.ToString();
+
+            SystemStatusButton.Content = "✓";
+        }
+        private async void OpenTasksButton_Click(object sender, RoutedEventArgs e)
+        {
+            SwitchModule(BottomModule.Patienten);
+            LoadPage(_dashboardPage);
+            await RefreshBottomStatusAsync();
         }
 
-        private async Task<int> GetUnreadMessagesCountAsync()
+        private async void OverdueTasksButton_Click(object sender, RoutedEventArgs e)
         {
-            return await _messageService.GetUnreadCountAsync("MFA");
-        }
-        private async Task<string> GetMessagesButtonTextAsync()
-        {
-            var unreadCount = await _messageService.GetUnreadCountAsync("MFA");
+            SwitchModule(BottomModule.Patienten);
+            LoadPage(_dashboardPage);
+            await RefreshBottomStatusAsync();
 
-            return unreadCount > 0
-                ? $"🔴 Nachrichten ({unreadCount})"
-                : "Nachrichten";
+            MessageBox.Show("Überfällige Aufgaben werden im Dashboard angezeigt.");
         }
+
+        private async void SystemStatusButton_Click(object sender, RoutedEventArgs e)
+        {
+            await RefreshBottomStatusAsync();
+            MessageBox.Show("Systemstatus aktualisiert.");
+        }
+        #endregion
+
 
     }
 }

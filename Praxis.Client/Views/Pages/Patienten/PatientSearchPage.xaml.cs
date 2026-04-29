@@ -137,5 +137,13 @@ namespace Praxis.Client.Views.Pages.Patienten
                 mainWindow.SetSelectedPatient(selectedPatient);
             }
         }
+
+        public async Task SetSearchAsync(string searchText)
+        {
+            await RefreshAsync();
+
+            SearchTextBox.Text = searchText;
+            ApplyFilter();
+        }
     }
 }
