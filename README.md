@@ -2,6 +2,9 @@
 
 Ein modular aufgebautes Praxisverwaltungssystem auf Basis von .NET zur digitalen Organisation von Patienten, Terminen und Abrechnungsprozessen.
 Das System ist als mehrschichtige Anwendung konzipiert und trennt klar zwischen Benutzeroberfläche, Geschäftslogik und Datenzugriff.
+Das Projekt ist als mehrschichtige .NET-WPF-Anwendung aufgebaut. 
+Die Architektur trennt Domain-Modelle, Application-Interfaces, Infrastructure-Services, 
+WPF-Client und Tests klar voneinander.
 
 ---
 ### Ziel des Projekts
