@@ -52,4 +52,8 @@
     <ProjectReference Include="..\Praxis.Infrastructure\Praxis.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

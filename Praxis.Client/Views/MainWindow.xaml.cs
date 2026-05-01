@@ -12,6 +12,7 @@ using Praxis.Client.Views.Pages.Patienten;
 using Praxis.Client.Views.Pages.Labor;
 using System.Linq;
 using System.Windows.Threading;
+using Praxis.Client.Views.Pages.Dashboard;
 
 using Praxis.Client.Views.Pages.UserManagement;
 using Praxis.Domain.Constants;
@@ -19,15 +20,16 @@ using Praxis.Domain.Entities;
 using Praxis.Infrastructure.Services;
 using Praxis.Client.Views.Pages.Abrechnung;
 using Praxis.Client.Views.Pages.Kataloge;
+using Praxis.Application.Interfaces;
+using Praxis.Client.Views.Pages.Patienten.PatientAppointment;
 using Praxis.Client.Security;
-
+using Praxis.Client.ViewModels;
 
 using MessageBox = System.Windows.MessageBox;
 using Button = System.Windows.Controls.Button;
-
-using Praxis.Application.Interfaces;
 using MouseEventHandler = System.Windows.Input.MouseEventHandler;
 using KeyEventHandler = System.Windows.Input.KeyEventHandler;
+
 
 
 namespace Praxis.Client.Views
@@ -64,7 +66,7 @@ namespace Praxis.Client.Views
         private readonly ReportsPage _reportsPage;
         private readonly MessagesPage _messagesPage;
 
-        private readonly DashboardPage _dashboardPage = new DashboardPage();
+        private readonly DashboardPage _dashboardPage;
         private readonly PatientSearchPage _patientSearchPage = new PatientSearchPage();
         private readonly PatientCreatePage _patientCreatePage = new PatientCreatePage();
         private readonly PatientEditPage _patientEditPage;
@@ -230,6 +232,10 @@ namespace Praxis.Client.Views
                                              doctorLetterService,
                                              externalMessageService
                                              );
+
+            var dashboardViewModel = new DashboardViewModel();
+
+            _dashboardPage = new DashboardPage(dashboardViewModel);
             StartSessionTimer();
            
         }

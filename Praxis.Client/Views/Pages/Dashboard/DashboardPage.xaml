@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Praxis.Client.Views.Pages.DashboardPage"
+﻿<UserControl x:Class="Praxis.Client.Views.Pages.Dashboard.DashboardPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="Transparent">
@@ -48,7 +48,7 @@
                             Width="120"
                             Margin="0,0,10,0"
                             Style="{StaticResource PrimaryButtonStyle}"
-                            Click="RefreshButton_Click"/>
+                             Command="{Binding RefreshCommand}" />
                     <Button Content="Layout zurücksetzen"
                             Width="150"
                             Margin="0,0,10,0"
@@ -79,11 +79,11 @@
                         <StackPanel>
                             <TextBlock Text="Patienten gesamt"
                            Foreground="{DynamicResource MutedTextBrush}"/>
-                            <TextBlock x:Name="TotalPatientsText"
-                           Text="0"
-                           FontSize="28"
-                           FontWeight="Bold"
-                           Margin="0,8,0,0"/>
+
+                            <TextBlock Text="{Binding TotalPatients}"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Margin="0,8,0,0"/>
                         </StackPanel>
                     </Border>
 
@@ -91,11 +91,10 @@
                         <StackPanel>
                             <TextBlock Text="Termine gesamt"
                            Foreground="{DynamicResource MutedTextBrush}"/>
-                            <TextBlock x:Name="TotalAppointmentsText"
-                           Text="0"
-                           FontSize="28"
-                           FontWeight="Bold"
-                           Margin="0,8,0,0"/>
+                            <TextBlock Text="{Binding TotalAppointments}"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Margin="0,8,0,0"/>
                         </StackPanel>
                     </Border>
 
@@ -103,23 +102,21 @@
                         <StackPanel>
                             <TextBlock Text="Rechnungen gesamt"
                            Foreground="{DynamicResource MutedTextBrush}"/>
-                            <TextBlock x:Name="TotalInvoicesText"
-                           Text="0"
-                           FontSize="28"
-                           FontWeight="Bold"
-                           Margin="0,8,0,0"/>
+                            <TextBlock Text="{Binding TotalInvoices}"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Margin="0,8,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <Border Style="{StaticResource CardBorderStyle}">
                         <StackPanel>
                             <TextBlock Text="Rezepte gesamt"
-                           Foreground="{DynamicResource MutedTextBrush}"/>
-                            <TextBlock x:Name="TotalPrescriptionsText"
-                           Text="0"
-                           FontSize="28"
-                           FontWeight="Bold"
-                           Margin="0,8,0,0"/>
+                                        Foreground="{DynamicResource MutedTextBrush}"/>
+                            <TextBlock Text="{Binding TotalPrescriptions}"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Margin="0,8,0,0"/>
                         </StackPanel>
                     </Border>
                 </UniformGrid>
@@ -168,16 +165,16 @@
                                 </Grid.ColumnDefinitions>
 
                                 <TextBlock Text="Termine im Monat" Grid.Row="0" Grid.Column="0" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="MonthAppointmentsText" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding MonthAppointments}" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
                                 <TextBlock Text="Rechnungen im Monat" Grid.Row="1" Grid.Column="0" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="MonthInvoicesText" Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding MonthInvoices}" Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
                                 <TextBlock Text="Umsatz im Monat" Grid.Row="2" Grid.Column="0" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="MonthRevenueText" Grid.Row="2" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding MonthRevenue}" Grid.Row="2" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
                                 <TextBlock Text="Gesamtumsatz" Grid.Row="3" Grid.Column="0"/>
-                                <TextBlock x:Name="TotalRevenueText" Grid.Row="3" Grid.Column="1" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding TotalRevenue}" Grid.Row="3" Grid.Column="1" FontWeight="SemiBold"/>
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -212,19 +209,19 @@
                                 </Grid.ColumnDefinitions>
 
                                 <TextBlock Text="Heutige Termine" Grid.Row="0" Grid.Column="0" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="TodayAppointmentsText" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding TodayAppointmentsCount}" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
                                 <TextBlock Text="Geplant" Grid.Row="1" Grid.Column="0" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="PlannedAppointmentsText" Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding PlannedAppointments}" Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
                                 <TextBlock Text="Erledigt" Grid.Row="2" Grid.Column="0" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="CompletedAppointmentsText" Grid.Row="2" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding CompletedAppointments}" Grid.Row="2" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
 
                                 <TextBlock Text="Abgesagt" Grid.Row="3" Grid.Column="0"/>
-                                <TextBlock x:Name="CancelledAppointmentsText" Grid.Row="3" Grid.Column="1" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding CancelledAppointments}" Grid.Row="3" Grid.Column="1" FontWeight="SemiBold"/>
 
                                 <TextBlock Text="Online gebucht" Grid.Row="4" Grid.Column="0" Margin="0,8,0,0"/>
-                                <TextBlock x:Name="OnlineAppointmentsText" Grid.Row="4" Grid.Column="1" Margin="0,8,0,0" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding OnlineAppointmentsCount}" Grid.Row="4" Grid.Column="1" Margin="0,8,0,0" FontWeight="SemiBold"/>
 
                                 <TextBlock Text="Check-in heute" Grid.Row="5" Grid.Column="0" Margin="0,0,0,8"/>
                                 <TextBlock x:Name="TodayCheckedInText" Grid.Row="5" Grid.Column="1" Margin="0,0,0,8" FontWeight="SemiBold"/>
@@ -295,18 +292,16 @@
                             <StackPanel>
                                 <TextBlock Text="Offen"
                                            Foreground="{DynamicResource MutedTextBrush}"/>
-                                <TextBlock x:Name="OpenTasksText"
-                                           Text="0"
-                                           FontSize="24"
-                                           FontWeight="Bold"
-                                           Margin="0,6,0,0"/>
+                            <TextBlock Text="{Binding OpenTasks}"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Margin="0,6,0,0"/>
                             </StackPanel>
 
                             <StackPanel>
                                 <TextBlock Text="Heute fällig"
                                            Foreground="{DynamicResource MutedTextBrush}"/>
-                                <TextBlock x:Name="DueTodayTasksText"
-                                           Text="0"
+                            <TextBlock Text="{Binding DueTodayTasks}"
                                            FontSize="24"
                                            FontWeight="Bold"
                                            Margin="0,6,0,0"/>
@@ -315,8 +310,7 @@
                             <StackPanel>
                                 <TextBlock Text="Überfällig"
                                            Foreground="{DynamicResource MutedTextBrush}"/>
-                                <TextBlock x:Name="OverdueTasksText"
-                                           Text="0"
+                            <TextBlock Text="{Binding OverdueTasks}"
                                            FontSize="24"
                                            FontWeight="Bold"
                                            Margin="0,6,0,0"/>
@@ -354,8 +348,7 @@
                                                 Background="#DBEAFE"
                                                 CornerRadius="10"
                                                 Padding="8,2">
-                                            <TextBlock x:Name="KanbanOpenCountText"
-                                                       Text="0"
+                                        <TextBlock Text="{Binding CompletedTasks}"
                                                        Foreground="#1D4ED8"
                                                        FontWeight="Bold"/>
                                         </Border>
@@ -363,6 +356,7 @@
 
                                     <ListBox Grid.Row="2"
                                              x:Name="KanbanOpenList"
+                                             ItemsSource="{Binding KanbanOpenTasks}"
                                              Tag="Open"
                                              AllowDrop="True"
                                              BorderThickness="0"
@@ -444,6 +438,7 @@
 
                                     <ListBox Grid.Row="2"
                                              x:Name="KanbanTodayList"
+                                             ItemsSource="{Binding KanbanTodayTasks}"
                                              Tag="Open"
                                              AllowDrop="True"
                                              BorderThickness="0"
@@ -525,6 +520,7 @@
 
                                     <ListBox Grid.Row="2"
                                              x:Name="KanbanOverdueList"
+                                             ItemsSource="{Binding KanbanOverdueTasks}"
                                              Tag="Open"
                                              AllowDrop="True"
                                              BorderThickness="0"
@@ -606,6 +602,7 @@
 
                                     <ListBox Grid.Row="2"
                                              x:Name="KanbanCompletedList"
+                                             ItemsSource="{Binding KanbanCompletedTasks}"
                                              Tag="Open"
                                              AllowDrop="True"
                                              BorderThickness="0"
@@ -660,6 +657,7 @@
                         <!-- TaskGrid -->
                         <DataGrid Grid.Row="8"
                                   x:Name="TasksGrid"
+                                  ItemsSource="{Binding Tasks}"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
@@ -811,8 +809,7 @@
                             <StackPanel>
                                 <TextBlock Text="Aktive Hinweise"
                                            Foreground="{DynamicResource MutedTextBrush}"/>
-                                <TextBlock x:Name="ActiveNoticesText"
-                                           Text="0"
+                            <TextBlock Text="{Binding ActiveNotices}"
                                            FontSize="24"
                                            FontWeight="Bold"
                                            Margin="0,6,0,0"/>
@@ -821,15 +818,14 @@
                             <StackPanel>
                                 <TextBlock Text="Angeheftet"
                                            Foreground="{DynamicResource MutedTextBrush}"/>
-                                <TextBlock x:Name="PinnedNoticesText"
-                                           Text="0"
+                            <TextBlock Text="{Binding PinnedNotices}"
                                            FontSize="24"
                                            FontWeight="Bold"
                                            Margin="0,6,0,0"/>
                             </StackPanel>
                         </UniformGrid>
 
-                    <ItemsControl Grid.Row="5" Margin="0,10,0,0" x:Name="NoticeCardsList">
+                    <ItemsControl Grid.Row="5" Margin="0,10,0,0"  ItemsSource="{Binding NoticeCards}">
 
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -880,13 +876,14 @@
                     </ItemsControl>
                     <!-- NoticesGrid -->
                     <DataGrid Grid.Row="6"
-                                  x:Name="NoticesGrid"
-                                  AutoGenerateColumns="False"
-                                  CanUserAddRows="False"
-                                  CanUserDeleteRows="False"
-                                  IsReadOnly="True"
-                                  SelectionMode="Single"
-                                  MouseDoubleClick="NoticesGrid_MouseDoubleClick">
+                              x:Name="NoticesGrid"
+                              ItemsSource="{Binding Notices}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              MouseDoubleClick="NoticesGrid_MouseDoubleClick">
                         <DataGrid.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="Bearbeiten"
@@ -949,14 +946,14 @@
                         <TextBlock Text="Heutige Termine"
                                    FontWeight="Bold"
                                    FontSize="15"/>
-                        <TextBlock x:Name="TodayDateText"
+                        <TextBlock Text="{Binding TodayDate}"
                                    Margin="0,2,0,0"
                                    Foreground="{DynamicResource MutedTextBrush}"/>
                         
                     </StackPanel>
 
                     <DataGrid Grid.Row="2"
-                              x:Name="TodayAppointmentsGrid"
+                              ItemsSource="{Binding TodayAppointments}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
                               CanUserDeleteRows="False"
@@ -986,7 +983,7 @@
                                        Margin="0,2,0,12"
                                        Foreground="{DynamicResource MutedTextBrush}"/>
 
-                            <DataGrid x:Name="OnlineAppointmentsGrid"
+                            <DataGrid ItemsSource="{Binding OnlineAppointments}"
                                       AutoGenerateColumns="False"
                                       CanUserAddRows="False"
                                       CanUserDeleteRows="False"
